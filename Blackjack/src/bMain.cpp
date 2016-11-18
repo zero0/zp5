@@ -2,7 +2,7 @@
 
 int main( const char** args )
 {
-    zpBlockAllocator mem( 1000 );
+    zpStackAllocator< 1000 > mem;
 
     void* a = mem.allocate( 11 );
     void* b = mem.allocate( 250 );

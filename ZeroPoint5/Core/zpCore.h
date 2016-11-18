@@ -114,6 +114,7 @@ void zp_printfln( const zp_char* text, ... );
 #endif
 
 #include "zpBlockAllocator.h"
+#include "zpStackAllocator.h"
 
 #endif // !ZP_CORE_H
 
