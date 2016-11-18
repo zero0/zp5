@@ -1,0 +1,12 @@
+//
+// Auto-generated from CMake
+//
+
+#define ZP_VERSION_MAJOR    @ZP_VERSION_MAJOR@
+#define ZP_VERSION_MINOR    @ZP_VERSION_MINOR@
+#define ZP_VERSION_PATCH    @ZP_VERSION_PATCH@
+#define ZP_VERSION          "@ZP_VERSION@"
+
+#cmakedefine ZP_USE_ASSERTIONS
+#cmakedefine ZP_USE_PRINT
+#cmakedefine ZP_USE_SAFE_FUNCTIONS

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ZeroPoint5" basedir="." default="usage">
+    <description>
+    </description>
+
+
+    <property name="platform.32" value="x86" />
+    <property name="platform.64" value="x64" />
+
+    <property name="build.32.dir" value="build_${platform.32}" basedir="${basedir}" />
+    <property name="build.64.dir" value="build_${platform.64}" basedir="${basedir}" />
+
+    <property name="install.32.dir" value="install_${platform.32}" basedir="${basedir}" />
+    <property name="install.64.dir" value="install_${platform.64}" basedir="${basedir}" />
+
+    <property name="vc.dir" location="C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/" />
+    <property name="vc.exe" location="${vc.dir}/vcvarsall.bat" />
+    <property name="devenv.exe" value="devenv" />
+
+    <target name="usage">
+        <echo></echo>
+    </target>
+
+    <target name="make.32">
+        <property name="platform" value="x86" />
+        <property name="mode" value="Debug" />
+        <antcall target="make.platform">
+        </antcall>
+    </target>
+
+     <target name="make.64">
+        <property name="platform" value="x64" />
+        <property name="mode" value="Debug" />
+        <antcall target="make.platform">
+        </antcall>
+    </target>
+
+    <target name="build.32" depends="make.32">
+        <property name="platform" value="x86" />
+        <property name="mode" value="Debug" />
+        <antcall target="build.platform">
+        </antcall>
+    </target>
+
+     <target name="build.64" depends="make.64">
+        <property name="platform" value="x64" />
+        <property name="mode" value="Debug" />
+        <antcall target="build.platform">
+        </antcall>
+    </target>
+
+     <target name="install.32" depends="build.32">
+        <property name="platform" value="x86" />
+        <property name="mode" value="Debug" />
+        <antcall target="install.platform">
+        </antcall>
+    </target>
+
+     <target name="install.64" depends="build.64">
+        <property name="platform" value="x64" />
+        <property name="mode" value="Debug" />
+        <antcall target="install.platform">
+        </antcall>
+    </target>
+
+    <target name="make.platform">
+        <echo>Making Platform ${mode} ${platform}</echo>
+        <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
+        <property name="install.dir" value="install_${platform}" basedir="${basedir}" />
+
+        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+
+        <condition property="gen" value="Visual Studio 14 2015 Win64" else="Visual Studio 14 2015">
+            <equals arg1="${platform}" arg2="${platform.64}" />
+        </condition>
+
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${install.dir}" />
+
+        <exec executable="cmake" dir="${build.dir}">
+            <arg value="-DCMAKE_INSTALL_PREFIX=${basedir}/install_${platform}" />
+            <arg value="-G" />
+            <arg value="${gen}" />
+            <arg value="${basedir}" />
+        </exec>
+    </target>
+
+    <target name="build.platform">
+        <echo>Building Platform ${mode} ${platform}</echo>
+        <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
+
+        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+
+        <exec executable="cmd">
+            <arg value="/c" />
+            <arg value="${vc.exe}" />
+            <arg value="${platform}" />
+            <arg value="&amp;&amp;" />
+            <arg value="devenv" />
+            <arg value="${zp.sln}" />
+            <arg value="/build" />
+            <arg value="${mode}" />
+            <arg value="/project" />
+            <arg value="ALL_BUILD" />
+        </exec>
+    </target>
+
+    <target name="install.platform">
+        <echo>Installing Platform ${mode} ${platform}</echo>
+        <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
+
+        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+        
+        <exec executable="cmd">
+            <arg value="/c" />
+            <arg value="${vc.exe}" />
+            <arg value="${platform}" />
+            <arg value="&amp;&amp;" />
+            <arg value="devenv" />
+            <arg value="${zp.sln}" />
+            <arg value="/build" />
+            <arg value="${mode}" />
+            <arg value="/project" />
+            <arg value="INSTALL" />
+        </exec>
+    </target>
+
+</project>
