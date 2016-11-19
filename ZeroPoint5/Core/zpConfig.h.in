@@ -10,3 +10,4 @@
 #cmakedefine ZP_USE_ASSERTIONS
 #cmakedefine ZP_USE_PRINT
 #cmakedefine ZP_USE_SAFE_FUNCTIONS
+#cmakedefine ZP_USE_SIMD

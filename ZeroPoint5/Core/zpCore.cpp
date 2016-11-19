@@ -2,6 +2,10 @@
 #include <memory>
 #include <stdarg.h>
 
+#ifdef ZP_WINDOWS
+#include <Windows.h>
+#endif // !ZP_WINDOWS
+
 enum
 {
     ZP_PRINT_BUFFER_SIZE =      1024,
@@ -30,36 +34,38 @@ void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
     va_start( vl, msg );
 #ifdef ZP_USE_SAFE_FUNCTIONS
     vsnprintf_s( message, sizeof( message ), sizeof( message ), msg, vl );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     vsnprintf( message, sizeof( message ), msg, vl );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
 #ifdef ZP_USE_SAFE_FUNCTIONS
     _snprintf_s( text, sizeof( text ), sizeof( text ), "%s\n\nDebug Break (Abort)  Continue (Retry)  Ignore", message );
     _snprintf_s( title, sizeof( title ), sizeof( title ), "ZeroPoint Assert Failed at %s:%d", file, line );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     snprintf( text, sizeof( text ), "%s\n\nDebug Break (Abort)  Continue (Retry)  Ignore", message );
     snprintf( title, sizeof( title ), "ZeroPoint Assert Failed at %s:%d", file, line );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
 
-    //zp_int result = MessageBox( ZP_NULL, text, title, MB_ABORTRETRYIGNORE | MB_ICONERROR );
-    //switch( result )
-    //{
-    //    case IDOK:
-    //    case IDYES:
-    //    case IDABORT:
-    //        __debugbreak();
-    //        break;
-    //    case IDNO:
-    //    case IDRETRY:
-    //        // continue
-    //        break;
-    //    case IDCANCEL:
-    //    case IDIGNORE:
-    //        // ignore
-    //        break;
-    //}
+#ifdef ZP_WINDOWS
+    zp_int result = MessageBox( ZP_NULL, text, title, MB_ABORTRETRYIGNORE | MB_ICONERROR );
+    switch( result )
+    {
+        case IDOK:
+        case IDYES:
+        case IDABORT:
+            __debugbreak();
+            break;
+        case IDNO:
+        case IDRETRY:
+            // continue
+            break;
+        case IDCANCEL:
+        case IDIGNORE:
+            // ignore
+            break;
+    }
+#endif // !ZP_WINDOWS
 }
 
 void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ... )
@@ -72,29 +78,31 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
     va_start( vl, msg );
 #ifdef ZP_USE_SAFE_FUNCTIONS
     vsnprintf_s( message, sizeof( message ), sizeof( message ), msg, vl );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     vsnprintf( message, sizeof( message ), msg, vl );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
 #ifdef ZP_USE_SAFE_FUNCTIONS
     _snprintf_s( text, sizeof( text ), sizeof( text ), "%s\n\nDebug Break (Retry)  Continue (Cancel)", message );
     _snprintf_s( title, sizeof( title ), sizeof( title ), "ZeroPoint Assert Warning at %s:%d", file, line );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     snprintf( text, sizeof( text ), "%s\n\nDebug Break (Retry)  Continue (Cancel)", message );
     snprintf( title, sizeof( title ), "ZeroPoint Assert Warning at %s:%d", file, line );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
 
-    //zp_int result = MessageBox( ZP_NULL, text, title, MB_RETRYCANCEL | MB_ICONWARNING );
-    //switch( result )
-    //{
-    //    case IDRETRY:
-    //        __debugbreak();
-    //        break;
-    //    case IDCANCEL:
-    //        // ignore
-    //        break;
-    //}
+#ifdef ZP_WINDOWS
+    zp_int result = MessageBox( ZP_NULL, text, title, MB_RETRYCANCEL | MB_ICONWARNING );
+    switch( result )
+    {
+        case IDRETRY:
+            __debugbreak();
+            break;
+        case IDCANCEL:
+            // ignore
+            break;
+    }
+#endif // !ZP_WINDOWS
 }
 #endif // !ZP_USE_ASSERTIONS
 
@@ -108,13 +116,15 @@ void zp_printf( const zp_char* text, ... )
 #ifdef ZP_USE_SAFE_FUNCTIONS
     vsprintf_s( buff, text, vl );
     printf_s( buff );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     vsprintf( buff, text, vl );
     printf( buff );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
-    //OutputDebugString( buff );
+#if defined( ZP_WINDOWS ) && defined( ZP_DEBUG )
+    OutputDebugString( buff );
+#endif // !ZP_WINDOWS && !ZP_DEBUG
 }
 void zp_printfln( const zp_char* text, ... )
 {
@@ -126,13 +136,15 @@ void zp_printfln( const zp_char* text, ... )
     zp_int end = vsprintf_s( buff, text, vl );
     sprintf_s( buff + end, sizeof( buff ) - end, "\n" );
     printf_s( buff );
-#else
+#else // !ZP_USE_SAFE_FUNCTIONS
     zp_int end = vsprintf( buff, text, vl );
     sprintf( buff + end, "\n" );
     printf( buff );
-#endif
+#endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
-    //OutputDebugString( buff );
+#if defined( ZP_WINDOWS ) && defined( ZP_DEBUG )
+    OutputDebugString( buff );
+#endif // !ZP_WINDOWS && !ZP_DEBUG
 }
 #endif // !ZP_USE_PRINT

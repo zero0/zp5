@@ -12,9 +12,12 @@
 
 #if defined(_WIN64) || defined(_M_X64) || defined(_M_AMD64) || defined(_M_IA64)
 #define ZP_WIN_64                   1
-#endif
-#if defined(_WIN32)
+#elif defined(_WIN32)
 #define ZP_WIN_32                   1
+#endif
+
+#if defined( ZP_WIN_32 ) || defined( ZP_WIN_64 )
+#define ZP_WINDOWS                  1
 #endif
 
 #define ZP_MALLOC_ALIGNMENT         16
@@ -92,6 +95,10 @@ typedef zp_ulong    zp_hash64;
 void* zp_malloc( zp_size_t size );
 void zp_free( void* ptr );
 
+//
+// Macros
+//
+
 #ifdef ZP_USE_ASSERTIONS
 #define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); } (void)0
 #define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, msg, __VA_ARGS__ ); } (void)0
@@ -113,6 +120,11 @@ void zp_printfln( const zp_char* text, ... );
 #define zp_printfln( text, ... ) (void)0
 #endif
 
+//
+// Includes
+//
+
+#include "zpMath.h"
 #include "zpBlockAllocator.h"
 #include "zpStackAllocator.h"
 

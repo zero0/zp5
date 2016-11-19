@@ -13,6 +13,7 @@ option( ZP_BUILD_STATIC "Build ZeroPoint5 as static library" ON )
 option( ZP_USE_ASSERTIONS "Build ZeroPoint5 with assersion" ON )
 option( ZP_USE_PRINT "Build ZeroPoint5 with prints" ON )
 option( ZP_USE_SAFE_FUNCTIONS "Build ZeroPoint5 with safe functions" ON )
+option( ZP_USE_SIMD "Build ZeroPoint5 with SIMD" ON )
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/Core/zpConfig.h.in"

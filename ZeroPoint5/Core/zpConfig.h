@@ -10,3 +10,4 @@
 #define ZP_USE_ASSERTIONS
 #define ZP_USE_PRINT
 #define ZP_USE_SAFE_FUNCTIONS
+#define ZP_USE_SIMD
