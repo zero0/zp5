@@ -22,9 +22,14 @@ configure_file(
 
 file( GLOB ZP_CORE_SOURCE "Core/*.cpp" )
 file( GLOB ZP_CORE_HEADER "Core/*.h" )
+file( GLOB ZP_CORE_INLINE "Core/*.inl" )
 
-source_group( Core FILES
-    ${ZP_CORE_SOURCE} ${ZP_CORE_HEADER}
+source_group( Core\\Headers FILES
+    ${ZP_CORE_HEADER}
+)
+source_group( Core\\Source FILES
+    ${ZP_CORE_INLINE}
+    ${ZP_CORE_SOURCE} 
 )
 
 if( ZP_BUILD_STATIC )
@@ -56,7 +61,7 @@ if( ZP_BUILD_SHARED )
 endif( ZP_BUILD_SHARED )
 
 if( ZP_INSTALL )
-    install( FILES ${ZP_CORE_HEADER} DESTINATION include/Core )
+    install( FILES ${ZP_CORE_HEADER} ${ZP_CORE_INLINE} DESTINATION include/Core )
 
     install( TARGETS ZeroPoint5_lib
         RUNTIME DESTINATION bin
