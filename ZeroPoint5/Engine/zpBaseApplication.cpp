@@ -255,6 +255,22 @@ void zpBaseApplication::processFrame()
     m_time.tick();
     zp_long startTime = m_time.getTime();
 
+    if( m_shouldGarbageCollect )
+    {
+        m_shouldGarbageCollect = false;
+
+        runGarbageCollection();
+    }
+
+    if( m_shouldReloadAllResources )
+    {
+        m_shouldReloadAllResources = false;
+
+        runReloadAllResources();
+    }
+
+    ++m_frameCount;
+
     zp_long endTime = m_time.getTime();
 
     zp_long diff = ( startTime - endTime ) * 1000L;
@@ -265,5 +281,5 @@ void zpBaseApplication::processFrame()
         sleepTime += 1 / 60.f;
     }
 
-    zp_sleep( sleepTime );
+    zp_sleep( static_cast<zp_int>( sleepTime ) );
 }
