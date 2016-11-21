@@ -9,5 +9,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 #endif // !ZP_WINDOWS
 {
     int r = zpMain( );
+
+    zpBaseApplication app;
+    app.setHandle( hInstance );
+    app.processCommandLine( lpCmdLine );
+
+    app.initialize();
+    app.run();
+    r = app.shutdown();
+
     return r;
 }

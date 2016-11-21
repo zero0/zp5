@@ -127,6 +127,27 @@ typedef const zpMatrix4f&       zpMatrix4fParamC;
 
 #endif // ZP_USE_SIMD
 
+struct zpVector2f
+{
+    zp_float x, y;
+};
+
+struct zpVector2i
+{
+    zp_int x, y;
+};
+
+struct zpRectf
+{
+    zp_float x, y, width, height;
+};
+
+struct zpRecti
+{
+    zp_int x, y, width, height;
+};
+
+
 //
 // Functions
 //

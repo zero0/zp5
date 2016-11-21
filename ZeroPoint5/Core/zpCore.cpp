@@ -24,6 +24,11 @@ void zp_free( void* ptr )
     free( ptr );
 }
 
+void zp_sleep( zp_int milliseconds )
+{
+    Sleep( milliseconds );
+}
+
 #ifdef ZP_USE_ASSERTIONS
 void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
 {

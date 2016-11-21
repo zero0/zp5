@@ -17,5 +17,6 @@ zp_int zpMain()
 
     zpScalar d = zpMath::Vector4Dot3( v1, v2 );
 
+
     return 0;
 }

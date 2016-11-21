@@ -98,6 +98,8 @@ typedef zp_ulong    zp_hash64;
 void* zp_malloc( zp_size_t size );
 void zp_free( void* ptr );
 
+void zp_sleep( zp_int milliseconds );
+
 //
 // Macros
 //
@@ -130,6 +132,7 @@ void zp_printfln( const zp_char* text, ... );
 #include "zpMath.h"
 #include "zpBlockAllocator.h"
 #include "zpStackAllocator.h"
+#include "zpTime.h"
 
 #endif // !ZP_CORE_H
 
