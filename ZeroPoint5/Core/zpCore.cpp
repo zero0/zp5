@@ -3,6 +3,7 @@
 #include <stdarg.h>
 
 #ifdef ZP_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif // !ZP_WINDOWS
 

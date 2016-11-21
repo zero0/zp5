@@ -38,8 +38,11 @@
 #define ZP_ALIGN(x)                 __declspec( align( x ) )
 #define ZP_ALIGN16                  ZP_ALIGN( 16 )
 
+#define ZP_CLASS                    class
 #define ZP_PURE_INTERFACE           class ZP_NO_VTABLE
 #define ZP_ABSTRACT_CLASS           class ZP_NO_VTABLE
+
+#define ZP_NON_COPYABLE( t )        private: t( const t& ){} t& operator=( const t& ){}
 
 #define ZP_UNUSED( v )              (void)v
 
