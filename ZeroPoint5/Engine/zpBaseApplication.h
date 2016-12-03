@@ -31,8 +31,13 @@ public:
     void restart();
     void exit( zpApplicationExitCode exitCode );
 
+    zp_bool shouldRestart() const;
+    zp_bool isRunning() const;
+
     void garbageCollect();
     void reloadAllResouces();
+
+    void setApplicationFocus( zp_bool focused );
 
 protected:
     virtual void onPreInitialize() {}
@@ -49,6 +54,11 @@ protected:
 
     virtual void onGarbageCollection() {}
     virtual void onReloadAllResources() {}
+
+    virtual void onUpdate( zp_float dt, zp_float rt ) {}
+    virtual void onLateUpdate( zp_float dt, zp_float rt ) {}
+
+    virtual void onFixedUpdate( zp_float ft, zp_float rt ) {}
 
 private:
     void runGarbageCollection();
@@ -67,10 +77,14 @@ private:
 
     zp_size_t m_frameCount;
 
+    zp_int m_targetFps;
+    zp_int m_targetFixedFps;
+
     zpApplicationExitCode m_exitCode;
 
     zp_bool m_isRunning;
     zp_bool m_isPaused;
+    zp_bool m_isFocused;
     zp_bool m_shouldRestart;
     zp_bool m_shouldGarbageCollect;
     zp_bool m_shouldReloadAllResources;

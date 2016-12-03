@@ -15,9 +15,25 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
             break;
 
         case WM_GETMINMAXINFO:
+        {
             LPMINMAXINFO lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
             lpMMI->ptMinTrackSize.x = 300;
             lpMMI->ptMinTrackSize.y = 300;
+        }
+            break;
+
+        case WM_KILLFOCUS:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->setApplicationFocus( false );
+        }
+            break;
+
+        case WM_SETFOCUS:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->setApplicationFocus( true );
+        }
             break;
     }
 
@@ -38,9 +54,12 @@ zpBaseApplication::zpBaseApplication()
     : m_hWnd( ZP_NULL )
     , m_hInstance( ZP_NULL )
     , m_frameCount( 0 )
+    , m_targetFps( 60 )
+    , m_targetFixedFps( 30 )
     , m_exitCode( ZP_APPLICATION_EXIT_NORMAL )
     , m_isRunning( false )
     , m_isPaused( false )
+    , m_isFocused( false )
     , m_shouldRestart( false )
     , m_shouldGarbageCollect( false )
     , m_shouldReloadAllResources( false )
@@ -138,6 +157,16 @@ void zpBaseApplication::exit( zpApplicationExitCode exitCode )
     m_exitCode = exitCode;
 }
 
+zp_bool zpBaseApplication::shouldRestart() const
+{
+    return m_shouldRestart;
+}
+
+zp_bool zpBaseApplication::isRunning() const
+{
+    return m_isRunning;
+}
+
 void zpBaseApplication::garbageCollect()
 {
     m_shouldGarbageCollect = true;
@@ -146,6 +175,11 @@ void zpBaseApplication::garbageCollect()
 void zpBaseApplication::reloadAllResouces()
 {
     m_shouldReloadAllResources = true;
+}
+
+void zpBaseApplication::setApplicationFocus( zp_bool focus )
+{
+    m_isFocused = focus;
 }
 
 void zpBaseApplication::runGarbageCollection()
@@ -178,13 +212,13 @@ void zpBaseApplication::createWindow()
     ATOM reg = RegisterClassEx( &wc );
     ZP_ASSERT( reg, "Unable to register window class" );
 
-    DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME | WS_VISIBLE;
+    DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME;
     DWORD exStyle = 0;
 #ifdef ZP_DEBUG
     exStyle |= WS_EX_ACCEPTFILES;
 #endif
 
-    const zp_char* title = "ZerPoint";
+    const zp_char* title = "ZeroPoint " ZP_VERSION;
     zpRecti windowRect;
     windowRect.x = CW_USEDEFAULT;
     windowRect.y = CW_USEDEFAULT;
@@ -254,6 +288,8 @@ void zpBaseApplication::processFrame()
 {
     m_time.tick();
     zp_long startTime = m_time.getTime();
+    zp_float dt = m_isPaused ? 0.f : m_time.getDeltaSeconds();
+    zp_float rt = m_time.getActualDeltaSeconds();
 
     if( m_shouldGarbageCollect )
     {
@@ -269,16 +305,20 @@ void zpBaseApplication::processFrame()
         runReloadAllResources();
     }
 
+    onUpdate( dt, rt );
+
+    onLateUpdate( dt, rt );
+
     ++m_frameCount;
 
     zp_long endTime = m_time.getTime();
 
     zp_long diff = ( startTime - endTime ) * 1000L;
     zp_float d = diff * m_time.getSecondsPerTick();
-    zp_float sleepTime = ( 1000.f / 60.f ) - d;
+    zp_float sleepTime = ( 1000.f / static_cast<zp_float>( m_targetFps ) ) - d;
     while( sleepTime < 0.f )
     {
-        sleepTime += 1 / 60.f;
+        sleepTime += 1.f / static_cast<zp_float>( m_targetFps );
     }
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
