@@ -46,6 +46,9 @@
 
 #define ZP_UNUSED( v )              (void)v
 
+#define ZP_MEMORY_KB( b )           ( (b) * 1024 )
+#define ZP_MEMORY_MB( b )           ( ZP_MEMORY_KB( b ) * 1024 )
+
 #if __cplusplus
 #define ZP_NULL    nullptr
 #else
@@ -100,6 +103,12 @@ void zp_free( void* ptr );
 
 void zp_sleep( zp_int milliseconds );
 
+void* zp_memcpy( void* dest, zp_size_t destSize, const void* src, zp_size_t size );
+
+zp_char* zp_strcpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString );
+zp_char* zp_strncpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString, zp_size_t maxCount );
+zp_size_t zp_strlen( const zp_char* srcString );
+
 //
 // Macros
 //
@@ -130,9 +139,11 @@ void zp_printfln( const zp_char* text, ... );
 //
 
 #include "zpMath.h"
+#include "zpAllocator.h"
 #include "zpBlockAllocator.h"
 #include "zpStackAllocator.h"
 #include "zpTime.h"
+#include "zpString.h"
 
 #endif // !ZP_CORE_H
 

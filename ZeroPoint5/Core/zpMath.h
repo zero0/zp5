@@ -147,6 +147,15 @@ struct zpRecti
     zp_int x, y, width, height;
 };
 
+struct zpColor
+{
+    zp_float r, g, b, a;
+};
+
+struct zpColor32
+{
+    zp_byte r, g, b, a;
+};
 
 //
 // Functions

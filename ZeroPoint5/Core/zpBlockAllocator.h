@@ -10,7 +10,7 @@ struct zpMemoryBlock
     zpMemoryBlock* prev;
 };
 
-class zpBlockAllocator
+class zpBlockAllocator : public zpAllocator
 {
 public:
     zpBlockAllocator( zp_size_t size );

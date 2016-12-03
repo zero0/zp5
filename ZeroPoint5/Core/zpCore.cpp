@@ -29,6 +29,42 @@ void zp_sleep( zp_int milliseconds )
     Sleep( milliseconds );
 }
 
+void* zp_memcpy( void* dest, zp_size_t destSize, const void* src, zp_size_t size )
+{
+#ifdef ZP_USE_SAFE_FUNCTIONS
+    memcpy_s( dest, destSize, src, size );
+    return dest;
+#else
+    ZP_UNUSED( destSize );
+    return memcpy( dest, src, size );
+#endif
+}
+
+zp_char* zp_strcpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString )
+{
+#ifdef ZP_USE_SAFE_FUNCTIONS
+    return strcpy_s( destString, numElements, srcString ) == 0 ? destString : ZP_NULL;
+#else
+    return strcpy( destString, numElements, srcString );
+#endif
+}
+
+zp_char* zp_strncpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString, zp_size_t maxCount )
+{
+#ifdef ZP_USE_SAFE_FUNCTIONS
+    strncpy_s( destString, numElements, srcString, maxCount );
+    return destString;
+#else
+    ZP_UNUSED( numElements );
+    return strncpy( destString, srcString, maxCount );
+#endif
+}
+
+zp_size_t zp_strlen( const zp_char* srcString )
+{
+    return srcString ? strlen( srcString ) : 0;
+}
+
 #ifdef ZP_USE_ASSERTIONS
 void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
 {

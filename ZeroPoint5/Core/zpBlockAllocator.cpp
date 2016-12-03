@@ -12,7 +12,7 @@ enum
 
 #define ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( s )  ( ( (s) + ZP_BLOCK_ALLOCATOR_INCREMENT_SIZE ) & ( ~ZP_BLOCK_ALLOCATOR_INCREMENT_MASK ) )
 
-void _insertAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock )
+ZP_FORCE_INLINE void _insertAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock )
 {
     newBlock->next = block->next;
     newBlock->prev = block;
@@ -21,12 +21,12 @@ void _insertAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock )
     block->next = newBlock;
 }
 
-void _insertBefore( zpMemoryBlock* node, zpMemoryBlock* newBlock )
+ZP_FORCE_INLINE void _insertBefore( zpMemoryBlock* node, zpMemoryBlock* newBlock )
 {
     _insertAfter( node->prev, newBlock );
 }
 
-void _removeBlock( zpMemoryBlock* node )
+ZP_FORCE_INLINE void _removeBlock( zpMemoryBlock* node )
 {
     node->next->prev = node->prev;
     node->prev->next = node->next;
