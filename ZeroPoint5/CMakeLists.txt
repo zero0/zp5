@@ -48,14 +48,29 @@ source_group( Engine\\Source FILES
     ${ZP_ENGINE_SOURCE}
 )
 
+# Rendering Config
+file( GLOB ZP_RENDERING_SOURCE "Rendering/*.cpp" )
+file( GLOB ZP_RENDERING_HEADER "Rendering/*.h" )
+file( GLOB ZP_RENDERING_INLINE "Rendering/*.inl" )
+
+source_group( Rendering\\Headers FILES
+    ${ZP_RENDERING_HEADER}
+)
+source_group( Rendering\\Source FILES
+    ${ZP_RENDERING_INLINE}
+    ${ZP_RENDERING_SOURCE}
+)
+
 # All Config
 set( ZP_ALL_HEADER
     ${ZP_CORE_HEADER}
     ${ZP_ENGINE_HEADER}
+    ${ZP_RENDERING_HEADER}
 )
 set( ZP_ALL_SOURCE
     ${ZP_CORE_SOURCE}
     ${ZP_ENGINE_SOURCE}
+    ${ZP_RENDERING_SOURCE}
 )
 
 # Staic Lib build

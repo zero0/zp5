@@ -104,6 +104,8 @@ void zp_free( void* ptr );
 void zp_sleep( zp_int milliseconds );
 
 void* zp_memcpy( void* dest, zp_size_t destSize, const void* src, zp_size_t size );
+void* zp_memset( void* dest, zp_int value, zp_size_t size );
+zp_int zp_memcmp( const void* ptr1, const void* ptr2, zp_size_t size );
 
 zp_char* zp_strcpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString );
 zp_char* zp_strncpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString, zp_size_t maxCount );
@@ -130,8 +132,8 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
 void zp_printf( const zp_char* text, ... );
 void zp_printfln( const zp_char* text, ... );
 #else
-#define zp_printf( text, ... ) (void)0
-#define zp_printfln( text, ... ) (void)0
+#define zp_printf( text, ... )      (void)0
+#define zp_printfln( text, ... )    (void)0
 #endif
 
 //

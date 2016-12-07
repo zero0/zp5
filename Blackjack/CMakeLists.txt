@@ -27,13 +27,21 @@ add_executable( Blackjack
     ${BLACKJACK_SOURCE}
 )
 
+if( ZP_BUILD_STATIC )
 target_link_Libraries( Blackjack
     ZeroPoint5_lib
 )
+endif()
 
-IF( WIN32 )
+if( ZP_BUILD_SHARED )
+target_link_Libraries( Blackjack
+    ZeroPoint5_dll
+)
+endif()
+
+if( WIN32 )
 set_target_properties( Blackjack PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS" )
-ENDIF()
+endif()
 
 set_target_properties( Blackjack PROPERTIES
     FOLDER "Executables"

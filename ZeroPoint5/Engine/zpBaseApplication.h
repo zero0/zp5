@@ -88,6 +88,7 @@ private:
     zp_bool m_shouldRestart;
     zp_bool m_shouldGarbageCollect;
     zp_bool m_shouldReloadAllResources;
+    zp_bool m_shouldPauseInBackground;
 };
 
 #endif // !ZP_BASE_APPLICATION_H

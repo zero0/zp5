@@ -21,8 +21,8 @@ zp_int zpMain()
     void* d = block.allocate( 1234 );
     void* e = block.allocate( 5678 );
 
-    block.free( e );
     block.free( d );
+    block.free( e );
 
     return 0;
 }

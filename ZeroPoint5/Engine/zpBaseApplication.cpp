@@ -63,6 +63,7 @@ zpBaseApplication::zpBaseApplication()
     , m_shouldRestart( false )
     , m_shouldGarbageCollect( false )
     , m_shouldReloadAllResources( false )
+    , m_shouldPauseInBackground( false )
 {
 
 }
@@ -286,9 +287,11 @@ zp_bool zpBaseApplication::processMessages()
 
 void zpBaseApplication::processFrame()
 {
+    zp_bool paused = m_isPaused || ( m_shouldPauseInBackground && !m_isFocused );
+
     m_time.tick();
     zp_long startTime = m_time.getTime();
-    zp_float dt = m_isPaused ? 0.f : m_time.getDeltaSeconds();
+    zp_float dt = paused ? 0.f : m_time.getDeltaSeconds();
     zp_float rt = m_time.getActualDeltaSeconds();
 
     if( m_shouldGarbageCollect )
@@ -313,7 +316,7 @@ void zpBaseApplication::processFrame()
 
     zp_long endTime = m_time.getTime();
 
-    zp_long diff = ( startTime - endTime ) * 1000L;
+    zp_long diff = ( endTime - startTime ) * 1000L;
     zp_float d = diff * m_time.getSecondsPerTick();
     zp_float sleepTime = ( 1000.f / static_cast<zp_float>( m_targetFps ) ) - d;
     while( sleepTime < 0.f )

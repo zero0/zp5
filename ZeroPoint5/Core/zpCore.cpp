@@ -40,6 +40,16 @@ void* zp_memcpy( void* dest, zp_size_t destSize, const void* src, zp_size_t size
 #endif
 }
 
+void* zp_memset( void* dest, zp_int value, zp_size_t size )
+{
+    return memset( dest, value, size );
+}
+
+zp_int zp_memcmp( const void* ptr1, const void* ptr2, zp_size_t size )
+{
+    return memcmp( ptr1, ptr2, size );
+}
+
 zp_char* zp_strcpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString )
 {
 #ifdef ZP_USE_SAFE_FUNCTIONS
