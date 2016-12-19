@@ -146,6 +146,8 @@ void zp_printfln( const zp_char* text, ... );
 #include "zpStackAllocator.h"
 #include "zpTime.h"
 #include "zpString.h"
+#include "zpDataBuffer.h"
+#include "zpFile.h"
 
 #endif // !ZP_CORE_H
 
