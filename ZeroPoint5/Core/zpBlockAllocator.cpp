@@ -37,19 +37,20 @@ ZP_FORCE_INLINE zpMemoryChunk* _createChunk( zp_size_t size )
     zp_size_t memSize = size + sizeof( zpMemoryChunk ) + sizeof( zpMemoryBlock ) + sizeof( zp_uint );
     zp_size_t alignedSize = ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( memSize );
     void* memoryBase = zp_malloc( alignedSize );
+    zp_byte* base = static_cast<zp_byte*>( memoryBase );
 
     const zp_uint canary = ZP_BLOCK_ALLOCATOR_END_CANARY;
-    zp_memcpy( static_cast<zp_byte*>( memoryBase ) + ( size + sizeof( zpMemoryChunk ) + sizeof( zpMemoryBlock ) ), sizeof( zp_uint ), &canary, sizeof( zp_uint ) );
+    zp_memcpy( base + ( size + sizeof( zpMemoryChunk ) + sizeof( zpMemoryBlock ) ), sizeof( zp_uint ), &canary, sizeof( zp_uint ) );
 
-    zpMemoryChunk* chunk = reinterpret_cast<zpMemoryChunk*>( memoryBase );
+    zpMemoryChunk* chunk = static_cast<zpMemoryChunk*>( memoryBase );
     chunk->size = size;
     chunk->alignedSize = alignedSize;
     chunk->next = ZP_NULL;
     chunk->prev = ZP_NULL;
 
-    zpMemoryBlock* block = reinterpret_cast<zpMemoryBlock*>( static_cast<zp_byte*>( memoryBase ) + sizeof( zpMemoryChunk ) );
+    zpMemoryBlock* block = reinterpret_cast<zpMemoryBlock*>( base + sizeof( zpMemoryChunk ) );
     block->size = 0;
-    block->alignedSize = alignedSize - sizeof( zpMemoryChunk );
+    block->alignedSize = alignedSize - sizeof( zpMemoryBlock ) - sizeof( zpMemoryChunk ) - sizeof( zp_uint );
     block->next = block;
     block->prev = block;
 
@@ -59,9 +60,10 @@ ZP_FORCE_INLINE zpMemoryChunk* _createChunk( zp_size_t size )
 ZP_FORCE_INLINE void _freeChunk( zpMemoryChunk* chunk )
 {
     void* memoryBase = static_cast<void*>( chunk );
+    zp_byte* base = static_cast<zp_byte*>( memoryBase );
 
     const zp_uint canary = ZP_BLOCK_ALLOCATOR_END_CANARY;
-    zp_int cmp = zp_memcmp( static_cast<zp_byte*>( memoryBase ) + ( chunk->size + sizeof( zpMemoryChunk ) + sizeof( zpMemoryBlock ) ), &canary, sizeof( zp_uint ) );
+    zp_int cmp = zp_memcmp( base + ( chunk->size + sizeof( zpMemoryChunk ) + sizeof( zpMemoryBlock ) ), &canary, sizeof( zp_uint ) );
     ZP_ASSERT( cmp == 0, "Buffer overrun" );
 
     zp_free( memoryBase );
@@ -98,8 +100,9 @@ zpBlockAllocator::~zpBlockAllocator()
     ZP_ASSERT_WARN( m_totalMemoryUsed == 0, "Possible memory leak of %d", m_totalMemoryUsed );
     ZP_ASSERT_WARN( m_numAllocs == 0, "Missing %d allocs->frees", m_numAllocs );
 
-    zpMemoryChunk* chunk = m_memoryChunkHead.next;
-    while( chunk != &m_memoryChunkHead )
+    zpMemoryChunk* head = &m_memoryChunkHead;
+    zpMemoryChunk* chunk = head->next;
+    while( chunk != head )
     {
         zpMemoryChunk* next = chunk->next;
 
@@ -125,7 +128,8 @@ void* zpBlockAllocator::allocate( zp_size_t size )
     ++m_numAllocs;
     m_totalMemoryUsed += size;
 
-    zp_size_t alignedSize = ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( size + sizeof( zpMemoryBlock ) );
+    zp_size_t alignedSize = ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( size );
+    alignedSize += sizeof( zpMemoryBlock );
 
     void* ptr = ZP_NULL;
 

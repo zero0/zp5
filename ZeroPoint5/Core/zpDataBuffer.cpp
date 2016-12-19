@@ -1,13 +1,16 @@
 #include "zpCore.h"
 
+thread_local static zpBlockAllocator g_dataBufferAllocator( ZP_MEMORY_MB( 1 ) );
+
 zp_byte* zpDataBufferAllocator::allocate( zp_size_t size )
 {
-    return 0;
+    void* data = g_dataBufferAllocator.allocate( size );
+    return static_cast<zp_byte*>( data );
 }
 
 void zpDataBufferAllocator::free( zp_byte* ptr )
 {
-
+    g_dataBufferAllocator.free( ptr );
 }
 
 zpDataBuffer::zpDataBuffer()
