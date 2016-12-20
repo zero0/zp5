@@ -70,6 +70,8 @@ private:
     zp_bool processMessages();
     void processFrame();
 
+    zpObjectManager m_objectManager;
+
     zpTime m_time;
 
     zp_handle m_hWnd;

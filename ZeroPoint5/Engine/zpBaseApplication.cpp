@@ -122,6 +122,8 @@ void zpBaseApplication::teardown()
 {
     onPreTeardown();
 
+    m_objectManager.garbageCollect();
+
     onPostTeardown();
 }
 
@@ -185,6 +187,8 @@ void zpBaseApplication::setApplicationFocus( zp_bool focus )
 
 void zpBaseApplication::runGarbageCollection()
 {
+    m_objectManager.garbageCollect();
+
     onGarbageCollection();
 }
 
@@ -223,8 +227,8 @@ void zpBaseApplication::createWindow()
     zpRecti windowRect;
     windowRect.x = CW_USEDEFAULT;
     windowRect.y = CW_USEDEFAULT;
-    windowRect.width = 640;
-    windowRect.height = 480;
+    windowRect.width = 960;
+    windowRect.height = 640;
 
     _AdjustWindowSize( windowRect, style );
 
@@ -316,12 +320,13 @@ void zpBaseApplication::processFrame()
 
     zp_long endTime = m_time.getTime();
 
+    zp_float spf = 1.f / static_cast<zp_float>( m_targetFps );
     zp_long diff = ( endTime - startTime ) * 1000L;
     zp_float d = diff * m_time.getSecondsPerTick();
-    zp_float sleepTime = ( 1000.f / static_cast<zp_float>( m_targetFps ) ) - d;
+    zp_float sleepTime = ( 1000.f * spf ) - d;
     while( sleepTime < 0.f )
     {
-        sleepTime += 1.f / static_cast<zp_float>( m_targetFps );
+        sleepTime += spf;
     }
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
