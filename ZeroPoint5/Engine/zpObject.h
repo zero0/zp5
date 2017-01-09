@@ -10,10 +10,28 @@ public:
 
     zp_hash64 getInstanceId() const;
 
+    const zpString& getName() const;
+    void setName( const zp_char* name );
+
+    zp_ulong getLayers() const;
+    void setLayers( zp_ulong layers );
+    void markOnLayer( zp_int layerIndex, zp_bool onLayer );
+    zp_bool isOnLayer( zp_int layerIndex ) const;
+
+    zp_ulong getTags() const;
+    void setTags( zp_ulong tags );
+    void markOnTag( zp_int tagIndex, zp_bool tagged );
+    zp_bool hasTag( zp_int tagIndex ) const;
+
 private:
     void setInstanceId( zp_hash64 instanceId );
 
     zp_hash64 m_instanceId;
+
+    zp_ulong m_layers;
+    zp_ulong m_tags;
+
+    zpString m_name;
 
     friend class zpObjectManager;
 };
@@ -61,6 +79,8 @@ public:
 
     void createObject( zpObjectHandle& objHandle );
     void destryObject( zpObjectHandle& objHandle );
+
+    zp_bool findObjectByID( zp_hash64 instanceId, zpObjectHandle& handle ) const;
 
     void update();
 
