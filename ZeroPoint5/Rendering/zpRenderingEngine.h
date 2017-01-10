@@ -2,14 +2,6 @@
 #ifndef ZP_RENDERING_ENGINE_H
 #define ZP_RENDERING_ENGINE_H
 
-#ifdef ZP_USE_OPENGL_RENDERING
-typedef zpRenderingEngineOpenGL zpRenderingEngineImpl;
-#endif
-
-#ifdef ZP_USE_D3D_RENDERING
-typedef zpRenderingEngineOpenGL zpRenderingEngineImpl;
-#endif
-
 class zpRenderingEngine
 {
 public:
@@ -27,7 +19,11 @@ public:
     void setVSync( zp_bool vsync );
 
 private:
-    zpRenderingEngineImpl m_engine;
+    //zpRenderingEngineImpl m_engine;
+    zpRenderingContext m_immidiateContext;
+
+    zp_handle m_hDC;
+    zp_handle m_hContext;
 
     zp_bool m_isVSync;
 };

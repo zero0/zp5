@@ -25,12 +25,12 @@ enum zpRenderingCommandType : zp_uint
     ZP_RENDERING_COMMNAD_NOOP,
 
     ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT,
+    ZP_RENDERING_COMMNAD_SET_VIEWPORT,
 
     ZP_RENDERING_COMMNAD_CLEAR,
 
     ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE,
     ZP_RENDERING_COMMNAD_DRAW_BUFFERED,
-
     ZP_RENDERING_COMMNAD_DRAW_INSTANCED,
 
     zpRenderingCommandType_Count,
@@ -56,12 +56,12 @@ enum zpVertexFormat : zp_uint
 
 struct zpViewport
 {
-    zp_float width;
-    zp_float height;
+    zp_int topX;
+    zp_int topY;
+    zp_int width;
+    zp_int height;
     zp_float minDepth;
     zp_float maxDepth;
-    zp_float topX;
-    zp_float topY;
 };
 
 union zpRenderingSortKey
@@ -88,6 +88,7 @@ struct zpRenderingCommand
     {
         struct // draw command data
         {
+            zpVertexFormat vertexFormat;
             zpTopology topology;
 
             zp_size_t vertexOffset;
@@ -110,18 +111,19 @@ struct zpRenderingCommand
             zpRecti scissorRect;
         };
 
+        struct // viewport rect data
+        {
+            zpViewport viewport;
+        };
+
         struct // clear data
         {
             zpColor clearColor;
             zp_float clearDepth;
-            zp_uint clearStencil;
+            zp_int clearStencil;
         };
     };
 };
-
-#ifdef ZP_USE_OPENGL_RENDERING
-#include "RenderingOpenGL\zpRenderingOpenGL.h"
-#endif
 
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"
