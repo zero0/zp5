@@ -14,6 +14,8 @@ option( ZP_USE_ASSERTIONS "Build ZeroPoint5 with assersion" ON )
 option( ZP_USE_PRINT "Build ZeroPoint5 with prints" ON )
 option( ZP_USE_SAFE_FUNCTIONS "Build ZeroPoint5 with safe functions" ON )
 option( ZP_USE_SIMD "Build ZeroPoint5 with SIMD" ON )
+option( ZP_USE_OPENGL_RENDERING "Build ZeroPoint5 with OpenGL Rendering" ON )
+option( ZP_USE_D3D_RENDERING "Build ZeroPoint5 with D3D Rendering" OFF )
 
 include_directories( ${PROJECT_SOURCE_DIR} )
 
@@ -30,9 +32,11 @@ file( GLOB ZP_CORE_INLINE "Core/*.inl" )
 source_group( Core\\Headers FILES
     ${ZP_CORE_HEADER}
 )
-source_group( Core\\Source FILES
+source_group( Core\\Inline FILES
     ${ZP_CORE_INLINE}
-    ${ZP_CORE_SOURCE} 
+)
+source_group( Core\\Source FILES
+    ${ZP_CORE_SOURCE}
 )
 
 # Engine Config
@@ -43,8 +47,10 @@ file( GLOB ZP_ENGINE_INLINE "Engine/*.inl" )
 source_group( Engine\\Headers FILES
     ${ZP_ENGINE_HEADER}
 )
-source_group( Engine\\Source FILES
+source_group( Engine\\Inline FILES
     ${ZP_ENGINE_INLINE}
+)
+source_group( Engine\\Source FILES
     ${ZP_ENGINE_SOURCE}
 )
 
@@ -61,19 +67,67 @@ source_group( Rendering\\Source FILES
     ${ZP_RENDERING_SOURCE}
 )
 
+# RenderingOpenGL Config
+file( GLOB ZP_RENDERING_OPENGL_SOURCE "RenderingOpenGL/*.cpp" )
+file( GLOB ZP_RENDERING_OPENGL_HEADER "RenderingOpenGL/*.h" )
+file( GLOB ZP_RENDERING_OPENGL_INLINE "RenderingOpenGL/*.inl" )
+
+source_group( RenderingOpenGL\\Headers FILES
+    ${ZP_RENDERING_OPENGL_HEADER}
+)
+source_group( RenderingOpenGL\\Source FILES
+    ${ZP_RENDERING_OPENGL_INLINE}
+    ${ZP_RENDERING_OPENGL_SOURCE}
+)
+
+# RenderingD3D Config
+file( GLOB ZP_RENDERING_D3D_SOURCE "RenderingD3D/*.cpp" )
+file( GLOB ZP_RENDERING_D3D_HEADER "RenderingD3D/*.h" )
+file( GLOB ZP_RENDERING_D3D_INLINE "RenderingD3D/*.inl" )
+
+source_group( RenderingD3D\\Headers FILES
+    ${ZP_RENDERING_D3D_HEADER}
+)
+source_group( RenderingD3D\\Source FILES
+    ${ZP_RENDERING_D3D_INLINE}
+    ${ZP_RENDERING_D3D_SOURCE}
+)
+
+# Rendering Impl OpenGL Config
+if( ZP_USE_OPENGL_RENDERING )
+    set( ZP_RENDERING_IMPL_SOURCE ${ZP_RENDERING_OPENGL_SOURCE} )
+    set( ZP_RENDERING_IMPL_HEADER ${ZP_RENDERING_OPENGL_HEADER} )
+    set( ZP_RENDERING_IMPL_INLINE ${ZP_RENDERING_OPENGL_INLINE} )
+endif( ZP_USE_OPENGL_RENDERING )
+
+# Rendering Impl D3D Config
+if( ZP_USE_D3D_RENDERING )
+    set( ZP_RENDERING_IMPL_SOURCE ${ZP_RENDERING_D3D_SOURCE} )
+    set( ZP_RENDERING_IMPL_HEADER ${ZP_RENDERING_D3D_HEADER} )
+    set( ZP_RENDERING_IMPL_INLINE ${ZP_RENDERING_D3D_INLINE} )
+endif( ZP_USE_D3D_RENDERING )
+
 # All Config
 set( ZP_ALL_HEADER
     ${ZP_CORE_HEADER}
     ${ZP_ENGINE_HEADER}
     ${ZP_RENDERING_HEADER}
+    ${ZP_RENDERING_IMPL_HEADER}
+)
+set( ZP_ALL_INLINE
+    ${ZP_CORE_INLINE}
+    ${ZP_ENGINE_INLINE}
+    ${ZP_RENDERING_INLINE}
+    ${ZP_RENDERING_IMPL_INLINE}
 )
 set( ZP_ALL_SOURCE
     ${ZP_CORE_SOURCE}
     ${ZP_ENGINE_SOURCE}
     ${ZP_RENDERING_SOURCE}
+    ${ZP_RENDERING_IMPL_SOURCE}
 )
 
-# Staic Lib build
+# Static Lib build
 if( ZP_BUILD_STATIC )
     add_library( ZeroPoint5_lib STATIC
         ${ZP_ALL_HEADER}

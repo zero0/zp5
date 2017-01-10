@@ -207,7 +207,7 @@ zpObjectManager::~zpObjectManager()
 
 }
 
-void zpObjectManager::createObject( zpObjectHandle& objHandle )
+void zpObjectManager::createObject( zpObjectHandle& handle )
 {
     zp_hash64 instanceId = ++m_newObjectInstanceId;
 
@@ -215,14 +215,9 @@ void zpObjectManager::createObject( zpObjectHandle& objHandle )
     instance->m_object.setInstanceId( instanceId );
     instance->m_refCount = 0;
 
-    objHandle.set( instanceId, instance );
+    handle.set( instanceId, instance );
 
     m_activeObjects.pushBack( instance );
-}
-
-void zpObjectManager::destryObject( zpObjectHandle& objHandle )
-{
-    objHandle.invalidate();
 }
 
 zp_bool zpObjectManager::findObjectByID( zp_hash64 instanceId, zpObjectHandle& handle ) const

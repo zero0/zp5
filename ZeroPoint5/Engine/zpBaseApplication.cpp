@@ -17,8 +17,7 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
         case WM_GETMINMAXINFO:
         {
             LPMINMAXINFO lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
-            lpMMI->ptMinTrackSize.x = 300;
-            lpMMI->ptMinTrackSize.y = 300;
+            lpMMI->ptMinTrackSize = { 300, 300 };
         }
             break;
 
@@ -40,7 +39,7 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
     return DefWindowProc( hWnd, uMessage, wParam, lParam );
 }
 
-void _AdjustWindowSize( zpRecti& windowRect, DWORD windowStyle )
+ZP_FORCE_INLINE void _AdjustWindowSize( zpRecti& windowRect, DWORD windowStyle )
 {
     RECT rc = { 0, 0, windowRect.width, windowRect.height };
     AdjustWindowRectEx( &rc, windowStyle, false, 0 );
@@ -97,6 +96,8 @@ void zpBaseApplication::setup()
 {
     onPreSetup();
 
+    m_renderingEngine.setup( m_hWnd );
+
     onPostSetup();
 }
 
@@ -123,6 +124,8 @@ void zpBaseApplication::teardown()
     onPreTeardown();
 
     m_objectManager.garbageCollect();
+
+    m_renderingEngine.teardown();
 
     onPostTeardown();
 }
@@ -224,11 +227,7 @@ void zpBaseApplication::createWindow()
 #endif
 
     const zp_char* title = "ZeroPoint " ZP_VERSION;
-    zpRecti windowRect;
-    windowRect.x = CW_USEDEFAULT;
-    windowRect.y = CW_USEDEFAULT;
-    windowRect.width = 960;
-    windowRect.height = 640;
+    zpRecti windowRect = { CW_USEDEFAULT, CW_USEDEFAULT, 960, 640 };
 
     _AdjustWindowSize( windowRect, style );
 
@@ -272,13 +271,15 @@ void zpBaseApplication::destroyWindow()
 
 zp_bool zpBaseApplication::processMessages()
 {
+    zp_bool messageOk = true;
+
 #ifdef ZP_WINDOWS
     MSG message;
     if( PeekMessage( &message, NULL, 0, 0, PM_REMOVE ) )
     {
         if( message.message == WM_QUIT )
         {
-            return false;
+            messageOk = false;
         }
 
         TranslateMessage( &message );
@@ -286,7 +287,7 @@ zp_bool zpBaseApplication::processMessages()
     }
 #endif // ZP_WINDOWS
 
-    return true;
+    return messageOk;
 }
 
 void zpBaseApplication::processFrame()
@@ -316,12 +317,14 @@ void zpBaseApplication::processFrame()
 
     onLateUpdate( dt, rt );
 
+    m_renderingEngine.present();
+
     ++m_frameCount;
 
     zp_long endTime = m_time.getTime();
 
     zp_float spf = 1.f / static_cast<zp_float>( m_targetFps );
-    zp_long diff = ( endTime - startTime ) * 1000L;
+    zp_long diff = ( endTime - startTime ) * 1000LL;
     zp_float d = diff * m_time.getSecondsPerTick();
     zp_float sleepTime = ( 1000.f * spf ) - d;
     while( sleepTime < 0.f )

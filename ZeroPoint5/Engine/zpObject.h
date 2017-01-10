@@ -77,8 +77,7 @@ public:
     zpObjectManager();
     ~zpObjectManager();
 
-    void createObject( zpObjectHandle& objHandle );
-    void destryObject( zpObjectHandle& objHandle );
+    void createObject( zpObjectHandle& handle );
 
     zp_bool findObjectByID( zp_hash64 instanceId, zpObjectHandle& handle ) const;
 

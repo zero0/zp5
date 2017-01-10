@@ -11,3 +11,5 @@
 #define ZP_USE_PRINT
 #define ZP_USE_SAFE_FUNCTIONS
 #define ZP_USE_SIMD
+#define ZP_USE_OPENGL_RENDERING
+/* #undef ZP_USE_D3D_RENDERING */
