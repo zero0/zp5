@@ -6,7 +6,8 @@
 #include <Windows.h>
 #endif // ZP_WINDOWS
 
-#include <gl\GL.h>
+#define GLEW_STATIC
+#include <GL\glew.h>
 
 zpRenderingEngineOpenGL::zpRenderingEngineOpenGL()
 {
@@ -46,6 +47,13 @@ void zpRenderingEngineOpenGL::setup( zp_handle hWindow )
     ok = wglMakeCurrent( hDC, hContext );
     ZP_ASSERT( ok, "" );
 
+    glewExperimental = true;
+    GLenum r = glewInit();
+    ZP_ASSERT( r == GLEW_OK, "" );
+
+    zp_printfln( "Using GLEW: %s", glewGetString( GLEW_VERSION ) );
+    zp_printfln( "Using GL: %s", glGetString( GL_VERSION ) );
+
     m_hContext = hContext;
     m_hWindow = hWindow;
     m_hDC = hDC;
@@ -73,16 +81,19 @@ void zpRenderingEngineOpenGL::present()
     wglMakeCurrent( hDC, hContext );
 
     glClearColor( 0.2058f, 0.3066f, 0.4877f, 1.0f );
+    glClearDepth( 1.0f );
+    glClearStencil( 0 );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+    glViewport( 0, 0, 960, 640 );
 
     glLoadIdentity();
 
     glBegin( GL_TRIANGLES );                      // Drawing Using Triangles
-    glColor4f( 0, 0, 0, 1 );
+    glColor4f( 1, 0, 0, 1 );
     glVertex3f( 0.0f, 1.0f, 0.0f );              // Top
-    glColor4f( 0, 0, 0, 1 );
+    glColor4f( 0, 1, 0, 1 );
     glVertex3f( -1.0f, -1.0f, 0.0f );              // Bottom Left
-    glColor4f( 0, 0, 0, 1 );
+    glColor4f( 0, 0, 1, 1 );
     glVertex3f( 1.0f, -1.0f, 0.0f );              // Bottom Right
     glEnd();                            // Finished Drawing The Triangle
 
