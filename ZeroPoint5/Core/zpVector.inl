@@ -104,7 +104,8 @@ template< typename T, typename Allocator >
 T& zpVector< T, Allocator >::pushBackEmpty()
 {
     ensureCapacity( m_size + 1 );
-    m_data[ m_size++ ] = (T&&)T();
+    m_data[ m_size ] = (T&&)T();
+    return m_data[ m_size++ ];
 }
 
 template< typename T, typename Allocator >
