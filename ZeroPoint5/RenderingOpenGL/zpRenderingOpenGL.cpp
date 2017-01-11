@@ -9,6 +9,281 @@
 #define GLEW_STATIC
 #include <GL\glew.h>
 
+ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
+{
+    GLenum target = GL_ARRAY_BUFFER;
+    static GLenum mapping[] =
+    {
+        0,
+        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
+        GL_UNIFORM_BUFFER,
+        GL_SHADER_STORAGE_BUFFER,
+        0,
+        0,
+        0,
+        0,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpBufferType_Count );
+    return target;
+}
+
+ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
+{
+    GLenum usage = GL_STATIC_DRAW;
+
+    static GLenum mapping[] =
+    {
+        GL_STREAM_DRAW,
+        GL_DYNAMIC_DRAW,
+        GL_STATIC_DRAW
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpBufferBindType_Count );
+    return mapping[ bindType ];
+}
+
+ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDimenision )
+{
+    GLenum target = GL_TEXTURE_2D;
+
+    static GLenum mapping[] =
+    {
+        0,
+        GL_TEXTURE_1D,
+        GL_TEXTURE_2D,
+        GL_TEXTURE_3D,
+        GL_TEXTURE_CUBE_MAP,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpTextureDimension_Count );
+    return mapping[ textureDimenision ];
+}
+
+ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFormat )
+{
+    static GLint mapping[] =
+    {
+        0,
+
+        // R Component
+        GL_R8,
+        GL_R8_SNORM,
+
+        GL_R16,
+        GL_R16_SNORM,
+        GL_R16F,
+
+        GL_R32UI,
+        GL_R32I,
+        GL_R32F,
+
+        // RG Components
+        GL_RG8,
+        GL_RG8_SNORM,
+
+        GL_RG16,
+        GL_RG16_SNORM,
+        GL_RG16F,
+
+        GL_RG32UI,
+        GL_RG32I,
+        GL_RG32F,
+
+        // RGB Components
+        GL_RGB8,
+        GL_RGB8_SNORM,
+
+        GL_RGB16,
+        GL_RGB16_SNORM,
+        GL_RGB16F,
+
+        GL_RGB32UI,
+        GL_RGB32I,
+        GL_RGB32F,
+
+        // RGBA Components
+        GL_RGBA8UI,
+        GL_RGBA8I,
+        GL_RGBA,
+        GL_RGBA_SNORM,
+
+        GL_RGBA16UI,
+        GL_RGBA16I,
+        GL_RGBA16,
+        GL_RGBA16_SNORM,
+        GL_RGBA16F,
+
+        GL_RGBA32UI,
+        GL_RGBA32I,
+        GL_RGBA32F,
+
+        // Depth Buffer
+        GL_DEPTH24_STENCIL8,
+        GL_DEPTH_COMPONENT32F,
+
+        // Compressed
+        0,
+        0,
+        0,
+        0,
+        0,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    return mapping[ displayFormat ];
+}
+
+ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
+{
+    static GLint mapping[] =
+    {
+        0,
+
+        // R Component
+        GL_RED,
+        GL_RED,
+
+        GL_RED,
+        GL_RED,
+        GL_RED,
+
+        GL_RED_INTEGER,
+        GL_RED_INTEGER,
+        GL_RED,
+
+        // RG Components
+        GL_RG,
+        GL_RG,
+
+        GL_RG,
+        GL_RG,
+        GL_RG,
+
+        GL_RG_INTEGER,
+        GL_RG_INTEGER,
+        GL_RG,
+
+        // RGB Components
+        GL_RGB,
+        GL_RGB,
+
+        GL_RGB,
+        GL_RGB,
+        GL_RGB,
+
+        GL_RGB_INTEGER,
+        GL_RGB_INTEGER,
+        GL_RGB,
+
+        // RGBA Components
+        GL_RGBA_INTEGER,
+        GL_RGBA_INTEGER,
+        GL_RGBA,
+        GL_RGBA,
+
+        GL_RGBA_INTEGER,
+        GL_RGBA_INTEGER,
+        GL_RGBA,
+        GL_RGBA,
+        GL_RGBA,
+
+        GL_RGBA_INTEGER,
+        GL_RGBA_INTEGER,
+        GL_RGBA,
+
+        // Depth Buffer
+        GL_DEPTH_STENCIL,
+        GL_DEPTH_COMPONENT,
+
+        // Compressed
+        0,
+        0,
+        0,
+        0,
+        0,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    return mapping[ displayFormat ];
+}
+
+
+ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
+{
+    static GLenum mapping[] =
+    {
+        0,
+
+        // R Component
+        GL_UNSIGNED_BYTE,
+        GL_UNSIGNED_BYTE,
+
+        GL_UNSIGNED_SHORT,
+        GL_SHORT,
+        GL_FLOAT,
+
+        GL_UNSIGNED_INT,
+        GL_INT,
+        GL_FLOAT,
+
+        // RG Components
+        GL_UNSIGNED_BYTE,
+        GL_BYTE,
+
+        GL_UNSIGNED_SHORT,
+        GL_SHORT,
+        GL_FLOAT,
+
+        GL_UNSIGNED_INT,
+        GL_INT,
+        GL_FLOAT,
+
+        // RGB Components
+        GL_UNSIGNED_BYTE,
+        GL_BYTE,
+
+        GL_UNSIGNED_SHORT,
+        GL_SHORT,
+        GL_FLOAT,
+
+        GL_UNSIGNED_INT,
+        GL_INT,
+        GL_FLOAT,
+
+        // RGBA Components
+        GL_UNSIGNED_BYTE,
+        GL_BYTE,
+        GL_UNSIGNED_BYTE,
+        GL_BYTE,
+
+        GL_UNSIGNED_SHORT,
+        GL_SHORT,
+        GL_UNSIGNED_SHORT,
+        GL_SHORT,
+        GL_FLOAT,
+
+        GL_UNSIGNED_INT,
+        GL_INT,
+        GL_FLOAT,
+
+        // Depth Buffer
+        GL_FLOAT,
+        GL_FLOAT,
+
+        // Compressed
+        0,
+        0,
+        0,
+        0,
+        0,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    return mapping[ displayFormat ];
+}
+
 void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContext )
 {
 #ifdef ZP_WINDOWS
@@ -87,6 +362,9 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
             break;
 
         case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
+            glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.bufferIndex );
+            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.bufferIndex );
+
             break;
 
         case ZP_RENDERING_COMMNAD_DRAW_BUFFERED:
@@ -127,4 +405,53 @@ void PresentOpenGL( zp_handle hDC, zp_handle hContext )
     glFlush();
 
     SwapBuffers( dc );
+}
+
+void CreateRenderBufferOpenGL( const void* data, zp_size_t size, zpBufferType type, zpBufferBindType bindType, zpRenderBuffer& buffer )
+{
+    buffer.size = size;
+    buffer.bufferType = type;
+    buffer.bindType = bindType;
+
+    GLenum target = _BufferTypeToTarget( type );
+    GLenum usage = _BufferBindTypeToUsage( bindType );
+
+    glGenBuffers( 1, &buffer.bufferIndex );
+    glBindBuffer( target, buffer.bufferIndex );
+    glBufferData( target, size, data, usage );
+    //glVertexAttribPointer( buffer.bufferIndex, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+}
+
+void DestroyRenderBufferOpenGL( zpRenderBuffer& buffer )
+{
+    glDeleteBuffers( 1, &buffer.bufferIndex );
+    buffer.bufferIndex = 0;
+}
+
+void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, zp_size_t offset, zp_size_t length )
+{
+    GLenum target = _BufferTypeToTarget( buffer.bufferType );
+
+    glBindBuffer( target, buffer.bufferIndex );
+    glBufferSubData( target, offset, length, data );
+}
+
+void CreateTextureOpenGL( zp_uint width, zp_uint height, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+{
+    GLenum target = _TextureDimensionToTarget( textureDimension );
+    GLint internalFormat = _DisplayFormatToInternalFormat( displayFormat );
+    GLenum format = _DisplayFormatToFormat( displayFormat );
+    GLenum type = _DisplayFormatToDataType( displayFormat );
+
+    glGenTextures( 1, &texture.textureIndex );
+    glBindTexture( target, texture.textureIndex );
+    glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
+}
+
+void DestroyTextureOpenGL( zpTexture& texture )
+{
+    glDeleteTextures( 1, &texture.textureIndex );
+    texture.textureIndex = 0;
 }

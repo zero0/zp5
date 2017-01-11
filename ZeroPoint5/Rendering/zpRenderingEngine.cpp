@@ -17,9 +17,13 @@ void zpRenderingEngine::setup( zp_handle hWindow )
 {
     //m_engine.setup( hWindow );
     SetupRenderingOpenGL( hWindow, m_hDC, m_hContext );
+
+    m_immidiateContext.setup();
 }
 void zpRenderingEngine::teardown()
 {
+    m_immidiateContext.teardown();
+
     //m_engine.teardown();
     TeardownRenderingOpenGL( m_hContext );
 

@@ -49,6 +49,10 @@
 #define ZP_MEMORY_KB( b )           ( (b) * 1024 )
 #define ZP_MEMORY_MB( b )           ( ZP_MEMORY_KB( b ) * 1024 )
 
+#define ZP_CONCAT_( a, b )          a##b
+#define ZP_CONCAT( a, b )           ZP_CONCAT_( a, b )
+#define ZP_STATIC_ASSERT( e )       ; enum { ZP_CONCAT( static_assert_, __LINE__ ) = 1 / static_cast<int>( !!(e) ) }
+
 #if __cplusplus
 #define ZP_NULL    nullptr
 #else

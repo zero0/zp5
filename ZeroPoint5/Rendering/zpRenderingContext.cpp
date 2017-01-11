@@ -1,11 +1,33 @@
 #include "zpRendering.h"
 
+#ifdef ZP_USE_OPENGL_RENDERING
+#include "RenderingOpenGL\zpRenderingOpenGL.h"
+#endif
+
 zpRenderingContext::zpRenderingContext()
 {
 }
 
 zpRenderingContext::~zpRenderingContext()
 {
+}
+
+void zpRenderingContext::setup()
+{
+    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateVertexBuffers[ 0 ] );
+    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateVertexBuffers[ 1 ] );
+
+    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateIndexBuffers[ 0 ] );
+    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateIndexBuffers[ 1 ] );
+}
+
+void zpRenderingContext::teardown()
+{
+    DestroyRenderBufferOpenGL( m_immidateVertexBuffers[ 0 ] );
+    DestroyRenderBufferOpenGL( m_immidateVertexBuffers[ 1 ] );
+
+    DestroyRenderBufferOpenGL( m_immidateIndexBuffers[ 0 ] );
+    DestroyRenderBufferOpenGL( m_immidateIndexBuffers[ 1 ] );
 }
 
 void zpRenderingContext::clear( const zpColor& clearColor, zp_float clearDepth, zp_uint clearStencil )
@@ -144,6 +166,16 @@ void zpRenderingContext::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_us
 
 void zpRenderingContext::fillBuffers()
 {
+    if( m_scratchVertexBuffer.getPosition() )
+    {
+        SetRenderBufferDataOpenGL( m_immidateVertexBuffers[ m_currentBufferIndex ], m_scratchVertexBuffer.getData(), 0, m_scratchVertexBuffer.getPosition() );
+    }
+
+    if( m_scratchIndexBuffer.getPosition() )
+    {
+        SetRenderBufferDataOpenGL( m_immidateIndexBuffers[ m_currentBufferIndex ], m_scratchIndexBuffer.getData(), 0, m_scratchIndexBuffer.getPosition() );
+    }
+
     m_scratchVertexBuffer.reset();
     m_scratchIndexBuffer.reset();
 }
@@ -161,6 +193,8 @@ void zpRenderingContext::processCommands( zpRenderingCommandProcessFunc func )
 void zpRenderingContext::flipBuffers()
 {
     m_commands.reset();
+
+    m_currentBufferIndex = ( m_currentBufferIndex + 1 ) % 2;
 
     m_immediateIndexSize = 0;
     m_immediateVertexSize = 0;

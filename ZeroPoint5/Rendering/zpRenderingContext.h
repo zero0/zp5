@@ -10,6 +10,9 @@ public:
     zpRenderingContext();
     ~zpRenderingContext();
 
+    void setup();
+    void teardown();
+
     void clear( const zpColor& clearColor, zp_float clearDepth, zp_uint clearStencil );
     void flush();
 
@@ -39,6 +42,9 @@ private:
 
     zpDataBuffer m_scratchVertexBuffer;
     zpDataBuffer m_scratchIndexBuffer;
+
+    zpRenderBuffer m_immidateVertexBuffers[ 2 ];
+    zpRenderBuffer m_immidateIndexBuffers[ 2 ];
 
     zp_size_t m_currentBufferIndex;
 
