@@ -18,6 +18,8 @@ public:
     zp_bool isVSync() const;
     void setVSync( zp_bool vsync );
 
+    zpRenderingContext* getImmidiateContext();
+
 private:
     //zpRenderingEngineImpl m_engine;
     zpRenderingContext m_immidiateContext;

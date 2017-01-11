@@ -18,6 +18,9 @@ public:
     const zp_byte* getData() const;
     zp_byte* getData();
 
+    const zp_byte* getBuffer() const;
+    zp_byte* getBuffer();
+
     zp_size_t getPosition() const;
     zp_size_t getLength() const;
     zp_size_t getCapacity() const;

@@ -54,3 +54,8 @@ void zpRenderingEngine::setVSync( zp_bool vsync )
 {
     m_isVSync = vsync;
 }
+
+zpRenderingContext* zpRenderingEngine::getImmidiateContext()
+{
+    return &m_immidiateContext;
+}

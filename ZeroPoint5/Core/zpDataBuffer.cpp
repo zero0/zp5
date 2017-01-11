@@ -1,6 +1,6 @@
 #include "zpCore.h"
 
-thread_local static zpBlockAllocator g_dataBufferAllocator( ZP_MEMORY_MB( 1 ) );
+thread_local static zpBlockAllocator g_dataBufferAllocator( ZP_MEMORY_MB( 5 ) );
 
 zp_byte* zpDataBufferAllocator::allocate( zp_size_t size )
 {
@@ -63,6 +63,16 @@ const zp_byte* zpDataBuffer::getData() const
 zp_byte* zpDataBuffer::getData()
 {
     return m_buffer + m_position;
+}
+
+const zp_byte* zpDataBuffer::getBuffer() const
+{
+    return m_buffer;
+}
+
+zp_byte* zpDataBuffer::getBuffer()
+{
+    return m_buffer;
 }
 
 zp_size_t zpDataBuffer::getPosition() const

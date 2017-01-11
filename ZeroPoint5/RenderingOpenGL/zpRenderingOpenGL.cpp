@@ -9,9 +9,26 @@
 #define GLEW_STATIC
 #include <GL\glew.h>
 
+ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
+{
+    static GLenum mapping[] =
+    {
+        0,
+        GL_POINTS,
+
+        GL_LINES,
+        GL_LINE_STRIP,
+
+        GL_TRIANGLES,
+        GL_TRIANGLE_STRIP,
+    };
+
+    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpTopology_Count );
+    return mapping[ topology ];
+}
+
 ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
 {
-    GLenum target = GL_ARRAY_BUFFER;
     static GLenum mapping[] =
     {
         0,
@@ -26,13 +43,11 @@ ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
     };
 
     ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpBufferType_Count );
-    return target;
+    return mapping[ type ];
 }
 
 ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
 {
-    GLenum usage = GL_STATIC_DRAW;
-
     static GLenum mapping[] =
     {
         GL_STREAM_DRAW,
@@ -46,8 +61,6 @@ ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
 
 ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDimenision )
 {
-    GLenum target = GL_TEXTURE_2D;
-
     static GLenum mapping[] =
     {
         0,
@@ -209,7 +222,6 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
     return mapping[ displayFormat ];
 }
 
-
 ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
 {
     static GLenum mapping[] =
@@ -284,6 +296,67 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
     return mapping[ displayFormat ];
 }
 
+void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
+{
+    static zp_int strides[] =
+    {
+        sizeof( zp_float ) * 0,
+        sizeof( zp_float ) * 8,
+        sizeof( zp_float ) * 10,
+        sizeof( zp_float ) * 14,
+        sizeof( zp_float ) * 18,
+        sizeof( zp_float ) * 20
+    };
+    ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
+
+    zp_int stride = strides[ cmd->vertexFormat ];
+
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
+            glEnableVertexAttribArray( 5 );
+            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 18 ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
+            glEnableVertexAttribArray( 4 );
+            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 14 ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
+            glEnableVertexAttribArray( 3 );
+            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 10 ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            glEnableVertexAttribArray( 2 );
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 8 ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            glEnableVertexAttribArray( 1 );
+            glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 4 ) );
+            glEnableVertexAttribArray( 0 );
+            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 0 ) );
+            break;
+        default:
+            break;
+    }
+}
+
+void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
+{
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
+            glDisableVertexAttribArray( 5 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
+            glDisableVertexAttribArray( 4 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
+            glDisableVertexAttribArray( 3 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            glDisableVertexAttribArray( 2 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            glDisableVertexAttribArray( 1 );
+            glDisableVertexAttribArray( 0 );
+            break;
+        default:
+            break;
+    }
+}
+
 void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContext )
 {
 #ifdef ZP_WINDOWS
@@ -346,12 +419,13 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
 
         case ZP_RENDERING_COMMNAD_SET_VIEWPORT:
             glViewport( cmd->viewport.topX,
-                        cmd->viewport.height - cmd->viewport.topY,
+                        cmd->viewport.topY,
                         cmd->viewport.width,
                         cmd->viewport.height );
             break;
 
         case ZP_RENDERING_COMMNAD_CLEAR:
+        {
             glClearColor( cmd->clearColor.r,
                           cmd->clearColor.g,
                           cmd->clearColor.b,
@@ -359,12 +433,25 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
             glClearDepthf( cmd->clearDepth );
             glClearStencil( cmd->clearStencil );
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+        }
             break;
 
         case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
+        {
             glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.bufferIndex );
             glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.bufferIndex );
 
+            BindVertexFormatForRenderCommand( cmd );
+
+            GLenum mode = _TopologyToMode( cmd->topology );
+
+            glDrawElements( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, reinterpret_cast<void*>( cmd->indexOffset ) );
+
+            UnbindVertexFormatForRenderCommand( cmd );
+
+            glBindBuffer( GL_ARRAY_BUFFER, 0 );
+            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+        }
             break;
 
         case ZP_RENDERING_COMMNAD_DRAW_BUFFERED:
@@ -385,22 +472,22 @@ void PresentOpenGL( zp_handle hDC, zp_handle hContext )
 
     wglMakeCurrent( dc, context );
 
-    glViewport( 0, 0, 960, 640 );
-    glClearColor( 0.2058f, 0.3066f, 0.4877f, 1.0f );
-    glClearDepthf( 1.0f );
-    glClearStencil( 0 );
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-
-    glLoadIdentity();
-
-    glBegin( GL_TRIANGLES );                      // Drawing Using Triangles
-    glColor4f( 1, 0, 0, 1 );
-    glVertex3f( 0.0f, 1.0f, 0.0f );              // Top
-    glColor4f( 0, 1, 0, 1 );
-    glVertex3f( -1.0f, -1.0f, 0.0f );              // Bottom Left
-    glColor4f( 0, 0, 1, 1 );
-    glVertex3f( 1.0f, -1.0f, 0.0f );              // Bottom Right
-    glEnd();                            // Finished Drawing The Triangle
+    //glViewport( 0, 0, 960, 640 );
+    //glClearColor( 0.2058f, 0.3066f, 0.4877f, 1.0f );
+    //glClearDepthf( 1.0f );
+    //glClearStencil( 0 );
+    //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+    //
+    //glLoadIdentity();
+    //
+    //glBegin( GL_TRIANGLES );                      // Drawing Using Triangles
+    //glColor4f( 1, 0, 0, 1 );
+    //glVertex3f( 0.0f, 1.0f, 0.0f );              // Top
+    //glColor4f( 0, 1, 0, 1 );
+    //glVertex3f( -1.0f, -1.0f, 0.0f );              // Bottom Left
+    //glColor4f( 0, 0, 1, 1 );
+    //glVertex3f( 1.0f, -1.0f, 0.0f );              // Bottom Right
+    //glEnd();                            // Finished Drawing The Triangle
 
     glFlush();
 
@@ -447,7 +534,23 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zpDisplayFormat display
     glBindTexture( target, texture.textureIndex );
     glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
+
+    switch( textureDimension )
+    {
+        case ZP_TEXTURE_DIMENSION_1D:
+            glTexImage1D( target, 0, internalFormat, width, 0, format, type, pixels );
+            break;
+        case ZP_TEXTURE_DIMENSION_2D:
+            glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
+            break;
+        case ZP_TEXTURE_DIMENSION_3D:
+            glTexImage3D( target, 0, internalFormat, width, height, 0, 0, format, type, pixels );
+            break;
+        case ZP_TEXTURE_DIMENSION_CUBE_MAP:
+            break;
+        default:
+            break;
+    }
 }
 
 void DestroyTextureOpenGL( zpTexture& texture )

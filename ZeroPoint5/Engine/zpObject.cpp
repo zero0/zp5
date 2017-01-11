@@ -195,8 +195,8 @@ void zpObjectHandle::invalidate()
 //
 
 zpObjectManager::zpObjectManager()
-    : m_objectMemory( sizeof( zpObjectInstance ) * 512 )
-    , m_activeObjects( 512 )
+    : m_objectMemory( sizeof( zpObjectInstance ) * 4 )
+    , m_activeObjects( 4 )
     , m_newObjectInstanceId( ZP_OBJECT_ID_EMPTY )
 {
 
