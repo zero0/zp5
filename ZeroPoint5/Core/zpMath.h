@@ -127,6 +127,16 @@ typedef const zpMatrix4f&       zpMatrix4fParamC;
 
 #endif // ZP_USE_SIMD
 
+struct zpVector4fData
+{
+    zp_float x, y, z, w;
+};
+
+struct zpQuaternion4fData
+{
+    zp_float x, y, z, w;
+};
+
 struct zpVector2f
 {
     zp_float x, y;
@@ -147,14 +157,21 @@ struct zpRecti
     zp_int x, y, width, height;
 };
 
-struct zpColor
+struct zpColorf
 {
     zp_float r, g, b, a;
 };
 
-struct zpColor32
+struct zpColor32i
 {
-    zp_byte r, g, b, a;
+    union
+    {
+        zp_uint rgba;
+        struct
+        {
+            zp_byte r, g, b, a;
+        };
+    };
 };
 
 //

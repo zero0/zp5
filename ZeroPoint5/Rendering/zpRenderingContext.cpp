@@ -37,7 +37,7 @@ void zpRenderingContext::teardown()
     DestroyRenderBufferOpenGL( m_immidateIndexBuffers[ 1 ] );
 }
 
-void zpRenderingContext::clear( const zpColor& clearColor, zp_float clearDepth, zp_uint clearStencil )
+void zpRenderingContext::clear( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil )
 {
     ZP_ASSERT( m_currentCommnad == m_commands.npos, "" );
 
@@ -124,7 +124,7 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     cmd->transform = transform;
 }
 
-void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor& color )
+void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )
 {
     ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -134,7 +134,7 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor& color )
     zpMath::Vector4Store4( pos, v );
 
     m_scratchVertexBuffer.write( v, 0, sizeof( v ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
     cmd->vertexCount += 1;
 }
 

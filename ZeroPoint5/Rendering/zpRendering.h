@@ -274,7 +274,7 @@ struct zpRenderingCommand
 
         struct // clear data
         {
-            zpColor clearColor;
+            zpColorf clearColor;
             zp_float clearDepth;
             zp_int clearStencil;
         };

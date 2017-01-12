@@ -13,7 +13,7 @@ public:
     void setup();
     void teardown();
 
-    void clear( const zpColor& clearColor, zp_float clearDepth, zp_uint clearStencil );
+    void clear( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil );
     void flush();
 
     void setViewport( const zpViewport& viewport );
@@ -25,7 +25,7 @@ public:
 
     void setTransform( zpMatrix4fParamF transform );
 
-    void addVertex( zpVector4fParamF pos, const zpColor& color );
+    void addVertex( zpVector4fParamF pos, const zpColorf& color );
 
     void addLineIndex( zp_ushort index0, zp_ushort index1 );
     void addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 );
