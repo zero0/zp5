@@ -252,3 +252,4 @@ ModelManifest.xml
 **/*.vcxproj.filters
 **/*.sln
 install_manifest.txt
+**/RelWithDebInfo/

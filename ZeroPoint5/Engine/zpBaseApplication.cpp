@@ -320,13 +320,21 @@ void zpBaseApplication::processFrame()
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->addVertex( zpMath::Vector4( 0, 1, 0, 1 ),   { 1, 0, 0, 1 } );
-    ctx->addVertex( zpMath::Vector4( -1, -1, 0, 1 ), { 0, 1, 0, 1 } );
-    ctx->addVertex( zpMath::Vector4( 1, -1, 0, 1 ),  { 0, 0, 1, 1 } );
+
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
+    ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 }, { 1, 0 } );
+    ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 }, { 1, 0 } );
+    ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 }, { 1, 0 } );
     ctx->addTriangleIndex( 0, 1, 2 );
     ctx->endDrawImmediate();
 
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    ctx->addVertexData( {  -1, 1, 0, 1 }, { 1, 0, 0, 1 } );
+    ctx->addVertexData( {   0, 0, 0, 1 }, { 0, 1, 0, 1 } );
+    ctx->addVertexData( {  -1, 0, 0, 1 }, { 0, 0, 1, 1 } );
+    ctx->addTriangleIndex( 0, 1, 2 );
+    ctx->endDrawImmediate();
+    
     m_renderingEngine.present();
 
     ++m_frameCount;
@@ -343,4 +351,5 @@ void zpBaseApplication::processFrame()
     }
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
+    zp_printfln( "MS: %f", d );
 }

@@ -7,6 +7,7 @@ typedef void(zpRenderingCommandProcessFunc)( zpRenderingCommand* );
 class zpRenderingContext
 {
 public:
+
     zpRenderingContext();
     ~zpRenderingContext();
 
@@ -27,6 +28,9 @@ public:
 
     void addVertex( zpVector4fParamF pos, const zpColorf& color );
 
+    void addVertexData( const zpVector4fData& pos, const zpColorf& color );
+    void addVertexData( const zpVector4fData& pos, const zpColorf& color, const zpVector2f& uv );
+
     void addLineIndex( zp_ushort index0, zp_ushort index1 );
     void addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 );
     void addQuadIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2, zp_ushort index3 );
@@ -36,6 +40,7 @@ public:
     void flipBuffers();
 
 private:
+    static const zp_size_t npos = -1;
     zp_size_t m_currentCommnad;
 
     zpVector< zpRenderingCommand > m_commands;

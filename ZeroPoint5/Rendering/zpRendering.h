@@ -65,9 +65,10 @@ enum zpDisplayFormat : zp_uint
     ZP_DISPLAY_FORMAT_D32_FLOAT,
 
     // Compressed
-    ZP_DISPLAY_FORMAT_BC1,
-    ZP_DISPLAY_FORMAT_BC2,
-    ZP_DISPLAY_FORMAT_BC3,
+    ZP_DISPLAY_FORMAT_RGB_BC1,
+    ZP_DISPLAY_FORMAT_RGBA_BC1,
+    ZP_DISPLAY_FORMAT_RGBA_BC2,
+    ZP_DISPLAY_FORMAT_RGBA_BC3,
     ZP_DISPLAY_FORMAT_ATI1N,
     ZP_DISPLAY_FORMAT_ATI2N,
 
@@ -142,6 +143,7 @@ enum zpBufferBindType : zp_uint
 {
     ZP_BUFFER_BIND_DEFAULT = 0,
     ZP_BUFFER_BIND_DYNAMIC,
+    ZP_BUFFER_BIND_STREAM,
     ZP_BUFFER_BIND_IMMUTABLE,
 
     zpBufferBindType_Count,
@@ -182,16 +184,33 @@ enum zpTextureType : zp_uint
     zpTextureType_Force32 = ZP_FORECE_32BIT
 };
 
+union zpRenderHandle
+{
+    zp_handle ptr;
+    zp_uint index;
+};
+
 struct zpTexture
 {
     zp_uint width;
     zp_uint height;
+    zpTextureDimension textureDimension;
+    zpTextureType type;
+    zpDisplayFormat format;
 
     union
     {
         zp_handle texturePtr;
         zp_uint textureIndex;
     };
+};
+
+struct zpShader
+{
+    zpRenderHandle programShader;
+    zpRenderHandle vertexShader;
+    zpRenderHandle fragmentShader;
+    zpRenderHandle geometryShader;
 };
 
 struct zpRenderBuffer

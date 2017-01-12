@@ -50,8 +50,9 @@ ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
 {
     static GLenum mapping[] =
     {
-        GL_STREAM_DRAW,
+        0,
         GL_DYNAMIC_DRAW,
+        GL_STREAM_DRAW,
         GL_STATIC_DRAW
     };
 
@@ -137,9 +138,10 @@ ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFor
         GL_DEPTH_COMPONENT32F,
 
         // Compressed
-        0,
-        0,
-        0,
+        GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+        GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+        GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+        GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
         0,
         0,
     };
@@ -211,9 +213,10 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
         GL_DEPTH_COMPONENT,
 
         // Compressed
-        0,
-        0,
-        0,
+        GL_COMPRESSED_RGB,
+        GL_COMPRESSED_RGBA,
+        GL_COMPRESSED_RGBA,
+        GL_COMPRESSED_RGBA,
         0,
         0,
     };
@@ -290,26 +293,51 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
         0,
         0,
         0,
+        0,
     };
 
     ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
     return mapping[ displayFormat ];
 }
 
+ZP_FORCE_INLINE zp_bool _IsCompressedDisplayFormat( zpDisplayFormat displayFormat )
+{
+    switch( displayFormat )
+    {
+        case ZP_DISPLAY_FORMAT_RGB_BC1:
+        case ZP_DISPLAY_FORMAT_RGBA_BC1:
+        case ZP_DISPLAY_FORMAT_RGBA_BC2:
+        case ZP_DISPLAY_FORMAT_RGBA_BC3:
+        case ZP_DISPLAY_FORMAT_ATI1N:
+        case ZP_DISPLAY_FORMAT_ATI2N:
+            return true;
+    }
+
+    return false;
+}
+
+static GLuint g_vaos[ zpVertexFormat_Count ];
+static zpShader g_shaderVC;
+static zpShader g_shaderVCU;
+
 void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 {
     static zp_int strides[] =
     {
         sizeof( zp_float ) * 0,
-        sizeof( zp_float ) * 8,
-        sizeof( zp_float ) * 10,
-        sizeof( zp_float ) * 14,
-        sizeof( zp_float ) * 18,
-        sizeof( zp_float ) * 20
+        sizeof( zp_float ) * ( 4 + 4 ),
+        sizeof( zp_float ) * ( 4 + 4 + 2 ),
+        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 ),
+        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 + 4 ),
+        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 + 4 + 2 )
     };
     ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
 
     zp_int stride = strides[ cmd->vertexFormat ];
+    
+    glBindVertexArray( g_vaos[ cmd->vertexFormat ] );
+    glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.bufferIndex );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.bufferIndex );
 
     switch( cmd->vertexFormat )
     {
@@ -355,6 +383,10 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
         default:
             break;
     }
+
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
 }
 
 void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContext )
@@ -394,12 +426,52 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     GLenum r = glewInit();
     ZP_ASSERT( r == GLEW_OK, "" );
 
+    glGenVertexArrays( zpVertexFormat_Count, g_vaos );
+
+    glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LEQUAL );
+
     zp_printfln( "Using GLEW: %s", glewGetString( GLEW_VERSION ) );
     zp_printfln( "Using GL:   %s", glGetString( GL_VERSION ) );
+
+    const zp_char* vertVC = "#version 330 core\n"
+        "layout(location = 0) in vec4 position;"
+        "layout(location = 1) in vec4 color;"
+        "out vec4 fragmentColor;"
+        "void main() {"
+            "gl_Position = position;"
+            "fragmentColor = color;"
+        "}";
+    const zp_char* fragVC = "#version 330 core\n"
+        "in vec4 fragmentColor;"
+        "out vec4 outColor;"
+        "void main() {"
+            "outColor = fragmentColor;"
+        "}";
+
+    const zp_char* vertVCU = "#version 330 core\n"
+        "layout(location = 0) in vec4 position;"
+        "layout(location = 1) in vec4 color;"
+        "layout(location = 2) in vec2 texcoord;"
+        "out vec4 fragmentColor;"
+        "void main() {"
+            "gl_Position = position;"
+            "fragmentColor = color;"
+        "}";
+    const zp_char* fragVCU = "#version 330 core\n"
+        "in vec4 fragmentColor;"
+        "out vec4 outColor;"
+        "void main() {"
+            "outColor = fragmentColor;"
+        "}";
+    CreateShaderOpenGL( vertVC, fragVC, g_shaderVC );
+    CreateShaderOpenGL( vertVCU, fragVCU, g_shaderVCU );
 }
 
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
+    glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
+
     HGLRC context = static_cast<HGLRC>( hContext );
 
     wglMakeCurrent( ZP_NULL, ZP_NULL );
@@ -438,19 +510,35 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
 
         case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
         {
-            glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.bufferIndex );
-            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.bufferIndex );
-
             BindVertexFormatForRenderCommand( cmd );
 
-            GLenum mode = _TopologyToMode( cmd->topology );
+            static zp_float rot = 0;
+            rot += 0.5f;
+            if( rot > 360.f )
+            {
+                rot -= 360.f;
+            }
 
+            switch( cmd->vertexFormat )
+            {
+                case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+                    glUseProgram( g_shaderVC.programShader.index );
+                    break;
+
+                case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+                    glUseProgram( g_shaderVCU.programShader.index );
+                    break;
+            }
+
+            glPushMatrix();
+            glRotatef( rot, 0, 1, 0 );
+            GLenum mode = _TopologyToMode( cmd->topology );
             glDrawElements( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, reinterpret_cast<void*>( cmd->indexOffset ) );
+            glPopMatrix();
+
+            glUseProgram( 0 );
 
             UnbindVertexFormatForRenderCommand( cmd );
-
-            glBindBuffer( GL_ARRAY_BUFFER, 0 );
-            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
         }
             break;
 
@@ -488,15 +576,16 @@ void PresentOpenGL( zp_handle hDC, zp_handle hContext )
     //glColor4f( 0, 0, 1, 1 );
     //glVertex3f( 1.0f, -1.0f, 0.0f );              // Bottom Right
     //glEnd();                            // Finished Drawing The Triangle
-
+    
     glFlush();
 
     SwapBuffers( dc );
 }
 
-void CreateRenderBufferOpenGL( const void* data, zp_size_t size, zpBufferType type, zpBufferBindType bindType, zpRenderBuffer& buffer )
+void CreateRenderBufferOpenGL( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer )
 {
     buffer.size = size;
+    buffer.stride = 0;
     buffer.bufferType = type;
     buffer.bindType = bindType;
 
@@ -506,7 +595,7 @@ void CreateRenderBufferOpenGL( const void* data, zp_size_t size, zpBufferType ty
     glGenBuffers( 1, &buffer.bufferIndex );
     glBindBuffer( target, buffer.bufferIndex );
     glBufferData( target, size, data, usage );
-    //glVertexAttribPointer( buffer.bufferIndex, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+    glBindBuffer( target, 0 );
 }
 
 void DestroyRenderBufferOpenGL( zpRenderBuffer& buffer )
@@ -521,40 +610,166 @@ void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, 
 
     glBindBuffer( target, buffer.bufferIndex );
     glBufferSubData( target, offset, length, data );
+    glBindBuffer( target, 0 );
 }
 
-void CreateTextureOpenGL( zp_uint width, zp_uint height, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
 {
     GLenum target = _TextureDimensionToTarget( textureDimension );
     GLint internalFormat = _DisplayFormatToInternalFormat( displayFormat );
     GLenum format = _DisplayFormatToFormat( displayFormat );
     GLenum type = _DisplayFormatToDataType( displayFormat );
 
+    texture.width = width;
+    texture.height = height;
+    texture.textureDimension = textureDimension;
+    texture.type = textureType;
+    texture.format = displayFormat;
+
     glGenTextures( 1, &texture.textureIndex );
     glBindTexture( target, texture.textureIndex );
-    glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
-    switch( textureDimension )
+    zp_bool isCompressedFormat = _IsCompressedDisplayFormat( displayFormat );
+    if( isCompressedFormat )
     {
-        case ZP_TEXTURE_DIMENSION_1D:
-            glTexImage1D( target, 0, internalFormat, width, 0, format, type, pixels );
-            break;
-        case ZP_TEXTURE_DIMENSION_2D:
-            glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
-            break;
-        case ZP_TEXTURE_DIMENSION_3D:
-            glTexImage3D( target, 0, internalFormat, width, height, 0, 0, format, type, pixels );
-            break;
-        case ZP_TEXTURE_DIMENSION_CUBE_MAP:
-            break;
-        default:
-            break;
+        zp_uint blockSize = ( format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) ? 8 : 16;
+        zp_uint offset = 0;
+        GLsizei imageSize = 0;
+
+        switch( textureDimension )
+        {
+            case ZP_TEXTURE_DIMENSION_1D:
+                imageSize = ( ( width + 3 ) / 4 ) * blockSize;
+                glCompressedTexImage1D( target, 0, internalFormat, width, 0, imageSize, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D:
+                imageSize = ( ( width + 3 ) / 4 ) * ( ( height + 3 ) / 4 ) * blockSize;
+                glCompressedTexImage2D( target, 0, internalFormat, width, height, 0, imageSize, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_3D:
+                glCompressedTexImage3D( target, 0, internalFormat, width, height, 0, 0, imageSize, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_CUBE_MAP:
+                break;
+            default:
+                break;
+        }
     }
+    else
+    {
+        switch( textureDimension )
+        {
+            case ZP_TEXTURE_DIMENSION_1D:
+                glTexImage1D( target, 0, internalFormat, width, 0, format, type, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D:
+                glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_3D:
+                glTexImage3D( target, 0, internalFormat, width, height, 0, 0, format, type, pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_CUBE_MAP:
+                break;
+            default:
+                break;
+        }
+    }
+
+    if( mipMapCount < 0 )
+    {
+        glGenerateMipmap( target );
+    }
+
+    glBindTexture( target, 0 );
 }
 
 void DestroyTextureOpenGL( zpTexture& texture )
 {
     glDeleteTextures( 1, &texture.textureIndex );
     texture.textureIndex = 0;
+}
+
+void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+{
+    shader = {};
+
+    GLint result;
+    GLint infoLength;
+
+    // vertex shader
+    shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
+
+    glShaderSource( shader.vertexShader.index, 1, &vertexShaderSource, ZP_NULL );
+    glCompileShader( shader.vertexShader.index );
+
+    glGetShaderiv( shader.vertexShader.index, GL_COMPILE_STATUS, &result );
+    glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetShaderInfoLog( shader.vertexShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Vertex Shader Error: %s", buffer );
+    }
+
+    // fragment shader
+    shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
+
+    glShaderSource( shader.fragmentShader.index, 1, &fragmentShaderSource, ZP_NULL );
+    glCompileShader( shader.fragmentShader.index );
+
+    glGetShaderiv( shader.fragmentShader.index, GL_COMPILE_STATUS, &result );
+    glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetShaderInfoLog( shader.fragmentShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Fragment Shader Error: %s", buffer );
+    }
+
+    // program
+    shader.programShader.index = glCreateProgram();
+    glAttachShader( shader.programShader.index, shader.vertexShader.index );
+    glAttachShader( shader.programShader.index, shader.fragmentShader.index );
+    glLinkProgram( shader.programShader.index );
+
+    glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
+    glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Program Link Error: %s", buffer );
+    }
+
+    glDetachShader( shader.programShader.index, shader.vertexShader.index );
+    glDetachShader( shader.programShader.index, shader.fragmentShader.index );
+
+    glDeleteShader( shader.vertexShader.index );
+    glDeleteShader( shader.fragmentShader.index );
+
+    shader.vertexShader.index = 0;
+    shader.fragmentShader.index = 0;
+}
+
+void DestroyShaderOpenGL( zpShader& shader )
+{
+    if( shader.vertexShader.index )
+    {
+        glDeleteShader( shader.vertexShader.index );
+        shader.vertexShader.index = 0;
+    }
+
+    if( shader.fragmentShader.index )
+    {
+        glDeleteShader( shader.fragmentShader.index );
+        shader.fragmentShader.index = 0;
+    }
+
+    if( shader.programShader.index )
+    {
+        glDeleteProgram( shader.programShader.index );
+        shader.programShader.index = 0;
+    }
 }

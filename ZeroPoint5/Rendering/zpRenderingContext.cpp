@@ -21,11 +21,11 @@ zpRenderingContext::~zpRenderingContext()
 
 void zpRenderingContext::setup()
 {
-    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateVertexBuffers[ 0 ] );
-    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateVertexBuffers[ 1 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateVertexBuffers[ 0 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateVertexBuffers[ 1 ] );
 
-    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateIndexBuffers[ 0 ] );
-    CreateRenderBufferOpenGL( ZP_NULL, ZP_MEMORY_MB( 1 ), ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_DYNAMIC, m_immidateIndexBuffers[ 1 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_STREAM,  ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateIndexBuffers[ 0 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_STREAM,  ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateIndexBuffers[ 1 ] );
 }
 
 void zpRenderingContext::teardown()
@@ -39,7 +39,7 @@ void zpRenderingContext::teardown()
 
 void zpRenderingContext::clear( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil )
 {
-    ZP_ASSERT( m_currentCommnad == m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
     cmd.type = ZP_RENDERING_COMMNAD_CLEAR;
@@ -57,7 +57,7 @@ void zpRenderingContext::flush()
 
 void zpRenderingContext::setViewport( const zpViewport& viewport )
 {
-    ZP_ASSERT( m_currentCommnad == m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
     cmd.type = ZP_RENDERING_COMMNAD_SET_VIEWPORT;
@@ -68,7 +68,7 @@ void zpRenderingContext::setViewport( const zpViewport& viewport )
 
 void zpRenderingContext::setScissorRect( const zpRecti& scissorRect )
 {
-    ZP_ASSERT( m_currentCommnad == m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
     cmd.type = ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT;
@@ -85,7 +85,7 @@ void zpRenderingContext::resetScissorRect()
 
 void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat )
 {
-    ZP_ASSERT( m_currentCommnad == m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad == npos, "" );
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
@@ -105,7 +105,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
 
 void zpRenderingContext::endDrawImmediate()
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
     cmd->vertexOffset = m_immediateVertexSize;
@@ -114,19 +114,19 @@ void zpRenderingContext::endDrawImmediate()
     m_immediateVertexSize = m_scratchVertexBuffer.getPosition();
     m_immediateIndexSize = m_scratchIndexBuffer.getPosition();
 
-    m_currentCommnad = -1;
+    m_currentCommnad = npos;
 }
 
 void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     cmd->transform = transform;
 }
 
 void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
@@ -138,9 +138,32 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color 
     cmd->vertexCount += 1;
 }
 
+void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColorf& color )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+    ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
+
+    m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
+    cmd->vertexCount += 1;
+}
+
+void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColorf& color, const zpVector2f& uv )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+    ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, "" );
+
+    m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
+    m_scratchVertexBuffer.write( &uv, 0, sizeof( zpVector2f ) );
+    cmd->vertexCount += 1;
+}
+
 void zpRenderingContext::addLineIndex( zp_ushort index0, zp_ushort index1 )
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
     m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
@@ -150,7 +173,7 @@ void zpRenderingContext::addLineIndex( zp_ushort index0, zp_ushort index1 )
 
 void zpRenderingContext::addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 )
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
     m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
@@ -161,7 +184,7 @@ void zpRenderingContext::addTriangleIndex( zp_ushort index0, zp_ushort index1, z
 
 void zpRenderingContext::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2, zp_ushort index3 )
 {
-    ZP_ASSERT( m_currentCommnad != m_commands.npos, "" );
+    ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
     m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
