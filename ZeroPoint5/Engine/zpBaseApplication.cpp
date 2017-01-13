@@ -321,17 +321,24 @@ void zpBaseApplication::processFrame()
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
-    ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 }, { 1, 0 } );
-    ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 }, { 1, 0 } );
-    ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 }, { 1, 0 } );
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    ctx->addVertexData( { -1, 1, 0, 1 }, { 1, 0, 0, 1 } );
+    ctx->addVertexData( { 0, 0, 0, 1 }, { 0, 1, 0, 1 } );
+    ctx->addVertexData( { -1, 0, 0, 1 }, { 0, 0, 1, 1 } );
+    ctx->addTriangleIndex( 0, 1, 2 );
+    ctx->endDrawImmediate();
+    
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 } );
+    ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
+    ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
     ctx->endDrawImmediate();
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->addVertexData( {  -1, 1, 0, 1 }, { 1, 0, 0, 1 } );
-    ctx->addVertexData( {   0, 0, 0, 1 }, { 0, 1, 0, 1 } );
-    ctx->addVertexData( {  -1, 0, 0, 1 }, { 0, 0, 1, 1 } );
+    ctx->addVertexData( { -1,  0, 0, 1 }, { 1, 0, 0, 1 } );
+    ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );
+    ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
     ctx->endDrawImmediate();
     

@@ -510,15 +510,6 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
 
         case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
         {
-            BindVertexFormatForRenderCommand( cmd );
-
-            static zp_float rot = 0;
-            rot += 0.5f;
-            if( rot > 360.f )
-            {
-                rot -= 360.f;
-            }
-
             switch( cmd->vertexFormat )
             {
                 case ZP_VERTEX_FORMAT_VERTEX_COLOR:
@@ -530,11 +521,22 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
                     break;
             }
 
-            glPushMatrix();
-            glRotatef( rot, 0, 1, 0 );
+            BindVertexFormatForRenderCommand( cmd );
+
+            static zp_float rot = 0;
+            rot += 0.5f;
+            if( rot > 360.f )
+            {
+                rot -= 360.f;
+            }
+
+            
+
+            //glPushMatrix();
+            //glRotatef( rot, 0, 1, 0 );
             GLenum mode = _TopologyToMode( cmd->topology );
-            glDrawElements( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, reinterpret_cast<void*>( cmd->indexOffset ) );
-            glPopMatrix();
+            glDrawElementsBaseVertex( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, reinterpret_cast<void*>( 0 ), static_cast<GLint>( cmd->indexOffset / sizeof( zp_ushort ) ) );
+            //glPopMatrix();
 
             glUseProgram( 0 );
 
