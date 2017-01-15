@@ -8,6 +8,7 @@
 
 #define GLEW_STATIC
 #include <GL\glew.h>
+#include <GL\wglew.h>
 
 ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
 {
@@ -335,29 +336,32 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 
     zp_int stride = strides[ cmd->vertexFormat ];
     
-    glBindVertexArray( g_vaos[ cmd->vertexFormat ] );
-    glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.bufferIndex );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.bufferIndex );
+    GLuint vao = g_vaos[ cmd->vertexFormat ];
+    glBindVertexArray( vao );
+    glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.buffer.index );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.buffer.index );
+
+    zp_size_t vertexOffset = 0; // cmd->vertexOffset;
 
     switch( cmd->vertexFormat )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
             glEnableVertexAttribArray( 5 );
-            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 18 ) );
+            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 18 ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
             glEnableVertexAttribArray( 4 );
-            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 14 ) );
+            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 14 ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
             glEnableVertexAttribArray( 3 );
-            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 10 ) );
+            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 10 ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
             glEnableVertexAttribArray( 2 );
-            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 8 ) );
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 8 ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
             glEnableVertexAttribArray( 1 );
-            glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 4 ) );
+            glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
             glEnableVertexAttribArray( 0 );
-            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( sizeof( zp_float ) * 0 ) );
+            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 0 ) ) );
             break;
         default:
             break;
@@ -389,12 +393,80 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     glBindVertexArray( 0 );
 }
 
+#ifdef ZP_DEBUG
+struct glDebugBlockS
+{
+private:
+    static GLuint id;
+
+public:
+    glDebugBlockS( GLenum source, const char* message );
+    ~glDebugBlockS();
+};
+
+GLuint glDebugBlockS::id = 1;
+glDebugBlockS::glDebugBlockS( GLenum source, const char* message )
+{
+    glPushDebugGroup( source, id++, -1, message );
+}
+glDebugBlockS::~glDebugBlockS()
+{
+    glPopDebugGroup();
+    --id;
+}
+
+#define glDebugBlock( source, message ) glDebugBlockS( source, message )
+#else
+#define glDebugBlock( source, message ) (void)0
+#endif
+
+void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
+{
+    const zp_char* src = "   ";
+    const zp_char* typ = "   ";
+    const zp_char* sev = " ";
+
+    switch( source )
+    {
+        case GL_DEBUG_SOURCE_API            : src = "API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM  : src = "WND"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: src = "CGC"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY    : src = "3RD"; break;
+        case GL_DEBUG_SOURCE_APPLICATION    : src = "APP"; break;
+        case GL_DEBUG_SOURCE_OTHER          : src = "OTH"; break;
+    }
+
+    switch( type )
+    {
+        case GL_DEBUG_TYPE_ERROR              : typ = "ERR"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typ = "DEP"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR : typ = "UND"; break;
+        case GL_DEBUG_TYPE_PORTABILITY        : typ = "PRT"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE        : typ = "PER"; break;
+        case GL_DEBUG_TYPE_OTHER              : typ = "OTH"; break;
+        case GL_DEBUG_TYPE_MARKER             : typ = "MRK"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP         : typ = "PUG"; break;
+        case GL_DEBUG_TYPE_POP_GROUP          : typ = "POG"; break;
+    }
+
+    switch( severity )
+    {
+        case GL_DEBUG_SEVERITY_NOTIFICATION: sev = "i"; break;
+        case GL_DEBUG_SEVERITY_HIGH        : sev = "!"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM      : sev = "+"; break;
+        case GL_DEBUG_SEVERITY_LOW         : sev = "-"; break;
+    }
+
+    zp_printfln( "%s %s %s: %s", sev, src, typ, message );
+}
+
 void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContext )
 {
 #ifdef ZP_WINDOWS
     BOOL ok;
     HWND wnd = static_cast<HWND>( hWindow );
     HDC dc = GetDC( wnd );
+    hDC = dc;
 
     PIXELFORMATDESCRIPTOR pfd;
     zp_memset( &pfd, 0, sizeof( PIXELFORMATDESCRIPTOR ) );
@@ -414,25 +486,68 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     ok = SetPixelFormat( dc, pixelFormatIndex, &pfd );
     ZP_ASSERT( ok, "" );
 
-    HGLRC context = wglCreateContext( dc );
-    ok = wglMakeCurrent( dc, context );
+    HGLRC glContext = wglCreateContext( dc );
+    ok = wglMakeCurrent( dc, glContext );
     ZP_ASSERT( ok, "" );
 
-    hDC = dc;
-    hContext = context;
 #endif
 
     glewExperimental = true;
     GLenum r = glewInit();
     ZP_ASSERT( r == GLEW_OK, "" );
+    zp_printfln( "Using GLEW: %s", glewGetString( GLEW_VERSION ) );
+
+#ifdef ZP_WINDOWS
+    if( WGLEW_ARB_create_context )
+    {
+        GLint OpenGLVersion[ 2 ];
+        glGetIntegerv( GL_MAJOR_VERSION, &OpenGLVersion[ 0 ] );
+        glGetIntegerv( GL_MINOR_VERSION, &OpenGLVersion[ 1 ] );
+
+        GLint flags = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+#ifdef ZP_DEBUG
+        flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+#endif
+        const int attribs[] =
+        {
+            WGL_CONTEXT_MAJOR_VERSION_ARB, OpenGLVersion[ 0 ],
+            WGL_CONTEXT_MINOR_VERSION_ARB, OpenGLVersion[ 1 ],
+            WGL_CONTEXT_LAYER_PLANE_ARB, 0,
+            WGL_CONTEXT_FLAGS_ARB, flags,
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0, 0
+        };
+
+        wglMakeCurrent( ZP_NULL, ZP_NULL );
+        wglDeleteContext( glContext );
+        glContext = ZP_NULL;
+
+        HGLRC arbContext = wglCreateContextAttribsARB( dc, 0, attribs );
+        wglMakeCurrent( dc, arbContext );
+
+        hContext = arbContext;
+    }
+    else
+#endif
+    {
+        hContext = glContext;
+    }
+
+    zp_printfln( "Using GL:   %s", glGetString( GL_VERSION ) );
+
+#ifdef ZP_DEBUG
+    glEnable( GL_DEBUG_OUTPUT );
+    //glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+    glDebugMessageCallback( _DebugOutputOpenGL, ZP_NULL );
+    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
+    glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
+    glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
+#endif
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
 
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
-
-    zp_printfln( "Using GLEW: %s", glewGetString( GLEW_VERSION ) );
-    zp_printfln( "Using GL:   %s", glGetString( GL_VERSION ) );
 
     const zp_char* vertVC = "#version 330 core\n"
         "layout(location = 0) in vec4 position;"
@@ -483,21 +598,28 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
     switch( cmd->type )
     {
         case ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT:
+        {
+            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
             glScissor( cmd->scissorRect.x,
                        cmd->scissorRect.y,
                        cmd->scissorRect.width,
                        cmd->scissorRect.height );
+        }
             break;
 
         case ZP_RENDERING_COMMNAD_SET_VIEWPORT:
+        {
+            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
             glViewport( cmd->viewport.topX,
                         cmd->viewport.topY,
                         cmd->viewport.width,
                         cmd->viewport.height );
+        }
             break;
 
         case ZP_RENDERING_COMMNAD_CLEAR:
         {
+            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear" );
             glClearColor( cmd->clearColor.r,
                           cmd->clearColor.g,
                           cmd->clearColor.b,
@@ -510,6 +632,7 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
 
         case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
         {
+            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Draw Immediate" );
             switch( cmd->vertexFormat )
             {
                 case ZP_VERTEX_FORMAT_VERTEX_COLOR:
@@ -535,7 +658,7 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
             //glPushMatrix();
             //glRotatef( rot, 0, 1, 0 );
             GLenum mode = _TopologyToMode( cmd->topology );
-            glDrawElementsBaseVertex( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, reinterpret_cast<void*>( 0 ), static_cast<GLint>( cmd->indexOffset / sizeof( zp_ushort ) ) );
+            glDrawElementsBaseVertex( mode, static_cast<GLsizei>( cmd->indexCount ), GL_UNSIGNED_SHORT, ZP_NULL, static_cast<GLint>( cmd->indexOffset / sizeof( zp_ushort ) ) );
             //glPopMatrix();
 
             glUseProgram( 0 );
@@ -586,6 +709,8 @@ void PresentOpenGL( zp_handle hDC, zp_handle hContext )
 
 void CreateRenderBufferOpenGL( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Buffer" );
+
     buffer.size = size;
     buffer.stride = 0;
     buffer.bufferType = type;
@@ -594,29 +719,34 @@ void CreateRenderBufferOpenGL( zpBufferType type, zpBufferBindType bindType, zp_
     GLenum target = _BufferTypeToTarget( type );
     GLenum usage = _BufferBindTypeToUsage( bindType );
 
-    glGenBuffers( 1, &buffer.bufferIndex );
-    glBindBuffer( target, buffer.bufferIndex );
+    glGenBuffers( 1, &buffer.buffer.index );
+    glBindBuffer( target, buffer.buffer.index );
     glBufferData( target, size, data, usage );
     glBindBuffer( target, 0 );
 }
 
 void DestroyRenderBufferOpenGL( zpRenderBuffer& buffer )
 {
-    glDeleteBuffers( 1, &buffer.bufferIndex );
-    buffer.bufferIndex = 0;
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Destroy Buffer" );
+
+    glDeleteBuffers( 1, &buffer.buffer.index );
+    buffer.buffer.index = 0;
 }
 
 void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, zp_size_t offset, zp_size_t length )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Buffer Data" );
     GLenum target = _BufferTypeToTarget( buffer.bufferType );
 
-    glBindBuffer( target, buffer.bufferIndex );
+    glBindBuffer( target, buffer.buffer.index );
     glBufferSubData( target, offset, length, data );
     glBindBuffer( target, 0 );
 }
 
 void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Texture" );
+
     GLenum target = _TextureDimensionToTarget( textureDimension );
     GLint internalFormat = _DisplayFormatToInternalFormat( displayFormat );
     GLenum format = _DisplayFormatToFormat( displayFormat );
@@ -628,8 +758,8 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
     texture.type = textureType;
     texture.format = displayFormat;
 
-    glGenTextures( 1, &texture.textureIndex );
-    glBindTexture( target, texture.textureIndex );
+    glGenTextures( 1, &texture.texture.index );
+    glBindTexture( target, texture.texture.index );
     glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
@@ -689,12 +819,16 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
 
 void DestroyTextureOpenGL( zpTexture& texture )
 {
-    glDeleteTextures( 1, &texture.textureIndex );
-    texture.textureIndex = 0;
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Destroy Buffer" );
+    
+    glDeleteTextures( 1, &texture.texture.index );
+    texture.texture.index = 0;
 }
 
 void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Shader" );
+
     shader = {};
 
     GLint result;
@@ -757,6 +891,8 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
 
 void DestroyShaderOpenGL( zpShader& shader )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Destroy Shader" );
+
     if( shader.vertexShader.index )
     {
         glDeleteShader( shader.vertexShader.index );

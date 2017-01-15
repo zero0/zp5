@@ -59,3 +59,23 @@ zpRenderingContext* zpRenderingEngine::getImmidiateContext()
 {
     return &m_immidiateContext;
 }
+
+void zpRenderingEngine::createRenderBuffer( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer )
+{
+    CreateRenderBufferOpenGL( type, bindType, size, data, buffer );
+}
+
+void zpRenderingEngine::destoryRenderBuffer( zpRenderBuffer& buffer )
+{
+    DestroyRenderBufferOpenGL( buffer );
+}
+
+void zpRenderingEngine::createTexture( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+{
+    CreateTextureOpenGL( width, height, mipMapCount, displayFormat, textureDimension, textureType, pixels, texture );
+}
+
+void zpRenderingEngine::destoryTexture( zpTexture& texture )
+{
+    DestroyTextureOpenGL( texture );
+}

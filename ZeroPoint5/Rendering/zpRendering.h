@@ -198,11 +198,7 @@ struct zpTexture
     zpTextureType type;
     zpDisplayFormat format;
 
-    union
-    {
-        zp_handle texturePtr;
-        zp_uint textureIndex;
-    };
+    zpRenderHandle texture;
 };
 
 struct zpShader
@@ -220,11 +216,7 @@ struct zpRenderBuffer
     zpBufferType bufferType;
     zpBufferBindType bindType;
 
-    union
-    {
-        zp_handle bufferPtr;
-        zp_uint bufferIndex;
-    };
+    zpRenderHandle buffer;
 };
 
 struct zpViewport

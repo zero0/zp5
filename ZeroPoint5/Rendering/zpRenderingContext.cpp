@@ -88,7 +88,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     ZP_ASSERT( m_currentCommnad == npos, "" );
     m_currentCommnad = m_commands.size();
 
-    zpRenderingCommand& cmd = m_commands.pushBackEmpty();
+    zpRenderingCommand cmd;
     cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
@@ -101,6 +101,8 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.transform = zpMath::MatrixIdentity();
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
+
+    m_commands.pushBack( cmd );
 }
 
 void zpRenderingContext::endDrawImmediate()

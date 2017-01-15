@@ -358,5 +358,5 @@ void zpBaseApplication::processFrame()
     }
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
-    zp_printfln( "MS: %f", d );
+    //zp_printfln( "MS: %f", d );
 }
