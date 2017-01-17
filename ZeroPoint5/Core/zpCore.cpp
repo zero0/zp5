@@ -82,7 +82,7 @@ zp_int zp_strcmp( const zp_char* str1, const zp_char* str2 )
 
 zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 )
 {
-    return stricmp( str1, str2 );
+    return _stricmp( str1, str2 );
 }
 
 #ifdef ZP_USE_ASSERTIONS

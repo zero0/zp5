@@ -12,6 +12,7 @@ option( ZP_BUILD_STATIC "Build ZeroPoint5 as static library" ON )
 
 option( ZP_USE_ASSERTIONS "Build ZeroPoint5 with assersion" ON )
 option( ZP_USE_PRINT "Build ZeroPoint5 with prints" ON )
+option( ZP_USE_PROFILER "Build ZeroPoint5 with profiler" ON )
 option( ZP_USE_SAFE_FUNCTIONS "Build ZeroPoint5 with safe functions" ON )
 option( ZP_USE_SIMD "Build ZeroPoint5 with SIMD" ON )
 option( ZP_USE_OPENGL_RENDERING "Build ZeroPoint5 with OpenGL Rendering" ON )

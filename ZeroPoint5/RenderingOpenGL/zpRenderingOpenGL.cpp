@@ -428,23 +428,18 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 #ifdef ZP_DEBUG
 struct glDebugBlockS
 {
-private:
-    static GLuint id;
-
 public:
-    glDebugBlockS( GLenum source, const char* message );
-    ~glDebugBlockS();
+    ZP_FORCE_INLINE glDebugBlockS( GLenum source, const char* message );
+    ZP_FORCE_INLINE ~glDebugBlockS();
 };
 
-GLuint glDebugBlockS::id = 1;
-glDebugBlockS::glDebugBlockS( GLenum source, const char* message )
+ZP_FORCE_INLINE glDebugBlockS::glDebugBlockS( GLenum source, const char* message )
 {
-    glPushDebugGroup( source, id++, -1, message );
+    glPushDebugGroup( source, 1, -1, message );
 }
-glDebugBlockS::~glDebugBlockS()
+ZP_FORCE_INLINE glDebugBlockS::~glDebugBlockS()
 {
     glPopDebugGroup();
-    --id;
 }
 
 #define glDebugBlock( source, message ) glDebugBlockS( source, message )

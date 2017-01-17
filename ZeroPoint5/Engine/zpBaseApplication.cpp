@@ -85,6 +85,8 @@ void zpBaseApplication::setHandle( zp_handle instance )
 
 void zpBaseApplication::initialize()
 {
+    ZP_PROFILE_BLOCK();
+    
     onPreInitialize();
 
     createWindow();
@@ -95,6 +97,8 @@ zpTextureHandle t;
 
 void zpBaseApplication::setup()
 {
+    ZP_PROFILE_BLOCK();
+    
     onPreSetup();
 
     m_renderingEngine.setup( m_hWnd );
@@ -125,6 +129,8 @@ void zpBaseApplication::run()
 
 void zpBaseApplication::teardown()
 {
+    ZP_PROFILE_BLOCK();
+    
     onPreTeardown();
     t.release();
     runGarbageCollection();
@@ -137,6 +143,8 @@ void zpBaseApplication::teardown()
 
 zpApplicationExitCode zpBaseApplication::shutdown()
 {
+    ZP_PROFILE_BLOCK();
+    
     onPreShutdown();
 
     destroyWindow();
@@ -195,6 +203,8 @@ void zpBaseApplication::setApplicationFocus( zp_bool focus )
 
 void zpBaseApplication::runGarbageCollection()
 {
+    ZP_PROFILE_BLOCK();
+
     m_objectManager.garbageCollect();
     m_textureManager.garbageCollect();
 
@@ -203,6 +213,8 @@ void zpBaseApplication::runGarbageCollection()
 
 void zpBaseApplication::runReloadAllResources()
 {
+    ZP_PROFILE_BLOCK();
+
     onReloadAllResources();
 }
 
@@ -298,6 +310,8 @@ zp_bool zpBaseApplication::processMessages()
 
 void zpBaseApplication::processFrame()
 {
+    ZP_PROFILE_START( ProcessFrame );
+
     zp_bool paused = m_isPaused || ( m_shouldPauseInBackground && !m_isFocused );
 
     m_time.tick();
@@ -363,7 +377,11 @@ void zpBaseApplication::processFrame()
     
     m_renderingEngine.present();
 
+    ZP_PROFILE_END( ProcessFrame );
+
     ++m_frameCount;
+
+    ZP_PROFILE_START( Sleep );
 
     zp_long endTime = m_time.getTime();
 
@@ -377,5 +395,9 @@ void zpBaseApplication::processFrame()
     }
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
+
+    ZP_PROFILE_END( Sleep );
+
     //zp_printfln( "MS: %f", d );
+    ZP_PROFILE_FINALIZE();
 }

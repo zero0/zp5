@@ -14,6 +14,7 @@ struct zpPlatform
     PlatformFreeFunc free;
 };
 
+#include "zpProfiler.h"
 #include "zpObject.h"
 #include "zpComponent.h"
 #include "zpBaseApplication.h"

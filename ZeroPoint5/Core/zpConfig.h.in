@@ -9,6 +9,7 @@
 
 #cmakedefine ZP_USE_ASSERTIONS
 #cmakedefine ZP_USE_PRINT
+#cmakedefine ZP_USE_PROFILER
 #cmakedefine ZP_USE_SAFE_FUNCTIONS
 #cmakedefine ZP_USE_SIMD
 #cmakedefine ZP_USE_OPENGL_RENDERING

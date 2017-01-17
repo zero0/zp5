@@ -74,6 +74,7 @@
 //
 
 typedef size_t zp_size_t;
+typedef unsigned __int64 zp_time_t;
 
 typedef unsigned __int8  zp_byte;
 typedef unsigned __int16 zp_ushort;
