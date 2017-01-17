@@ -53,6 +53,8 @@
 #define ZP_CONCAT( a, b )           ZP_CONCAT_( a, b )
 #define ZP_STATIC_ASSERT( e )       ; enum { ZP_CONCAT( static_assert_, __LINE__ ) = 1 / static_cast<int>( !!(e) ) }
 
+#define ZP_ARRAY_SIZE( a )          ( sizeof( a ) / sizeof( a[ 0 ] ) )
+
 #if __cplusplus
 #define ZP_NULL    nullptr
 #else
@@ -114,6 +116,8 @@ zp_int zp_memcmp( const void* ptr1, const void* ptr2, zp_size_t size );
 zp_char* zp_strcpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString );
 zp_char* zp_strncpy( zp_char* destString, zp_size_t numElements, const zp_char* srcString, zp_size_t maxCount );
 zp_size_t zp_strlen( const zp_char* srcString );
+zp_int zp_strcmp( const zp_char* str1, const zp_char* str2 );
+zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 );
 
 //
 // Macros

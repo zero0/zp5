@@ -79,3 +79,13 @@ void zpRenderingEngine::destoryTexture( zpTexture& texture )
 {
     DestroyTextureOpenGL( texture );
 }
+
+void zpRenderingEngine::createShader( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+{
+    CreateShaderOpenGL( vertexShaderSource, fragmentShaderSource, shader );
+}
+
+void zpRenderingEngine::destroyShader( zpShader& shader )
+{
+    DestroyShaderOpenGL( shader );
+}

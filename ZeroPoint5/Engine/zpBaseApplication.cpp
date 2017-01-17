@@ -91,12 +91,16 @@ void zpBaseApplication::initialize()
 
     onPostInitialize();
 }
+zpTextureHandle t;
 
 void zpBaseApplication::setup()
 {
     onPreSetup();
 
     m_renderingEngine.setup( m_hWnd );
+    m_textureManager.setup( &m_renderingEngine );
+
+    m_textureManager.getTexture( "Assets/uv_checker_large.bmp", t );
 
     onPostSetup();
 }
@@ -122,9 +126,10 @@ void zpBaseApplication::run()
 void zpBaseApplication::teardown()
 {
     onPreTeardown();
+    t.release();
+    runGarbageCollection();
 
-    m_objectManager.garbageCollect();
-
+    m_textureManager.teardown();
     m_renderingEngine.teardown();
 
     onPostTeardown();
@@ -191,6 +196,7 @@ void zpBaseApplication::setApplicationFocus( zp_bool focus )
 void zpBaseApplication::runGarbageCollection()
 {
     m_objectManager.garbageCollect();
+    m_textureManager.garbageCollect();
 
     onGarbageCollection();
 }
@@ -321,20 +327,33 @@ void zpBaseApplication::processFrame()
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->addVertexData( { -1, 1, 0, 1 }, { 1, 0, 0, 1 } );
-    ctx->addVertexData( { 0, 0, 0, 1 }, { 0, 1, 0, 1 } );
-    ctx->addVertexData( { -1, 0, 0, 1 }, { 0, 0, 1, 1 } );
-    ctx->addTriangleIndex( 0, 1, 2 );
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
+    ctx->setTransform( zpMath::MatrixTRS( { .10f, -.10f, 0, 1 }, { 0, 0, 0, 1 }, { 1.5f, .5f, 1.f, 0 } ) );
+    ctx->setTexture( 0, *t.operator->() );
+    ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
+    ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
+    ctx->addVertexData( {  0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
+    ctx->addVertexData( {  0, 0, 0, 1 }, { 1, 1, 1, 1 }, { 1, 0 } );
+    ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDrawImmediate();
     
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
+    ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
+    ctx->setTexture( 0, *t.operator->() );
+    ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
+    ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
+    ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
+    ctx->addVertexData( { 0, 0, 0, 1 }, { 1, 1, 1, 1 }, { 1, 0 } );
+    ctx->addQuadIndex( 0, 1, 2, 3 );
+    ctx->endDrawImmediate();
+
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
     ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
     ctx->endDrawImmediate();
-
+    
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
     ctx->addVertexData( { -1,  0, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );

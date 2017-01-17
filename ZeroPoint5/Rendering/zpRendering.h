@@ -246,12 +246,15 @@ union zpRenderingSortKey
 struct zpRenderingCommand
 {
     zpRenderingCommandType type;
+    zp_uint id;
     zpRenderingSortKey sortKey;
 
     union
     {
         struct // draw command data
         {
+            zpMatrix4f transform;
+
             zpVertexFormat vertexFormat;
             zpTopology topology;
 
@@ -263,14 +266,14 @@ struct zpRenderingCommand
             zpRenderBuffer vertexBuffer;
             zpRenderBuffer indexBuffer;
 
-            zpMatrix4f transform;
+            zpTexture tex;
         };
 
         struct // draw instanced data
         {
-            zp_hash64 instanceId;
-
             zpMatrix4f instanceTransform;
+
+            zp_hash64 instanceId;
         };
 
         struct // scissor rect data
@@ -294,5 +297,8 @@ struct zpRenderingCommand
 
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"
+
+#include "zpTextureManager.h"
+
 
 #endif // !ZP_RENDERING_H

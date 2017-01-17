@@ -137,6 +137,11 @@ struct zpQuaternion4fData
     zp_float x, y, z, w;
 };
 
+struct zpMatrix4fData
+{
+    zp_float m[ 16 ];
+};
+
 struct zpVector2f
 {
     zp_float x, y;
@@ -277,6 +282,9 @@ namespace zpMath
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixIdentity();
 
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixMul( zpMatrix4fParamF a, zpMatrix4fParamC b );
+
+    ZP_FORCE_INLINE void ZP_VECTORCALL MatrixStore4( zpMatrix4fParamF s, zp_float* m );
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixLoad4( const zp_float* m );
 };
 
 #ifdef ZP_USE_SIMD

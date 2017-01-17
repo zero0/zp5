@@ -73,6 +73,7 @@ private:
     zpRenderingEngine m_renderingEngine;
 
     zpObjectManager m_objectManager;
+    zpTextureManager m_textureManager;
 
     zpTime m_time;
 

@@ -101,6 +101,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.transform = zpMath::MatrixIdentity();
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
+    cmd.tex = {};
 
     m_commands.pushBack( cmd );
 }
@@ -124,6 +125,13 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     cmd->transform = transform;
+}
+
+void zpRenderingContext::setTexture( zp_uint index, const zpTexture& texture )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+    cmd->tex = texture;
 }
 
 void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )
@@ -227,7 +235,7 @@ void zpRenderingContext::processCommands( zpRenderingCommandProcessFunc func )
 
 void zpRenderingContext::flipBuffers()
 {
-    m_commands.reset();
+    m_commands.clear();
 
     m_currentBufferIndex = ( m_currentBufferIndex + 1 ) % 2;
 

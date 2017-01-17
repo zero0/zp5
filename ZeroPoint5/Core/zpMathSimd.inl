@@ -493,4 +493,22 @@ namespace zpMath
         return s;
     }
 
+    ZP_FORCE_INLINE void ZP_VECTORCALL MatrixStore4( zpMatrix4fParamF s, zp_float* m )
+    {
+        _mm_store_ps( m + 0, s.m_m1 );
+        _mm_store_ps( m + 4, s.m_m2 );
+        _mm_store_ps( m + 8, s.m_m3 );
+        _mm_store_ps( m + 12, s.m_m4 );
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixLoad4( const zp_float* m )
+    {
+        zpMatrix4f mat;
+        mat.m_m1 = _mm_load_ps( m + 0 );
+        mat.m_m2 = _mm_load_ps( m + 4 );
+        mat.m_m3 = _mm_load_ps( m + 8 );
+        mat.m_m4 = _mm_load_ps( m + 12 );
+
+        return mat;
+    }
 };

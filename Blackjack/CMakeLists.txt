@@ -11,6 +11,7 @@ file( GLOB BLACKJACK_HEADER "src/*.h" )
 file( GLOB BLACKJACK_INLINE "src/*.inl" )
 
 set( BLACKJACK_BIN ${PROJECT_NAME}_Win64 )
+set( BLACKJACK_ASSETS "Assets/" )
 
 source_group( Blackjack\\Headers FILES
     ${BLACKJACK_HEADER}

@@ -75,6 +75,16 @@ zp_size_t zp_strlen( const zp_char* srcString )
     return srcString ? strlen( srcString ) : 0;
 }
 
+zp_int zp_strcmp( const zp_char* str1, const zp_char* str2 )
+{
+    return strcmp( str1, str2 );
+}
+
+zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 )
+{
+    return stricmp( str1, str2 );
+}
+
 #ifdef ZP_USE_ASSERTIONS
 void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
 {
