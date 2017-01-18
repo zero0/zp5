@@ -23,13 +23,16 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     zp_int width, height;
     zp_int imageSize;
     
-    zpFile bmpFile( filepath );
-    bmpFile.open( ZP_FILE_MODE_BINARY_READ );
+    zpFile bmpFile( filepath, ZP_FILE_MODE_BINARY_READ );
+    if( bmpFile.getResult() != ZP_FILE_SUCCESS )
+    {
+        return -1;
+    }
+
     bmpFile.read( header, 0, sizeof( header ) );
 
     if( header[ 0 ] != 'B' && header[ 1 ] != 'M' )
     {
-        bmpFile.close();
         return -1;
     }
 
@@ -58,7 +61,7 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     zp_size_t len;
     zp_byte buff[ 8192 ];
     textureData.data.reserve( imageSize );
-    while( ( len = bmpFile.read( buff, 0, 8192 ) ) != 0 )
+    while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
         textureData.data.write( buff, 0, len );
     }
@@ -71,7 +74,6 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
         d[ i ] ^= d[ i + 2 ] ^= d[ i ] ^= d[ i + 2 ];
     }
 
-    bmpFile.close();
     return result;
 }
 
@@ -96,8 +98,7 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     };
     tgaHeader header;
 
-    zpFile bmpFile( filepath );
-    bmpFile.open( ZP_FILE_MODE_BINARY_READ );
+    zpFile bmpFile( filepath, ZP_FILE_MODE_BINARY_READ );
     bmpFile.read( &header, 0, sizeof( tgaHeader ) );
 
     textureData.width = header.width;
@@ -125,7 +126,7 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     zp_size_t len;
     zp_byte buff[ 8192 ];
     textureData.data.reserve( imageSize );
-    while( ( len = bmpFile.read( buff, 0, 8192 ) ) != 0 )
+    while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
         textureData.data.write( buff, 0, len );
     }
@@ -137,8 +138,6 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     {
         d[ i ] ^= d[ i + 2 ] ^= d[ i ] ^= d[ i + 2 ];
     }
-
-    bmpFile.close();
 
     return result;
 }

@@ -1,5 +1,6 @@
 #include "zpCore.h"
 #include <stdio.h>
+#include <errno.h>
 
 const zp_char* g_zpFileModeToString[] =
 {
@@ -21,45 +22,41 @@ const zp_char* g_zpFileModeToString[] =
     "wb+"
 };
 
-zpFile::zpFile()
-    : m_filename()
-    , m_fileHandle( ZP_NULL )
-{}
-
-zpFile::zpFile( const zp_char* filename )
+zpFile::zpFile( const zp_char* filename, zpFileMode filemode )
     : m_filename( filename )
     , m_fileHandle( ZP_NULL )
 {
-}
+    ZP_STATIC_ASSERT( ( sizeof( g_zpFileModeToString ) / sizeof( g_zpFileModeToString[ 0 ] ) ) == zpFileMode_Count );
 
-zpFile::~zpFile()
-{
-}
-
-zpFileResult zpFile::open( zpFileMode filemode )
-{
     FILE* f;
+    errno_t err;
 #ifdef ZP_USE_SAFE_FUNCTIONS
-    fopen_s( &f, m_filename.str(), g_zpFileModeToString[ filemode ] );
+    err = fopen_s( &f, m_filename.str(), g_zpFileModeToString[ filemode ] );
 #else
     f = fopen( m_filename.str(), g_zpFileModeToString[ filemode ] );
+    err = errno;
 #endif
 
     m_fileHandle = f;
 
-    zpFileResult result = ZP_FILE_SUCCESS;
-    return result;
+    m_result = err == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_NOT_FOUND;
 }
 
-zpFileResult zpFile::close()
+zpFile::~zpFile()
 {
-    FILE* f = static_cast<FILE*>( m_fileHandle );
-    zp_int r = fclose( f );
+    if( m_fileHandle )
+    {
+        FILE* f = static_cast<FILE*>( m_fileHandle );
+        errno_t err = fclose( f );
 
-    m_fileHandle = ZP_NULL;
+        m_fileHandle = ZP_NULL;
+        m_result = err == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_ON_CLOSE;
+    }
+}
 
-    zpFileResult result = r == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_ON_CLOSE;
-    return result;
+zpFileResult zpFile::getResult() const
+{
+    return m_result;
 }
 
 zp_size_t zpFile::write( const void* data, zp_size_t offset, zp_size_t length ) const
