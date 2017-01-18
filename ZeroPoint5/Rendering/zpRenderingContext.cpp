@@ -221,6 +221,8 @@ void zpRenderingContext::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_us
 
 void zpRenderingContext::fillBuffers()
 {
+    ZP_PROFILER_BLOCK();
+
     if( m_scratchVertexBuffer.getPosition() )
     {
         SetRenderBufferDataOpenGL( m_immidateVertexBuffers[ m_currentBufferIndex ], m_scratchVertexBuffer.getBuffer(), 0, m_scratchVertexBuffer.getPosition() );
@@ -237,6 +239,8 @@ void zpRenderingContext::fillBuffers()
 
 void zpRenderingContext::processCommands( zpRenderingCommandProcessFunc func )
 {
+    ZP_PROFILER_BLOCK();
+    
     zpRenderingCommand* cmd = m_commands.begin();
     zpRenderingCommand* end = m_commands.end();
     for( ; cmd != end; ++cmd )
