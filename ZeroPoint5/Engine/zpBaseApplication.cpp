@@ -85,7 +85,7 @@ void zpBaseApplication::setHandle( zp_handle instance )
 
 void zpBaseApplication::initialize()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
     
     onPreInitialize();
 
@@ -97,7 +97,7 @@ zpTextureHandle t;
 
 void zpBaseApplication::setup()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
     
     onPreSetup();
 
@@ -130,7 +130,7 @@ void zpBaseApplication::run()
 
 void zpBaseApplication::teardown()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
     
     onPreTeardown();
     t.release();
@@ -145,7 +145,7 @@ void zpBaseApplication::teardown()
 
 zpApplicationExitCode zpBaseApplication::shutdown()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
     
     onPreShutdown();
 
@@ -205,7 +205,7 @@ void zpBaseApplication::setApplicationFocus( zp_bool focus )
 
 void zpBaseApplication::runGarbageCollection()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
 
     m_objectManager.garbageCollect();
     m_textureManager.garbageCollect();
@@ -216,7 +216,7 @@ void zpBaseApplication::runGarbageCollection()
 
 void zpBaseApplication::runReloadAllResources()
 {
-    ZP_PROFILE_BLOCK();
+    ZP_PROFILER_BLOCK();
 
     onReloadAllResources();
 }
@@ -313,7 +313,7 @@ zp_bool zpBaseApplication::processMessages()
 
 void zpBaseApplication::processFrame()
 {
-    ZP_PROFILE_START( ProcessFrame );
+    ZP_PROFILER_START( ProcessFrame );
 
     zp_bool paused = m_isPaused || ( m_shouldPauseInBackground && !m_isFocused );
 
@@ -336,13 +336,13 @@ void zpBaseApplication::processFrame()
         runReloadAllResources();
     }
 
-    ZP_PROFILE_START( Update );
+    ZP_PROFILER_START( Update );
     onUpdate( dt, rt );
-    ZP_PROFILE_END( Update );
+    ZP_PROFILER_END( Update );
 
-    ZP_PROFILE_START( LateUpdate );
+    ZP_PROFILER_START( LateUpdate );
     onLateUpdate( dt, rt );
-    ZP_PROFILE_END( LateUpdate );
+    ZP_PROFILER_END( LateUpdate );
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
@@ -384,11 +384,11 @@ void zpBaseApplication::processFrame()
     
     m_renderingEngine.present();
 
-    ZP_PROFILE_END( ProcessFrame );
+    ZP_PROFILER_END( ProcessFrame );
 
     ++m_frameCount;
 
-    ZP_PROFILE_START( Sleep );
+    ZP_PROFILER_START( Sleep );
 
     zp_long endTime = m_time.getTime();
 
@@ -403,8 +403,8 @@ void zpBaseApplication::processFrame()
 
     zp_sleep( static_cast<zp_int>( sleepTime ) );
 
-    ZP_PROFILE_END( Sleep );
+    ZP_PROFILER_END( Sleep );
 
     //zp_printfln( "MS: %f", d );
-    ZP_PROFILE_FINALIZE();
+    ZP_PROFILER_FINALIZE();
 }

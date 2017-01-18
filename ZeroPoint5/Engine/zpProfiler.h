@@ -3,20 +3,20 @@
 #define ZP_PROFILER_H
 
 #ifndef ZP_USE_PROFILER
-#define ZP_PROFILE_BLOCK()      (void)0
-#define ZP_PROFILE_START( e )   (void)0
-#define ZP_PROFILE_END( e )     (void)0
-#define ZP_PROFILE_FINALIZE()   (void)0
+#define ZP_PROFILER_BLOCK()      (void)0
+#define ZP_PROFILER_START( e )   (void)0
+#define ZP_PROFILER_END( e )     (void)0
+#define ZP_PROFILER_FINALIZE()   (void)0
 #else
-#define ZP_PROFILE_BLOCK()      zpProfileBlockS ZP_CONCAT( __profileBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__ )
-#define ZP_PROFILE_START( e )   zp_size_t __profileIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__ )
-#define ZP_PROFILE_END( e )     g_profiler.end( __profileIndex##e )
-#define ZP_PROFILE_FINALIZE()   g_profiler.finalize()
+#define ZP_PROFILER_BLOCK()      zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__ )
+#define ZP_PROFILER_START( e )   zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__ )
+#define ZP_PROFILER_END( e )     g_profiler.end( __profilerIndex##e )
+#define ZP_PROFILER_FINALIZE()   g_profiler.finalize()
 
-struct zpProfileBlockS
+struct zpProfilerBlockS
 {
-    zpProfileBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber );
-    ~zpProfileBlockS();
+    zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber );
+    ~zpProfilerBlockS();
 
     zp_size_t index;
 };
@@ -75,7 +75,7 @@ private:
 };
 
 
-static zpProfiler g_profiler;
+extern zpProfiler g_profiler;
 
 #endif
 

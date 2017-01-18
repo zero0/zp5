@@ -7,12 +7,12 @@
 #include <Windows.h>
 #endif // ZP_WINDOWS
 
-zpProfileBlockS::zpProfileBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber )
+zpProfilerBlockS::zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber )
     : index( g_profiler.start( fileName, functionName, lineNumber ) )
 {
 }
 
-zpProfileBlockS::~zpProfileBlockS()
+zpProfilerBlockS::~zpProfilerBlockS()
 {
     g_profiler.end( index );
 }
@@ -114,5 +114,7 @@ const zpProfilerFrame* zpProfiler::getPreviousFrameEnd() const
     const zpProfilerFrameTimeline* t = m_timelines + m_previousFrame;
     return t->frames + t->size;
 }
+
+zpProfiler g_profiler;
 
 #endif
