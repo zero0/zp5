@@ -256,7 +256,7 @@ struct zpRenderingCommand
     zpRenderingSortKey sortKey;
 
     // draw command data
-    zpMatrix4f transform;
+    zpMatrix4fData transform;
 
     zpVertexFormat vertexFormat;
     zpTopology topology;

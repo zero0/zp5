@@ -381,9 +381,7 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
             break;
     }
 
-    ZP_ALIGN16 zpMatrix4fData m;
-    zpMath::MatrixStore4( cmd->transform, m.m );
-    glUniformMatrix4fv( glGetUniformLocation( prog, "_ObjectToWorld" ), 1, GL_FALSE, m.m );
+    glUniformMatrix4fv( glGetUniformLocation( prog, "_ObjectToWorld" ), 1, GL_FALSE, cmd->transform.m );
 
     if( cmd->tex.isValid() && cmd->tex->texture.index > 0 )
     {

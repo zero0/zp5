@@ -98,11 +98,14 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.vertexCount = 0;
     cmd.indexOffset = 0;
     cmd.indexCount = 0;
-    cmd.transform = zpMath::MatrixIdentity();
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
     cmd.tex = zpTextureHandle();
     cmd.shader = zpShaderHandle();
+
+    ZP_ALIGN16 zpMatrix4fData transformData;
+    zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
+    cmd.transform = transformData;
 }
 
 void zpRenderingContext::endDrawImmediate()
@@ -123,7 +126,10 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
-    cmd->transform = transform;
+
+    ZP_ALIGN16 zpMatrix4fData transformData;
+    zpMath::MatrixStore4( transform, transformData.m );
+    cmd->transform = transformData;
 }
 
 void zpRenderingContext::setTexture( zp_uint index, const zpTextureHandle& texture )
