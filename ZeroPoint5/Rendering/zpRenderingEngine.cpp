@@ -75,7 +75,7 @@ void zpRenderingEngine::createTexture( zp_uint width, zp_uint height, zp_int mip
     CreateTextureOpenGL( width, height, mipMapCount, displayFormat, textureDimension, textureType, pixels, texture );
 }
 
-void zpRenderingEngine::destoryTexture( zpTexture& texture )
+void zpRenderingEngine::destroyTexture( zpTexture& texture )
 {
     DestroyTextureOpenGL( texture );
 }

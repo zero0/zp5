@@ -74,6 +74,7 @@ private:
 
     zpObjectManager m_objectManager;
     zpTextureManager m_textureManager;
+    zpShaderManager m_shaderManager;
 
     zpTime m_time;
 

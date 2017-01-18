@@ -22,7 +22,8 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     zp_uint dataPos;
     zp_int width, height;
     zp_int imageSize;
-    
+    const zp_size_t bytesPerPixel = 3;
+
     zpFile bmpFile( filepath, ZP_FILE_MODE_BINARY_READ );
     if( bmpFile.getResult() != ZP_FILE_SUCCESS )
     {
@@ -43,7 +44,7 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
 
     if( imageSize == 0 )
     {
-        imageSize = width * height * 3;
+        imageSize = width * height * bytesPerPixel;
     }
 
     if( dataPos == 0 )
@@ -56,11 +57,10 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     textureData.textureDimension = ZP_TEXTURE_DIMENSION_2D;
     textureData.type = ZP_TEXTURE_TYPE_TEXTURE;
     textureData.format = ZP_DISPLAY_FORMAT_RGB8_UINT;
+    textureData.data.reserve( imageSize );
 
-    zp_size_t bytesPerPixel = 3;
     zp_size_t len;
     zp_byte buff[ 8192 ];
-    textureData.data.reserve( imageSize );
     while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
         textureData.data.write( buff, 0, len );
@@ -120,12 +120,12 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
             return -1;
     }
 
-    zp_size_t bytesPerPixel = header.bitsPerPixel / 8;
-    zp_size_t imageSize = header.width * header.height * bytesPerPixel;
+    const zp_size_t bytesPerPixel = header.bitsPerPixel / 8;
+    const zp_size_t imageSize = header.width * header.height * bytesPerPixel;
+    textureData.data.reserve( imageSize );
 
     zp_size_t len;
     zp_byte buff[ 8192 ];
-    textureData.data.reserve( imageSize );
     while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
         textureData.data.write( buff, 0, len );
@@ -271,7 +271,7 @@ zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandl
         zpTextureInstance* t = ( *b );
         if( t->refCount == 0 )
         {
-            m_engine->destoryTexture( t->texture );
+            m_engine->destroyTexture( t->texture );
             foundTextureInstance = t;
             break;
         }
@@ -324,7 +324,7 @@ void zpTextureManager::garbageCollect()
         zpTextureInstance* b = m_textureInstances[ i ];
         if( b->refCount == 0 )
         {
-            m_engine->destoryTexture( b->texture );
+            m_engine->destroyTexture( b->texture );
             b->~zpTextureInstance();
 
             m_textureMemory.free( b );

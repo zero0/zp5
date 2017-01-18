@@ -103,6 +103,7 @@ void zpBaseApplication::setup()
 
     m_renderingEngine.setup( m_hWnd );
     m_textureManager.setup( &m_renderingEngine );
+    m_shaderManager.setup( &m_renderingEngine );
 
     m_textureManager.getTexture( "Assets/uv_checker_large.bmp", t );
 
@@ -135,6 +136,7 @@ void zpBaseApplication::teardown()
     t.release();
     runGarbageCollection();
 
+    m_shaderManager.teardown();
     m_textureManager.teardown();
     m_renderingEngine.teardown();
 
@@ -207,6 +209,7 @@ void zpBaseApplication::runGarbageCollection()
 
     m_objectManager.garbageCollect();
     m_textureManager.garbageCollect();
+    m_shaderManager.garbageCollect();
 
     onGarbageCollection();
 }
@@ -347,7 +350,7 @@ void zpBaseApplication::processFrame()
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixTRS( { .10f, -.10f, 0, 1 }, { 0, 0, 0, 1 }, { 1.5f, .5f, 1.f, 0 } ) );
-    ctx->setTexture( 0, *t.operator->() );
+    ctx->setTexture( 0, t );
     ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
     ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
     ctx->addVertexData( {  0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
@@ -357,7 +360,7 @@ void zpBaseApplication::processFrame()
     
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
-    ctx->setTexture( 0, *t.operator->() );
+    ctx->setTexture( 0, t );
     ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
     ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
     ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );

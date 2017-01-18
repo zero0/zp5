@@ -385,10 +385,10 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     zpMath::MatrixStore4( cmd->transform, m.m );
     glUniformMatrix4fv( glGetUniformLocation( prog, "_ObjectToWorld" ), 1, GL_FALSE, m.m );
 
-    if( cmd->tex.texture.index > 0 )
+    if( cmd->tex.isValid() && cmd->tex->texture.index > 0 )
     {
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, cmd->tex.texture.index );
+        glBindTexture( GL_TEXTURE_2D, cmd->tex->texture.index );
         glUniform1i( glGetUniformLocation( prog, "_MainTex" ), 0 );
     }
 }
@@ -417,7 +417,7 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );
 
-    if( cmd->tex.texture.index > 0 )
+    if( cmd->tex.isValid() && cmd->tex->texture.index > 0 )
     {
         glBindTexture( GL_TEXTURE_2D, 0 );
     }
@@ -833,7 +833,7 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     shader = {};
 
     GLint result;
-    GLint infoLength;
+    //GLint infoLength;
 
     // vertex shader
     shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
@@ -857,9 +857,18 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
         "\n" "};"
         "\n";
 
+    const zp_char* vsHeader =
+        "\n" "#define VERTEX"
+        "\n";
+
+    const zp_char* psHeader =
+        "\n" "#define FRAGMENT"
+        "\n";
+
     const zp_char* vs[] =
     {
         commonHeader,
+        vsHeader,
         vertexShaderSource
     };
     glShaderSource( shader.vertexShader.index, ZP_ARRAY_SIZE( vs ), vs, ZP_NULL );
@@ -880,6 +889,7 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     const zp_char* ps[] =
     {
         commonHeader,
+        psHeader,
         fragmentShaderSource
     };
     glShaderSource( shader.fragmentShader.index, ZP_ARRAY_SIZE( ps ), ps, ZP_NULL );
@@ -901,13 +911,13 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     glLinkProgram( shader.programShader.index );
 
     glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
-    glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    if( infoLength )
-    {
-        zp_char buffer[ 512 ];
-        glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
-        zp_printfln( "Program Link Error: %s", buffer );
-    }
+    //glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    //if( infoLength )
+    //{
+    //    zp_char buffer[ 512 ];
+    //    glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
+    //    zp_printfln( "Program Link Error: %s", buffer );
+    //}
 
     glDetachShader( shader.programShader.index, shader.vertexShader.index );
     glDetachShader( shader.programShader.index, shader.fragmentShader.index );

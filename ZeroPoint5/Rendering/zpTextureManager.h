@@ -1,5 +1,6 @@
 #pragma once
 #ifndef ZP_TEXTURE_MANAGER_H
+#define ZP_TEXTURE_MANAGER_H
 
 struct zpTextureInstance
 {

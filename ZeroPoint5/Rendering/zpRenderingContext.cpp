@@ -88,7 +88,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     ZP_ASSERT( m_currentCommnad == npos, "" );
     m_currentCommnad = m_commands.size();
 
-    zpRenderingCommand cmd;
+    zpRenderingCommand& cmd = m_commands.pushBackEmpty();
     cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
@@ -101,9 +101,8 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.transform = zpMath::MatrixIdentity();
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
-    cmd.tex = {};
-
-    m_commands.pushBack( cmd );
+    cmd.tex = zpTextureHandle();
+    cmd.shader = zpShaderHandle();
 }
 
 void zpRenderingContext::endDrawImmediate()
@@ -127,11 +126,18 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     cmd->transform = transform;
 }
 
-void zpRenderingContext::setTexture( zp_uint index, const zpTexture& texture )
+void zpRenderingContext::setTexture( zp_uint index, const zpTextureHandle& texture )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
-    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad; sizeof( zpRenderingCommand );
     cmd->tex = texture;
+}
+
+void zpRenderingContext::setShader( zp_uint index, const zpShaderHandle& shader )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad; sizeof( zpRenderingCommand );
+    cmd->shader = shader;
 }
 
 void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )

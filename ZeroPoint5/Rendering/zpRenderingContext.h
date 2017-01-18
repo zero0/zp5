@@ -25,7 +25,8 @@ public:
     void endDrawImmediate();
 
     void setTransform( zpMatrix4fParamF transform );
-    void setTexture( zp_uint index, const zpTexture& texture );
+    void setTexture( zp_uint index, const zpTextureHandle& texture );
+    void setShader( zp_uint index, const zpShaderHandle& shader );
 
     void addVertex( zpVector4fParamF pos, const zpColorf& color );
 

@@ -24,7 +24,7 @@ public:
     void destoryRenderBuffer( zpRenderBuffer& buffer );
 
     void createTexture( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture );
-    void destoryTexture( zpTexture& texture );
+    void destroyTexture( zpTexture& texture );
 
     void createShader( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
     void destroyShader( zpShader& shader );

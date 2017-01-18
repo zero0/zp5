@@ -1,6 +1,8 @@
 
 thread_local static zpBlockAllocator g_vectorAllocator( ZP_MEMORY_MB( 4 ) );
 
+#include <new>
+
 template< typename T >
 T* zpVectorAllocator< T >::allocate( zp_size_t count )
 {
@@ -104,7 +106,7 @@ template< typename T, typename Allocator >
 T& zpVector< T, Allocator >::pushBackEmpty()
 {
     ensureCapacity( m_size + 1 );
-    m_data[ m_size ] = (T&&)T();
+    new ( m_data + m_size ) T();
     return m_data[ m_size++ ];
 }
 
@@ -118,9 +120,9 @@ void zpVector< T, Allocator >::pushFront( const T& val )
         m_array[ i ] = (T&&)m_array[ i - 1 ];
     }
 
-    m_array[ 0 ] = val;
-
     ++m_size;
+
+    m_array[ 0 ] = val;
 }
 
 template< typename T, typename Allocator >
@@ -133,9 +135,10 @@ T& zpVector< T, Allocator >::pushFrontEmpty()
         m_array[ i ] = (T&&)m_array[ i - 1 ];
     }
 
-    m_array[ 0 ] = (T&&)T();
-
     ++m_size;
+
+    new ( m_array ) T();
+    return m_array[ 0 ];
 }
 
 template< typename T, typename Allocator >

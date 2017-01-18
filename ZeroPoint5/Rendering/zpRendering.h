@@ -243,6 +243,50 @@ union zpRenderingSortKey
     zp_ulong key;
 };
 
+class zpRenderingEngine;
+
+#include "zpTextureManager.h"
+#include "zpShaderManager.h"
+
+#if 1
+struct zpRenderingCommand
+{
+    zpRenderingCommandType type;
+    zp_uint id;
+    zpRenderingSortKey sortKey;
+
+    // draw command data
+    zpMatrix4f transform;
+
+    zpVertexFormat vertexFormat;
+    zpTopology topology;
+
+    zp_size_t vertexOffset;
+    zp_size_t vertexCount;
+    zp_size_t indexOffset;
+    zp_size_t indexCount;
+
+    zpRenderBuffer vertexBuffer;
+    zpRenderBuffer indexBuffer;
+
+    zpTextureHandle tex;
+    zpShaderHandle shader;
+
+    // draw instanced data
+    zp_hash64 instanceId;
+
+    // scissor rect data
+    zpRecti scissorRect;
+
+    // viewport rect data
+    zpViewport viewport;
+
+    // clear data
+    zpColorf clearColor;
+    zp_float clearDepth;
+    zp_int clearStencil;
+};
+#else
 struct zpRenderingCommand
 {
     zpRenderingCommandType type;
@@ -266,7 +310,8 @@ struct zpRenderingCommand
             zpRenderBuffer vertexBuffer;
             zpRenderBuffer indexBuffer;
 
-            zpTexture tex;
+            zpTextureHandle tex;
+            zpShaderHandle shader;
         };
 
         struct // draw instanced data
@@ -294,11 +339,9 @@ struct zpRenderingCommand
         };
     };
 };
+#endif
 
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"
-
-#include "zpTextureManager.h"
-
 
 #endif // !ZP_RENDERING_H
