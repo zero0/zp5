@@ -7,8 +7,8 @@
 #include <Windows.h>
 #endif // ZP_WINDOWS
 
-zpProfilerBlockS::zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber )
-    : index( g_profiler.start( fileName, functionName, lineNumber ) )
+zpProfilerBlockS::zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber, const zp_char* eventName )
+    : index( g_profiler.start( fileName, functionName, lineNumber, eventName ) )
 {
 }
 
@@ -42,7 +42,7 @@ zpProfiler::~zpProfiler()
     clear();
 }
 
-zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber )
+zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber, const zp_char* eventName )
 {
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     zp_size_t index = t->size;
@@ -62,6 +62,7 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
     frame->fileName = fileName;
     frame->functionName = functionName;
     frame->lineNumber = lineNumber;
+    frame->eventName = eventName;
 
     frame->parentFrame = parentFrame;
 

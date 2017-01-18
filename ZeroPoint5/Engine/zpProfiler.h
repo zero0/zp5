@@ -8,14 +8,14 @@
 #define ZP_PROFILER_END( e )     (void)0
 #define ZP_PROFILER_FINALIZE()   (void)0
 #else
-#define ZP_PROFILER_BLOCK()      zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__ )
-#define ZP_PROFILER_START( e )   zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__ )
+#define ZP_PROFILER_BLOCK()      zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__, ZP_NULL )
+#define ZP_PROFILER_START( e )   zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__, #e )
 #define ZP_PROFILER_END( e )     g_profiler.end( __profilerIndex##e )
 #define ZP_PROFILER_FINALIZE()   g_profiler.finalize()
 
 struct zpProfilerBlockS
 {
-    zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber );
+    zpProfilerBlockS( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber, const zp_char* eventName );
     ~zpProfilerBlockS();
 
     zp_size_t index;
@@ -32,6 +32,7 @@ struct zpProfilerFrame
     const zp_char* fileName;
     const zp_char* functionName;
     zp_long lineNumber;
+    const zp_char* eventName;
 
     zp_time_t parentFrame;
 
@@ -58,7 +59,7 @@ public:
     zpProfiler();
     ~zpProfiler();
 
-    zp_size_t start( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber );
+    zp_size_t start( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber, const zp_char* eventName );
     void end( zp_size_t index );
 
     void clear();
