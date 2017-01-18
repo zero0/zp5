@@ -333,9 +333,13 @@ void zpBaseApplication::processFrame()
         runReloadAllResources();
     }
 
+    ZP_PROFILE_START( Update );
     onUpdate( dt, rt );
+    ZP_PROFILE_END( Update );
 
+    ZP_PROFILE_START( LateUpdate );
     onLateUpdate( dt, rt );
+    ZP_PROFILE_END( LateUpdate );
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );

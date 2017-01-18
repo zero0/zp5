@@ -46,12 +46,24 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
 {
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     zp_size_t index = t->size;
+    zp_size_t parentFrame = npos;
+
+    if( t->stackSize > 0 )
+    {
+        parentFrame = t->frameStack[ t->stackSize - 1 ];
+    }
+
+    t->frameStack[ t->stackSize ] = index;
+
     ++t->size;
+    ++t->stackSize;
 
     zpProfilerFrame* frame = t->frames + index;
     frame->fileName = fileName;
     frame->functionName = functionName;
     frame->lineNumber = lineNumber;
+
+    frame->parentFrame = parentFrame;
 
     frame->startTime = GetTime();
     frame->endTime = 0;
@@ -69,6 +81,11 @@ void zpProfiler::end( zp_size_t index )
 
     frame->endTime = GetTime();
     frame->endMemory = 0;
+
+    if( t->stackSize > 0 )
+    {
+        --t->stackSize;
+    }
 }
 
 void zpProfiler::clear()
@@ -83,6 +100,19 @@ void zpProfiler::finalize()
     
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     t->size = 0;
+    t->stackSize = 0;
+}
+
+const zpProfilerFrame* zpProfiler::getPreviousFrameBegin() const
+{
+    const zpProfilerFrameTimeline* t = m_timelines + m_previousFrame;
+    return t->frames;
+}
+
+const zpProfilerFrame* zpProfiler::getPreviousFrameEnd() const
+{
+    const zpProfilerFrameTimeline* t = m_timelines + m_previousFrame;
+    return t->frames + t->size;
 }
 
 #endif

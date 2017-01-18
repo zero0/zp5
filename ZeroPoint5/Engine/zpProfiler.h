@@ -23,7 +23,7 @@ struct zpProfileBlockS
 
 enum
 {
-    ZP_PROFILER_MAX_SAMPLES_PER_FRAME = 512,
+    ZP_PROFILER_MAX_SAMPLES_PER_FRAME = 128,
     ZP_PROFILER_MAX_FRAMES = 120
 };
 
@@ -32,6 +32,8 @@ struct zpProfilerFrame
     const zp_char* fileName;
     const zp_char* functionName;
     zp_long lineNumber;
+
+    zp_time_t parentFrame;
 
     zp_time_t startTime;
     zp_time_t endTime;
@@ -43,12 +45,16 @@ struct zpProfilerFrame
 struct zpProfilerFrameTimeline
 {
     zpProfilerFrame frames[ ZP_PROFILER_MAX_SAMPLES_PER_FRAME ];
+    zp_size_t frameStack[ ZP_PROFILER_MAX_SAMPLES_PER_FRAME ];
     zp_size_t size;
+    zp_size_t stackSize;
 };
 
 class zpProfiler
 {
 public:
+    static const zp_size_t npos = -1;
+
     zpProfiler();
     ~zpProfiler();
 
@@ -57,6 +63,9 @@ public:
 
     void clear();
     void finalize();
+
+    const zpProfilerFrame* getPreviousFrameBegin() const;
+    const zpProfilerFrame* getPreviousFrameEnd() const;
 
 private:
     zp_size_t m_currentFrame;
