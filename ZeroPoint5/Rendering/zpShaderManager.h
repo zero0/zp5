@@ -54,7 +54,6 @@ public:
     void garbageCollect();
 
 private:
-    zpBlockAllocator m_shaderMemory;
     zpVector< zpShaderInstance* > m_shaderInstances;
 
     zpRenderingEngine* m_engine;

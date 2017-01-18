@@ -16,6 +16,7 @@ struct zpMemoryBlock
     zp_size_t alignedSize;
     zpMemoryBlock* next;
     zpMemoryBlock* prev;
+    zpMemoryChunk* chunk;
 };
 
 class zpBlockAllocator : public zpAllocator

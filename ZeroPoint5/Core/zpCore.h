@@ -159,5 +159,7 @@ void zp_printfln( const zp_char* text, ... );
 #include "zpDataBuffer.h"
 #include "zpFile.h"
 
+extern zpBlockAllocator g_globalAllocator;
+
 #endif // !ZP_CORE_H
 

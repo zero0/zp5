@@ -1,19 +1,17 @@
 
-thread_local static zpBlockAllocator g_vectorAllocator( ZP_MEMORY_MB( 4 ) );
-
 #include <new>
 
 template< typename T >
 T* zpVectorAllocator< T >::allocate( zp_size_t count )
 {
-    void* ptr = g_vectorAllocator.allocate( sizeof( T ) * count );
+    void* ptr = g_globalAllocator.allocate( sizeof( T ) * count );
     return static_cast<T*>( ptr );
 }
 
 template< typename T >
 void zpVectorAllocator< T >::free( T* ptr )
 {
-    g_vectorAllocator.free( ptr );
+    g_globalAllocator.free( ptr );
 }
 
 //

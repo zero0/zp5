@@ -53,7 +53,6 @@ public:
     void garbageCollect();
 
 private:
-    zpBlockAllocator m_textureMemory;
     zpVector< zpTextureInstance* > m_textureInstances;
 
     zpRenderingEngine* m_engine;

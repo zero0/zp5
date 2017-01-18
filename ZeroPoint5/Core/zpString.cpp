@@ -1,15 +1,13 @@
 #include "zpCore.h"
 
-thread_local static zpBlockAllocator g_stringAllocator( ZP_MEMORY_MB( 1 ) );
-
 zp_char* zpStringAllocator::allocate( zp_size_t size )
 {
-    void* str = g_stringAllocator.allocate( size );
+    void* str = g_globalAllocator.allocate( size );
     return static_cast<zp_char*>( str );
 }
 void zpStringAllocator::free( zp_char* ptr )
 {
-    g_stringAllocator.free( ptr );
+    g_globalAllocator.free( ptr );
 }
 
 

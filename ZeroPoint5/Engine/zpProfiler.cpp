@@ -68,7 +68,7 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
     frame->startTime = GetTime();
     frame->endTime = 0;
 
-    frame->startMemory = 0;
+    frame->startMemory = g_globalAllocator.getMemoryUsed();
     frame->endMemory = 0;
 
     return index;
@@ -80,7 +80,7 @@ void zpProfiler::end( zp_size_t index )
     zpProfilerFrame* frame = t->frames + index;
 
     frame->endTime = GetTime();
-    frame->endMemory = 0;
+    frame->endMemory = g_globalAllocator.getMemoryUsed();
 
     if( t->stackSize > 0 )
     {

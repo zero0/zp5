@@ -241,8 +241,7 @@ void zpTextureHandle::set( zp_hash64 instanceId, zpTextureInstance* objectInstan
 //
 
 zpTextureManager::zpTextureManager()
-    : m_textureMemory( sizeof( zpTextureInstance ) * 64 )
-    , m_textureInstances( 64 )
+    : m_textureInstances( 64 )
     , m_engine( ZP_NULL )
     , m_newTextureInstanceId( ZP_TEXTURE_ID_EMPTY )
 {
@@ -284,7 +283,7 @@ zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandl
 
     if( foundTextureInstance == ZP_NULL )
     {
-        foundTextureInstance = new( m_textureMemory.allocate( sizeof( zpTextureInstance ) ) ) zpTextureInstance;
+        foundTextureInstance = new( g_globalAllocator.allocate( sizeof( zpTextureInstance ) ) ) zpTextureInstance;
         m_textureInstances.pushBack( foundTextureInstance );
     }
 
@@ -327,7 +326,7 @@ void zpTextureManager::garbageCollect()
             m_engine->destroyTexture( b->texture );
             b->~zpTextureInstance();
 
-            m_textureMemory.free( b );
+            g_globalAllocator.free( b );
 
             m_textureInstances.erase( i );
 

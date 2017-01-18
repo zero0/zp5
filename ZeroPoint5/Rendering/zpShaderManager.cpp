@@ -121,8 +121,7 @@ void zpShaderHandle::set( zp_hash64 instanceId, zpShaderInstance* objectInstance
 //
 
 zpShaderManager::zpShaderManager()
-    : m_shaderMemory( sizeof( zpShaderInstance ) * 64 )
-    , m_shaderInstances( 64 )
+    : m_shaderInstances( 64 )
     , m_engine( ZP_NULL )
     , m_newShaderInstanceId( ZP_SHADER_ID_EMPTY )
 {
@@ -164,7 +163,7 @@ zp_bool zpShaderManager::getShader( const zp_char* shaderName, zpShaderHandle& s
 
     if( foundShaderInstance == ZP_NULL )
     {
-        foundShaderInstance = new( m_shaderMemory.allocate( sizeof( zpShaderInstance ) ) ) zpShaderInstance;
+        foundShaderInstance = new( g_globalAllocator.allocate( sizeof( zpShaderInstance ) ) ) zpShaderInstance;
         m_shaderInstances.pushBack( foundShaderInstance );
     }
 
@@ -192,7 +191,7 @@ void zpShaderManager::garbageCollect()
             m_engine->destroyShader( b->shader );
             b->~zpShaderInstance();
 
-            m_shaderMemory.free( b );
+            g_globalAllocator.free( b );
 
             m_shaderInstances.erase( i );
 

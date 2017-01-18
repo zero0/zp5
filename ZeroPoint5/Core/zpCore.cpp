@@ -210,3 +210,5 @@ void zp_printfln( const zp_char* text, ... )
 #endif // !ZP_WINDOWS && !ZP_DEBUG
 }
 #endif // !ZP_USE_PRINT
+
+zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );

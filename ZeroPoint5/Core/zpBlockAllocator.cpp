@@ -12,7 +12,22 @@ enum : zp_uint
 
 #define ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( s )  ( ( (s) + ZP_BLOCK_ALLOCATOR_INCREMENT_SIZE ) & ( ~ZP_BLOCK_ALLOCATOR_INCREMENT_MASK ) )
 
-ZP_FORCE_INLINE void _insertAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock )
+ZP_FORCE_INLINE void _insertChunkAfter( zpMemoryChunk* chunk, zpMemoryChunk* newChunk )
+{
+    newChunk->next = chunk->next;
+    newChunk->prev = chunk;
+
+    chunk->next->prev = newChunk;
+    chunk->next = newChunk;
+}
+
+ZP_FORCE_INLINE void _removeChunk( zpMemoryChunk* chunk )
+{
+    chunk->next->prev = chunk->prev;
+    chunk->prev->next = chunk->next;
+}
+
+ZP_FORCE_INLINE void _insertBlockAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock )
 {
     newBlock->next = block->next;
     newBlock->prev = block;
@@ -23,7 +38,7 @@ ZP_FORCE_INLINE void _insertAfter( zpMemoryBlock* block, zpMemoryBlock* newBlock
 
 ZP_FORCE_INLINE void _insertBefore( zpMemoryBlock* node, zpMemoryBlock* newBlock )
 {
-    _insertAfter( node->prev, newBlock );
+    _insertBlockAfter( node->prev, newBlock );
 }
 
 ZP_FORCE_INLINE void _removeBlock( zpMemoryBlock* node )
@@ -133,22 +148,19 @@ void* zpBlockAllocator::allocate( zp_size_t size )
 
     void* ptr = ZP_NULL;
 
+    zpMemoryChunk* head = &m_memoryChunkHead;
     zpMemoryChunk* chunk = m_memoryChunkHead.next;
 
     // find a chunk that has enough space
-    while( chunk->alignedSize < alignedSize )
+    while( chunk->size < alignedSize )
     {
         // if the chunk is the head, create a new chunk
-        if( chunk == &m_memoryChunkHead )
+        if( chunk == head )
         {
             zp_size_t chunkSize = alignedSize < m_minChunkSize ? m_minChunkSize : alignedSize;
             zpMemoryChunk* newChunck = _createChunk( chunkSize );
 
-            newChunck->next = chunk->next;
-            newChunck->prev = chunk;
-
-            chunk->next->prev = newChunck;
-            chunk->next = newChunck;
+            _insertChunkAfter( head, newChunck );
 
             chunk = newChunck;
             break;
@@ -172,6 +184,9 @@ void* zpBlockAllocator::allocate( zp_size_t size )
             if( block->alignedSize == alignedSize )
             {
                 block->size = size;
+                block->chunk = chunk;
+
+                chunk->size -= alignedSize;
 
                 ptr = static_cast<void*>( block + 1 );
                 break;
@@ -187,8 +202,11 @@ void* zpBlockAllocator::allocate( zp_size_t size )
                 zpMemoryBlock* newBlock = reinterpret_cast<zpMemoryBlock*>( b );
                 newBlock->size = size;
                 newBlock->alignedSize = alignedSize;
+                newBlock->chunk = chunk;
 
-                _insertAfter( block, newBlock );
+                chunk->size -= alignedSize;
+
+                _insertBlockAfter( block, newBlock );
 
                 ptr = static_cast<void*>( newBlock + 1 );
                 break;
@@ -214,6 +232,8 @@ void zpBlockAllocator::free( void* ptr )
     zpMemoryBlock* block = static_cast< zpMemoryBlock* >( ptr ) - 1;
 
     m_totalMemoryUsed -= block->size;
+
+    block->chunk->size += block->alignedSize;
 
     block->size = 0;
 

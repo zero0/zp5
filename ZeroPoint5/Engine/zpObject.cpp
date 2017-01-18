@@ -118,12 +118,12 @@ zpObjectHandle::zpObjectHandle( zpObjectHandle&& other )
     , m_objectInstance( other.m_objectInstance )
 {
     addRef();
-    other.invalidate();
+    other.release();
 }
 
 zpObjectHandle::~zpObjectHandle()
 {
-    invalidate();
+    release();
 }
 
 zpObjectHandle& zpObjectHandle::operator=( const zpObjectHandle& other )
@@ -136,7 +136,7 @@ zpObjectHandle& zpObjectHandle::operator=( zpObjectHandle&& other )
 {
     set( other.m_instanceId, other.m_objectInstance );
     
-    other.invalidate();
+    other.release();
 
     return *this;
 }
@@ -182,7 +182,7 @@ void zpObjectHandle::set( zp_hash64 instanceId, zpObjectInstance* objectInstance
     addRef();
 }
 
-void zpObjectHandle::invalidate()
+void zpObjectHandle::release()
 {
     releaseRef();
 
@@ -195,8 +195,7 @@ void zpObjectHandle::invalidate()
 //
 
 zpObjectManager::zpObjectManager()
-    : m_objectMemory( sizeof( zpObjectInstance ) * 4 )
-    , m_activeObjects( 4 )
+    : m_activeObjects( 4 )
     , m_newObjectInstanceId( ZP_OBJECT_ID_EMPTY )
 {
 
@@ -211,7 +210,7 @@ void zpObjectManager::createObject( zpObjectHandle& handle )
 {
     zp_hash64 instanceId = ++m_newObjectInstanceId;
 
-    zpObjectInstance* instance = static_cast<zpObjectInstance*>( m_objectMemory.allocate( sizeof( zpObjectInstance ) ) );
+    zpObjectInstance* instance = static_cast<zpObjectInstance*>( g_globalAllocator.allocate( sizeof( zpObjectInstance ) ) );
     instance->m_object.setInstanceId( instanceId );
     instance->m_refCount = 0;
 
@@ -257,7 +256,7 @@ void zpObjectManager::garbageCollect()
         zpObjectInstance* b = m_activeObjects[ i ];
         if( b->m_refCount == 0 )
         {
-            m_objectMemory.free( b );
+            g_globalAllocator.free( b );
 
             m_activeObjects.erase( i );
 

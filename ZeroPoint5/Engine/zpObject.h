@@ -57,13 +57,13 @@ public:
     zpObject* operator->();
 
     zp_bool isValid() const;
+    void release();
 
 private:
     void addRef();
     void releaseRef();
 
     void set( zp_hash64 instanceId, zpObjectInstance* objectInstance );
-    void invalidate();
 
     zp_hash64 m_instanceId;
     zpObjectInstance* m_objectInstance;
@@ -86,7 +86,6 @@ public:
     void garbageCollect();
 
 private:
-    zpBlockAllocator m_objectMemory;
     zpVector< zpObjectInstance* > m_activeObjects;
 
     zp_hash64 m_newObjectInstanceId;

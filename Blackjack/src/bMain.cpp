@@ -8,7 +8,7 @@
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
-    int r = zpMain( );
+    int r;// = zpMain();
 
     zpBaseApplication app;
     app.setHandle( hInstance );
