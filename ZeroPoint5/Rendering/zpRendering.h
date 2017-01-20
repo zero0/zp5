@@ -247,8 +247,8 @@ class zpRenderingEngine;
 
 #include "zpTextureManager.h"
 #include "zpShaderManager.h"
+#include "zpMaterialManager.h"
 
-#if 1
 struct zpRenderingCommand
 {
     zpRenderingCommandType type;
@@ -269,8 +269,7 @@ struct zpRenderingCommand
     zpRenderBuffer vertexBuffer;
     zpRenderBuffer indexBuffer;
 
-    zpTextureHandle tex;
-    zpShaderHandle shader;
+    zpMaterialHandle material;
 
     // draw instanced data
     zp_hash64 instanceId;
@@ -286,60 +285,6 @@ struct zpRenderingCommand
     zp_float clearDepth;
     zp_int clearStencil;
 };
-#else
-struct zpRenderingCommand
-{
-    zpRenderingCommandType type;
-    zp_uint id;
-    zpRenderingSortKey sortKey;
-
-    union
-    {
-        struct // draw command data
-        {
-            zpMatrix4f transform;
-
-            zpVertexFormat vertexFormat;
-            zpTopology topology;
-
-            zp_size_t vertexOffset;
-            zp_size_t vertexCount;
-            zp_size_t indexOffset;
-            zp_size_t indexCount;
-
-            zpRenderBuffer vertexBuffer;
-            zpRenderBuffer indexBuffer;
-
-            zpTextureHandle tex;
-            zpShaderHandle shader;
-        };
-
-        struct // draw instanced data
-        {
-            zpMatrix4f instanceTransform;
-
-            zp_hash64 instanceId;
-        };
-
-        struct // scissor rect data
-        {
-            zpRecti scissorRect;
-        };
-
-        struct // viewport rect data
-        {
-            zpViewport viewport;
-        };
-
-        struct // clear data
-        {
-            zpColorf clearColor;
-            zp_float clearDepth;
-            zp_int clearStencil;
-        };
-    };
-};
-#endif
 
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"

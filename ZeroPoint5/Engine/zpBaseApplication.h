@@ -54,6 +54,7 @@ protected:
 
     virtual void onGarbageCollection() {}
     virtual void onReloadAllResources() {}
+    virtual void onReloadChangedResources() {}
 
     virtual void onUpdate( zp_float dt, zp_float rt ) {}
     virtual void onLateUpdate( zp_float dt, zp_float rt ) {}
@@ -63,6 +64,7 @@ protected:
 private:
     void runGarbageCollection();
     void runReloadAllResources();
+    void runReloadChangedResources();
 
     void createWindow();
     void destroyWindow();
@@ -73,8 +75,11 @@ private:
     zpRenderingEngine m_renderingEngine;
 
     zpObjectManager m_objectManager;
+    zpTransformComponentManager m_transformComponentManager;
+
     zpTextureManager m_textureManager;
     zpShaderManager m_shaderManager;
+    zpMaterialManager m_materialManager;
 
     zpTime m_time;
 

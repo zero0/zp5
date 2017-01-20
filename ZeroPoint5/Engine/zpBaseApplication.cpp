@@ -93,7 +93,7 @@ void zpBaseApplication::initialize()
 
     onPostInitialize();
 }
-zpTextureHandle t;
+zpMaterialHandle t;
 
 void zpBaseApplication::setup()
 {
@@ -104,8 +104,9 @@ void zpBaseApplication::setup()
     m_renderingEngine.setup( m_hWnd );
     m_textureManager.setup( &m_renderingEngine );
     m_shaderManager.setup( &m_renderingEngine );
+    m_materialManager.setup( &m_shaderManager, &m_textureManager );
 
-    m_textureManager.getTexture( "Assets/uv_checker_large.bmp", t );
+    m_materialManager.getMaterial( "", t );
 
     onPostSetup();
 }
@@ -136,6 +137,7 @@ void zpBaseApplication::teardown()
     t.release();
     runGarbageCollection();
 
+    m_materialManager.teardown();
     m_shaderManager.teardown();
     m_textureManager.teardown();
     m_renderingEngine.teardown();
@@ -208,6 +210,9 @@ void zpBaseApplication::runGarbageCollection()
     ZP_PROFILER_BLOCK();
 
     m_objectManager.garbageCollect();
+    m_transformComponentManager.garbageCollect();
+
+    m_materialManager.garbageCollect();
     m_textureManager.garbageCollect();
     m_shaderManager.garbageCollect();
 
@@ -220,6 +225,16 @@ void zpBaseApplication::runReloadAllResources()
 
     onReloadAllResources();
 }
+
+void zpBaseApplication::runReloadChangedResources()
+{
+    ZP_PROFILER_BLOCK();
+
+    m_textureManager.reloadChangedTextures();
+
+    onReloadChangedResources();
+}
+
 
 void zpBaseApplication::createWindow()
 {
@@ -336,9 +351,13 @@ void zpBaseApplication::processFrame()
         runReloadAllResources();
     }
 
+    runReloadChangedResources();
+
     ZP_PROFILER_START( Update );
     onUpdate( dt, rt );
     ZP_PROFILER_END( Update );
+
+    m_transformComponentManager.update( dt, rt );
 
     ZP_PROFILER_START( LateUpdate );
     onLateUpdate( dt, rt );
@@ -350,7 +369,7 @@ void zpBaseApplication::processFrame()
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixTRS( { .10f, -.10f, 0, 1 }, { 0, 0, 0, 1 }, { 1.5f, .5f, 1.f, 0 } ) );
-    ctx->setTexture( 0, t );
+    ctx->setMaterial( t );
     ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
     ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
     ctx->addVertexData( {  0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
@@ -360,7 +379,7 @@ void zpBaseApplication::processFrame()
     
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
-    ctx->setTexture( 0, t );
+    ctx->setMaterial( t );
     ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
     ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
     ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
@@ -369,6 +388,7 @@ void zpBaseApplication::processFrame()
     ctx->endDrawImmediate();
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    ctx->setMaterial( t );
     ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
@@ -376,6 +396,7 @@ void zpBaseApplication::processFrame()
     ctx->endDrawImmediate();
     
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    ctx->setMaterial( t );
     ctx->addVertexData( { -1,  0, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );

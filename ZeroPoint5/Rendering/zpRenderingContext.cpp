@@ -100,8 +100,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.indexCount = 0;
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
-    cmd.tex = zpTextureHandle();
-    cmd.shader = zpShaderHandle();
+    cmd.material = zpMaterialHandle();
 
     ZP_ALIGN16 zpMatrix4fData transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
@@ -132,18 +131,11 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     cmd->transform = transformData;
 }
 
-void zpRenderingContext::setTexture( zp_uint index, const zpTextureHandle& texture )
+void zpRenderingContext::setMaterial( const zpMaterialHandle& material )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad; sizeof( zpRenderingCommand );
-    cmd->tex = texture;
-}
-
-void zpRenderingContext::setShader( zp_uint index, const zpShaderHandle& shader )
-{
-    ZP_ASSERT( m_currentCommnad != npos, "" );
-    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad; sizeof( zpRenderingCommand );
-    cmd->shader = shader;
+    cmd->material = material;
 }
 
 void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )

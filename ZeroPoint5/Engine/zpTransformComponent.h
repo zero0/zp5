@@ -2,28 +2,57 @@
 #ifndef ZP_TRANSFORM_COMPONENT_H
 #define ZP_TRANSFORM_COMPONENT_H
 
-class zpTransfromComponent;
-class zpTransformComponentManager;
+class zpTransformComponent;
+struct zpTransformComponentInstance;
 
-typedef zpComponentInstance< zpTransfromComponent > zpTransformComponentInstance;
-typedef zpComponentHandle< zpTransfromComponent, zpTransformComponentInstance, zpTransformComponentManager > zpTransformComponentHandle;
-
-class zpTransfromComponent
+class zpTransformComponentHandle
 {
 public:
-    zpTransfromComponent();
-    ~zpTransfromComponent();
+    zpTransformComponentHandle();
+    zpTransformComponentHandle( const zpTransformComponentHandle& other );
+    zpTransformComponentHandle( zpTransformComponentHandle&& other );
+    ~zpTransformComponentHandle();
 
-    void setLocalPosition( zpVector4fParamF position );
-    void setLocalPositionRotation( zpVector4fParamF position, zpQuaternion4f rotation );
-    void setLocalPositionRotationScale( zpVector4fParamF position, zpQuaternion4f rotation, zpVector4f scale );
+    zpTransformComponentHandle& operator=( const zpTransformComponentHandle& other );
+    zpTransformComponentHandle& operator=( zpTransformComponentHandle&& other );
 
-    zpVector4f getLocalPosition() const;
-    zpQuaternion4f getLocalRotation() const;
-    zpVector4f getLocalScale() const;
+    const zpTransformComponent* operator->() const;
+    zpTransformComponent* operator->();
 
-    zpMatrix4f getLocalMatrix() const;
-    zpMatrix4f getWorldMatrix() const;
+    zp_bool isValid() const;
+    void release();
+
+private:
+    void addRef();
+    void releaseRef();
+
+    void set( zp_hash64 instanceId, zpTransformComponentInstance* objectInstance );
+
+    zp_hash64 m_instanceId;
+    zpTransformComponentInstance* m_transformInstance;
+
+    friend class zpTransformComponentManager;
+};
+
+class zpTransformComponent
+{
+public:
+    zpTransformComponent();
+    ~zpTransformComponent();
+
+    void setParentObject( const zpObjectHandle& parent );
+    const zpObjectHandle& getParentObject() const;
+
+    void setLocalPosition( const zpVector4fData& position );
+    void setLocalPositionRotation( const zpVector4fData& position, const zpQuaternion4fData& rotation );
+    void setLocalPositionRotationScale( const zpVector4fData& position, const zpQuaternion4fData& rotation, const zpVector4fData& scale );
+
+    const zpVector4fData& getLocalPosition() const;
+    const zpQuaternion4fData& getLocalRotation() const;
+    const zpVector4fData& getLocalScale() const;
+
+    const zpMatrix4fData& getLocalMatrix() const;
+    const zpMatrix4fData& getWorldMatrix() const;
 
     const zpTransformComponentHandle& getParentTransform() const;
     zpTransformComponentHandle& getParentTransform();
@@ -34,21 +63,32 @@ public:
     zp_bool isEnabled() const;
     void setEnabled( zp_bool enabled );
 
-private:
-    zpVector4f m_localPosition;
-    zpQuaternion4f m_localRotation;
-    zpVector4f m_localScale;
+    zp_hash64 getInstanceId() const;
 
-    zpMatrix4f m_localMatrix;
-    zpMatrix4f m_worldMatrix;
+private:
+    void setInstanceId( zp_hash64 instanceId );
+
+    zpVector4fData m_localPosition;
+    zpQuaternion4fData m_localRotation;
+    zpVector4fData m_localScale;
+
+    zpMatrix4fData m_localMatrix;
+    zpMatrix4fData m_worldMatrix;
 
     zp_hash64 m_instanceID;
     zp_ulong m_flags;
 
     zpTransformComponentHandle m_parentTransfrom;
     zpObjectHandle m_parentObject;
+
+    friend class zpTransformComponentManager;
 };
 
+struct zpTransformComponentInstance
+{
+    zpTransformComponent transform;
+    zp_size_t refCount;
+};
 
 class zpTransformComponentManager
 {
@@ -58,7 +98,7 @@ public:
 
     void update( zp_float dt, zp_float rt );
 
-    void create( zpTransformComponentHandle& handle );
+    void createTransformComponent( zpTransformComponentHandle& handle );
 
     void garbageCollect();
 
@@ -66,6 +106,7 @@ public:
 
 private:
     zpVector< zpTransformComponentInstance* > m_activeComponents;
+    zp_size_t m_newTransformComponentInstanceId;
 };
 
 #endif // !ZP_TRANSFORM_COMPONENT_H

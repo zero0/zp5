@@ -47,6 +47,8 @@ public:
     zp_size_t write( const void* data, zp_size_t offset, zp_size_t length ) const;
     zp_size_t read( void* data, zp_size_t offset, zp_size_t length ) const;
 
+    static zp_time_t lastModifiedTime( const zp_char* filenname );
+
 private:
     zpFile();
 

@@ -383,11 +383,28 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 
     glUniformMatrix4fv( glGetUniformLocation( prog, "_ObjectToWorld" ), 1, GL_FALSE, cmd->transform.m );
 
-    if( cmd->tex.isValid() && cmd->tex->texture.index > 0 )
+    if( cmd->material.isValid() )
     {
-        glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, cmd->tex->texture.index );
-        glUniform1i( glGetUniformLocation( prog, "_MainTex" ), 0 );
+        GLint c = glGetUniformLocation( prog, "_Color" );
+        if( c > 0 )
+        {
+            glUniform4fv( c, 1, cmd->material->color.rgba );
+        }
+
+        if( cmd->material->mainTex.isValid() )
+        {
+            GLint t = glGetUniformLocation( prog, "_MainTex" );
+            GLint st = glGetUniformLocation( prog, "_MainTexST" );
+
+            glActiveTexture( GL_TEXTURE0 );
+            glBindTexture( GL_TEXTURE_2D, cmd->material->mainTex->texture.index );
+            glUniform1i( t, 0 );
+
+            if( st > 0 )
+            {
+                glUniform4fv( st, 1, cmd->material->mainTexST.m );
+            }
+        }
     }
 }
 
@@ -415,9 +432,12 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );
 
-    if( cmd->tex.isValid() && cmd->tex->texture.index > 0 )
+    if( cmd->material.isValid() )
     {
-        glBindTexture( GL_TEXTURE_2D, 0 );
+        if( cmd->material->mainTex.isValid() )
+        {
+            glBindTexture( GL_TEXTURE_2D, 0 );
+        }
     }
 
     glUseProgram( 0 );

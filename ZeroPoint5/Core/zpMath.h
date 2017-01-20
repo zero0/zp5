@@ -129,12 +129,26 @@ typedef const zpMatrix4f&       zpMatrix4fParamC;
 
 struct zpVector4fData
 {
-    zp_float x, y, z, w;
+    union
+    {
+        struct
+        {
+            zp_float x, y, z, w;
+        };
+        zp_float m[ 4 ];
+    };
 };
 
 struct zpQuaternion4fData
 {
-    zp_float x, y, z, w;
+    union
+    {
+        struct
+        {
+            zp_float x, y, z, w;
+        };
+        zp_float m[ 4 ];
+    };
 };
 
 struct zpMatrix4fData
@@ -164,7 +178,14 @@ struct zpRecti
 
 struct zpColorf
 {
-    zp_float r, g, b, a;
+    union
+    {
+        zp_float rgba[4];
+        struct
+        {
+            zp_float r, g, b, a;
+        };
+    };
 };
 
 struct zpColor32i

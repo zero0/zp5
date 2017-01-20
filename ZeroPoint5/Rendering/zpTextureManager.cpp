@@ -11,6 +11,7 @@ struct zpTextureData
     zpTextureDimension textureDimension;
     zpTextureType type;
     zpDisplayFormat format;
+    zp_time_t lastModifiedTime;
 
     zpDataBuffer data;
 };
@@ -29,6 +30,8 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     {
         return -1;
     }
+
+    textureData.lastModifiedTime = zpFile::lastModifiedTime( filepath );
 
     bmpFile.read( header, 0, sizeof( header ) );
 
@@ -105,6 +108,8 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     textureData.height = header.height;
     textureData.textureDimension = ZP_TEXTURE_DIMENSION_2D;
     textureData.type = ZP_TEXTURE_TYPE_TEXTURE;
+
+    textureData.lastModifiedTime = zpFile::lastModifiedTime( filepath );
 
     switch( header.bitsPerPixel )
     {
@@ -307,6 +312,7 @@ zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandl
                              textureData.data.getBuffer(), 
                              foundTextureInstance->texture );
 
+    foundTextureInstance->lastModifiedTime = textureData.lastModifiedTime;
     foundTextureInstance->refCount = 0;
     foundTextureInstance->instanceId = ++m_newTextureInstanceId;
     foundTextureInstance->textureName = textureName;
@@ -332,6 +338,49 @@ void zpTextureManager::garbageCollect()
 
             --i;
             --imax;
+        }
+    }
+}
+
+void zpTextureManager::reloadChangedTextures()
+{
+    zpTextureInstance** b = m_textureInstances.begin();
+    zpTextureInstance** e = m_textureInstances.end();
+    for( ; b != e; ++b )
+    {
+        zpTextureInstance* t = ( *b );
+        if( t->refCount > 0 )
+        {
+            const zp_char* textureName = t->textureName.str();
+            zp_time_t lastModTime = zpFile::lastModifiedTime( textureName );
+            if( t->lastModifiedTime != lastModTime )
+            {
+                t->lastModifiedTime = lastModTime;
+
+                zpTextureData textureData;
+                zp_size_t len = zp_strlen( textureName );
+                if( zp_stricmp( textureName + ( len - 4 ), ".tga" ) == 0 )
+                {
+                    LoadTGATextureData( textureName, textureData );
+                }
+                else if( zp_stricmp( textureName + ( len - 4 ), ".bmp" ) == 0 )
+                {
+                    LoadBMPTextureData( textureName, textureData );
+                }
+
+                zpTexture tex = t->texture;
+
+                m_engine->createTexture( textureData.width,
+                                         textureData.height,
+                                         0,
+                                         textureData.format,
+                                         textureData.textureDimension,
+                                         textureData.type,
+                                         textureData.data.getBuffer(),
+                                         t->texture );
+
+                m_engine->destroyTexture( tex );
+            }
         }
     }
 }

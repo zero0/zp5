@@ -1,6 +1,7 @@
 #include "zpCore.h"
 #include <stdio.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 const zp_char* g_zpFileModeToString[] =
 {
@@ -81,4 +82,15 @@ zp_size_t zpFile::read( void* data, zp_size_t offset, zp_size_t length ) const
 #endif
 
     return r;
+}
+
+zp_time_t zpFile::lastModifiedTime( const zp_char* filepath )
+{
+    zp_time_t lastModifiedTime;
+#if ZP_WINDOWS
+    struct stat fileStat;
+    zp_int r = stat( filepath, &fileStat );
+    lastModifiedTime = static_cast<zp_time_t>( fileStat.st_mtime );
+#endif
+    return lastModifiedTime;
 }

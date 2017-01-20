@@ -14,10 +14,18 @@ struct zpPlatform
     PlatformFreeFunc free;
 };
 
-#include "zpObject.h"
+
+#include "zpObjectManager.h"
+
 #include "zpComponent.h"
+
+#include "zpTransformComponent.h"
+
+#include "zpAllComponents.h"
+
+#include "zpObject.h"
+#include "zpScene.h"
 #include "zpBaseApplication.h"
 #include "zpMain.h"
-#include "zpTransformComponent.h"
 
 #endif // !ZP_ENGINE_H

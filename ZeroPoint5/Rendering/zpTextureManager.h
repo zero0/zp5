@@ -4,10 +4,11 @@
 
 struct zpTextureInstance
 {
-    zpTexture texture;
-    zp_size_t refCount;
-    zp_hash64 instanceId;
     zpString textureName;
+    zp_size_t refCount;
+    zp_time_t lastModifiedTime;
+    zp_hash64 instanceId;
+    zpTexture texture;
 };
 
 class zpTextureHandle
@@ -51,6 +52,7 @@ public:
     zp_bool getTexture( const zp_char* textureName, zpTextureHandle& texture );
 
     void garbageCollect();
+    void reloadChangedTextures();
 
 private:
     zpVector< zpTextureInstance* > m_textureInstances;

@@ -4,12 +4,12 @@
 
 struct zpShaderInstance
 {
-    zpShader shader;
+    zpString shaderName;
     zp_size_t refCount;
     zp_hash64 instanceId;
-    zpString shaderName;
+    zp_time_t lastModifiedTime;
+    zpShader shader;
 };
-
 
 class zpShaderHandle
 {
