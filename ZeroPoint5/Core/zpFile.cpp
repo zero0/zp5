@@ -40,7 +40,7 @@ zpFile::zpFile( const zp_char* filename, zpFileMode filemode )
 
     m_fileHandle = f;
 
-    m_result = err == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_NOT_FOUND;
+    m_result = err == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_ON_OPEN;
 }
 
 zpFile::~zpFile()

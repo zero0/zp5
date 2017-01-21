@@ -6,8 +6,8 @@ enum zpFileResult : zp_uint
 {
     ZP_FILE_SUCCESS = 0,
 
-    ZP_FILE_ERROR_NOT_FOUND = (zp_uint)-1,
-    ZP_FILE_ERROR_ON_CLOSE = (zp_uint)-2,
+    ZP_FILE_ERROR_ON_OPEN,
+    ZP_FILE_ERROR_ON_CLOSE,
 };
 
 enum zpFileMode : zp_uint

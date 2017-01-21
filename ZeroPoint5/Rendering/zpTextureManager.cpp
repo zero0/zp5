@@ -16,7 +16,7 @@ struct zpTextureData
     zpDataBuffer data;
 };
 
-zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
+zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData* textureData )
 {
     zp_int result = 0;
     zp_byte header[ 54 ];
@@ -28,16 +28,16 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
     zpFile bmpFile( filepath, ZP_FILE_MODE_BINARY_READ );
     if( bmpFile.getResult() != ZP_FILE_SUCCESS )
     {
-        return -1;
+        return 1;
     }
 
-    textureData.lastModifiedTime = zpFile::lastModifiedTime( filepath );
+    textureData->lastModifiedTime = zpFile::lastModifiedTime( filepath );
 
     bmpFile.read( header, 0, sizeof( header ) );
 
     if( header[ 0 ] != 'B' && header[ 1 ] != 'M' )
     {
-        return -1;
+        return 1;
     }
 
     dataPos = *reinterpret_cast<zp_uint*>( header + 0x0A );
@@ -55,21 +55,21 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData& textureData )
         dataPos = 54;
     }
 
-    textureData.width = width;
-    textureData.height = height;
-    textureData.textureDimension = ZP_TEXTURE_DIMENSION_2D;
-    textureData.type = ZP_TEXTURE_TYPE_TEXTURE;
-    textureData.format = ZP_DISPLAY_FORMAT_RGB8_UINT;
-    textureData.data.reserve( imageSize );
+    textureData->width = width;
+    textureData->height = height;
+    textureData->textureDimension = ZP_TEXTURE_DIMENSION_2D;
+    textureData->type = ZP_TEXTURE_TYPE_TEXTURE;
+    textureData->format = ZP_DISPLAY_FORMAT_RGB8_UINT;
+    textureData->data.reserve( imageSize );
 
     zp_size_t len;
     zp_byte buff[ 8192 ];
     while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
-        textureData.data.write( buff, 0, len );
+        textureData->data.write( buff, 0, len );
     }
 
-    zp_byte* d = textureData.data.getBuffer();
+    zp_byte* d = textureData->data.getBuffer();
 
     // swap BGR to RGB
     for( zp_size_t i = 0; i < imageSize; i += bytesPerPixel )
@@ -101,8 +101,13 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     };
     tgaHeader header;
 
-    zpFile bmpFile( filepath, ZP_FILE_MODE_BINARY_READ );
-    bmpFile.read( &header, 0, sizeof( tgaHeader ) );
+    zpFile tgaFile( filepath, ZP_FILE_MODE_BINARY_READ );
+    if( tgaFile.getResult() != ZP_FILE_SUCCESS )
+    {
+        return 1;
+    }
+
+    tgaFile.read( &header, 0, sizeof( tgaHeader ) );
 
     textureData.width = header.width;
     textureData.height = header.height;
@@ -122,7 +127,7 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
             break;
 
         default:
-            return -1;
+            return 1;
     }
 
     const zp_size_t bytesPerPixel = header.bitsPerPixel / 8;
@@ -131,7 +136,7 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
 
     zp_size_t len;
     zp_byte buff[ 8192 ];
-    while( ( len = bmpFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
+    while( ( len = tgaFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
     {
         textureData.data.write( buff, 0, len );
     }
@@ -286,21 +291,31 @@ zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandl
         }
     }
 
-    if( foundTextureInstance == ZP_NULL )
-    {
-        foundTextureInstance = new( g_globalAllocator.allocate( sizeof( zpTextureInstance ) ) ) zpTextureInstance;
-        m_textureInstances.pushBack( foundTextureInstance );
-    }
-
+    zp_int r = 0;
     zpTextureData textureData;
     zp_size_t len = zp_strlen( textureName );
     if( zp_stricmp( textureName + ( len - 4 ), ".tga" ) == 0 )
     {
-        LoadTGATextureData( textureName, textureData );
+        r = LoadTGATextureData( textureName, textureData );
     }
     else if( zp_stricmp( textureName + ( len - 4 ), ".bmp" ) == 0 )
     {
-        LoadBMPTextureData( textureName, textureData );
+        r = LoadBMPTextureData( textureName, &textureData );
+    }
+    else
+    {
+        ZP_ASSERT( false, "" );
+    }
+
+    if( r )
+    {
+        return false;
+    }
+
+    if( foundTextureInstance == ZP_NULL )
+    {
+        foundTextureInstance = new( g_globalAllocator.allocate( sizeof( zpTextureInstance ) ) ) zpTextureInstance;
+        m_textureInstances.pushBack( foundTextureInstance );
     }
 
     m_engine->createTexture( textureData.width,
@@ -355,21 +370,30 @@ void zpTextureManager::reloadChangedTextures()
             zp_time_t lastModTime = zpFile::lastModifiedTime( textureName );
             if( t->lastModifiedTime != lastModTime )
             {
-                t->lastModifiedTime = lastModTime;
-
+                zp_int r = 0;
                 zpTextureData textureData;
                 zp_size_t len = zp_strlen( textureName );
                 if( zp_stricmp( textureName + ( len - 4 ), ".tga" ) == 0 )
                 {
-                    LoadTGATextureData( textureName, textureData );
+                    r = LoadTGATextureData( textureName, textureData );
                 }
                 else if( zp_stricmp( textureName + ( len - 4 ), ".bmp" ) == 0 )
                 {
-                    LoadBMPTextureData( textureName, textureData );
+                    r = LoadBMPTextureData( textureName, &textureData );
+                }
+                else
+                {
+                    ZP_ASSERT( false, "" );
+                }
+                
+                if( r )
+                {
+                    continue;
                 }
 
-                zpTexture tex = t->texture;
+                t->lastModifiedTime = lastModTime;
 
+                zpTexture tex = t->texture;
                 m_engine->createTexture( textureData.width,
                                          textureData.height,
                                          0,
