@@ -23,7 +23,6 @@ struct zpMaterialInstance
     zp_hash64 instanceId;
     zp_time_t lastModifiedTime;
     zpMaterial material;
-
 };
 
 class zpMaterialHandle
@@ -64,9 +63,12 @@ public:
     void setup( zpShaderManager* shaderManager, zpTextureManager* textureManager );
     void teardown();
 
+    zp_bool loadMaterial( const zp_char* materialFile, zpMaterialHandle& material );
     zp_bool getMaterial( const zp_char* materialName, zpMaterialHandle& material );
 
     void garbageCollect();
+    void reloadChangedMaterials();
+
 
 private:
     zpVector< zpMaterialInstance* > m_materialInstances;

@@ -270,7 +270,7 @@ void zpTextureManager::teardown()
     m_engine = ZP_NULL;
 }
 
-zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandle& texture )
+zp_bool zpTextureManager::loadTexture( const zp_char* textureName, zpTextureHandle& texture )
 {
     zpTextureInstance* foundTextureInstance = ZP_NULL;
     zpTextureInstance** b = m_textureInstances.begin();
@@ -363,7 +363,7 @@ void zpTextureManager::reloadChangedTextures()
     zpTextureInstance** e = m_textureInstances.end();
     for( ; b != e; ++b )
     {
-        zpTextureInstance* t = ( *b );
+        zpTextureInstance* t = *b;
         if( t->refCount > 0 )
         {
             const zp_char* textureName = t->textureName.str();

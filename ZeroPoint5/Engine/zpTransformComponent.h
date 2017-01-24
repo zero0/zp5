@@ -90,6 +90,15 @@ struct zpTransformComponentInstance
     zp_size_t refCount;
 };
 
+struct zpTransformComponentDesc
+{
+    zpVector4fData localPosition;
+    zpQuaternion4fData localRotation;
+    zpVector4fData localScale;
+
+    zpObjectHandle parentObject;
+};
+
 class zpTransformComponentManager
 {
 public:
@@ -99,6 +108,7 @@ public:
     void update( zp_float dt, zp_float rt );
 
     void createTransformComponent( zpTransformComponentHandle& handle );
+    void createTransformComponent( zpTransformComponentDesc* desc, zpTransformComponentHandle& handle );
 
     void garbageCollect();
 

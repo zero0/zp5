@@ -106,7 +106,11 @@ void zpBaseApplication::setup()
     m_shaderManager.setup( &m_renderingEngine );
     m_materialManager.setup( &m_shaderManager, &m_textureManager );
 
-    m_materialManager.getMaterial( "", t );
+    m_materialManager.getMaterial( "tempMaterial", t );
+
+    t->color = { 1, 1, 1, 1 };
+    t->mainTexST = { 1, 1, 0, 0 };
+    m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", t->mainTex );
 
     onPostSetup();
 }
@@ -230,6 +234,7 @@ void zpBaseApplication::runReloadChangedResources()
 {
     ZP_PROFILER_BLOCK();
 
+    m_materialManager.reloadChangedMaterials();
     m_textureManager.reloadChangedTextures();
 
     onReloadChangedResources();

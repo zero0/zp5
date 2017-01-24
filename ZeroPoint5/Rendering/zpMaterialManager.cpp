@@ -1,9 +1,9 @@
 #include "zpRendering.h"
 #include <new>
 
-
-const zp_hash64 ZP_MATERIAL_ID_INVALID = (zp_hash64)-1;
+const zp_hash64 ZP_MATERIAL_ID_INVALID = static_cast<zp_hash64>( -1 );
 const zp_hash64 ZP_MATERIAL_ID_EMPTY = 0;
+const zp_time_t ZP_MATERIAL_NOT_FILE = static_cast<zp_time_t>( -1 );
 
 struct zpMaterialData
 {
@@ -161,6 +161,62 @@ void zpMaterialManager::teardown()
     m_textureManager = ZP_NULL;
 }
 
+zp_bool zpMaterialManager::loadMaterial( const zp_char* materialFile, zpMaterialHandle& material )
+{
+    zpMaterialInstance* foundMaterialInstance = ZP_NULL;
+    zpMaterialInstance** b = m_materialInstances.begin();
+    zpMaterialInstance** e = m_materialInstances.end();
+    for( ; b != e; ++b )
+    {
+        zpMaterialInstance* t = ( *b );
+        if( t->refCount == 0 )
+        {
+            t->material.shader.release();
+            t->material.mainTex.release();
+            t->material.normTex.release();
+            t->material.specTex.release();
+
+            foundMaterialInstance = t;
+            break;
+        }
+        else if( zp_strcmp( materialFile, t->materialName.str() ) == 0 )
+        {
+            material.set( t->instanceId, t );
+            return true;
+        }
+    }
+
+    if( foundMaterialInstance == ZP_NULL )
+    {
+        foundMaterialInstance = new( g_globalAllocator.allocate( sizeof( zpMaterialInstance ) ) ) zpMaterialInstance;
+        m_materialInstances.pushBack( foundMaterialInstance );
+    }
+
+    zpMaterialData materialData;
+    LoadMaterialData( materialFile, materialData );
+
+    foundMaterialInstance->material.color = materialData.color;
+
+    foundMaterialInstance->material.mainTexST = materialData.mainTexST;
+    foundMaterialInstance->material.specTexST = materialData.specTexST;
+    foundMaterialInstance->material.normTexST = materialData.normTexST;
+
+    if( !materialData.shaderName.isEmpty() ) m_shaderManager->getShader( materialData.shaderName.str(), foundMaterialInstance->material.shader );
+
+    if( !materialData.mainTexName.isEmpty() ) m_textureManager->loadTexture( materialData.mainTexName.str(), foundMaterialInstance->material.mainTex );
+    if( !materialData.specTexName.isEmpty() ) m_textureManager->loadTexture( materialData.specTexName.str(), foundMaterialInstance->material.specTex );
+    if( !materialData.normTexName.isEmpty() ) m_textureManager->loadTexture( materialData.normTexName.str(), foundMaterialInstance->material.normTex );
+
+    foundMaterialInstance->lastModifiedTime = materialData.lastModifiedTime;
+    foundMaterialInstance->refCount = 0;
+    foundMaterialInstance->instanceId = ++m_newMaterialInstanceId;
+    foundMaterialInstance->materialName = materialFile;
+
+    material.set( foundMaterialInstance->instanceId, foundMaterialInstance );
+
+    return true;
+}
+
 zp_bool zpMaterialManager::getMaterial( const zp_char* materialName, zpMaterialHandle& material )
 {
     zpMaterialInstance* foundMaterialInstance = ZP_NULL;
@@ -192,22 +248,7 @@ zp_bool zpMaterialManager::getMaterial( const zp_char* materialName, zpMaterialH
         m_materialInstances.pushBack( foundMaterialInstance );
     }
 
-    zpMaterialData materialData;
-    LoadMaterialData( materialName, materialData );
-
-    foundMaterialInstance->material.color = materialData.color;
-
-    foundMaterialInstance->material.mainTexST = materialData.mainTexST;
-    foundMaterialInstance->material.specTexST = materialData.specTexST;
-    foundMaterialInstance->material.normTexST = materialData.normTexST;
-
-    if( !materialData.shaderName.isEmpty() ) m_shaderManager->getShader( materialData.shaderName.str(), foundMaterialInstance->material.shader );
-
-    if( !materialData.mainTexName.isEmpty() ) m_textureManager->getTexture( materialData.mainTexName.str(), foundMaterialInstance->material.mainTex );
-    if( !materialData.specTexName.isEmpty() ) m_textureManager->getTexture( materialData.specTexName.str(), foundMaterialInstance->material.specTex );
-    if( !materialData.normTexName.isEmpty() ) m_textureManager->getTexture( materialData.normTexName.str(), foundMaterialInstance->material.normTex );
-
-    foundMaterialInstance->lastModifiedTime = materialData.lastModifiedTime;
+    foundMaterialInstance->lastModifiedTime = ZP_MATERIAL_NOT_FILE;
     foundMaterialInstance->refCount = 0;
     foundMaterialInstance->instanceId = ++m_newMaterialInstanceId;
     foundMaterialInstance->materialName = materialName;
@@ -232,6 +273,49 @@ void zpMaterialManager::garbageCollect()
 
             --i;
             --imax;
+        }
+    }
+}
+
+void zpMaterialManager::reloadChangedMaterials()
+{
+    zpMaterialInstance** b = m_materialInstances.begin();
+    zpMaterialInstance** e = m_materialInstances.end();
+    for( ; b != e; ++b )
+    {
+        zpMaterialInstance* m = *b;
+        if( m->refCount > 0 && m->lastModifiedTime != ZP_MATERIAL_NOT_FILE )
+        {
+            const zp_char* materialName = m->materialName.str();
+            zp_time_t lastModTime = zpFile::lastModifiedTime( materialName );
+            if( m->lastModifiedTime != lastModTime )
+            {
+                zp_int r;
+                zpMaterialData materialData;
+                r = LoadMaterialData( materialName, materialData );
+
+                if( r )
+                {
+                    continue;
+                }
+
+                m->material.color = materialData.color;
+
+                m->material.mainTexST = materialData.mainTexST;
+                m->material.specTexST = materialData.specTexST;
+                m->material.normTexST = materialData.normTexST;
+
+                m->material.shader.release();
+                m->material.mainTex.release();
+                m->material.normTex.release();
+                m->material.specTex.release();
+
+                if( !materialData.shaderName.isEmpty() ) m_shaderManager->getShader( materialData.shaderName.str(), m->material.shader );
+
+                if( !materialData.mainTexName.isEmpty() ) m_textureManager->loadTexture( materialData.mainTexName.str(), m->material.mainTex );
+                if( !materialData.specTexName.isEmpty() ) m_textureManager->loadTexture( materialData.specTexName.str(), m->material.specTex );
+                if( !materialData.normTexName.isEmpty() ) m_textureManager->loadTexture( materialData.normTexName.str(), m->material.normTex );
+            }
         }
     }
 }
