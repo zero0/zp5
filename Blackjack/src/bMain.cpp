@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
+
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
