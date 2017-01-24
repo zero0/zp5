@@ -6,6 +6,7 @@
 #include <Windows.h>
 
 zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
+zpProfiler g_profiler;
 
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS

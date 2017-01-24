@@ -116,6 +116,4 @@ const zpProfilerFrame* zpProfiler::getPreviousFrameEnd() const
     return t->frames + t->size;
 }
 
-zpProfiler g_profiler;
-
 #endif
