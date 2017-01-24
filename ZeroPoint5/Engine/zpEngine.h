@@ -14,6 +14,7 @@ struct zpPlatform
     PlatformFreeFunc free;
 };
 
+#include "zpInput.h"
 
 #include "zpObjectManager.h"
 

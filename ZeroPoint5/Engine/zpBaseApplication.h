@@ -38,6 +38,8 @@ public:
     void reloadAllResouces();
 
     void setApplicationFocus( zp_bool focused );
+    
+    zpInput* getInput();
 
 protected:
     virtual void onPreInitialize() {}
@@ -71,6 +73,8 @@ private:
 
     zp_bool processMessages();
     void processFrame();
+
+    zpInput m_input;
 
     zpRenderingEngine m_renderingEngine;
 

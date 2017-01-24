@@ -18,22 +18,31 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
         {
             LPMINMAXINFO lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
             lpMMI->ptMinTrackSize = { 300, 300 };
-        }
-            break;
+        } break;
 
         case WM_KILLFOCUS:
         {
             zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
             app->setApplicationFocus( false );
-        }
-            break;
+        } break;
 
         case WM_SETFOCUS:
         {
             zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
             app->setApplicationFocus( true );
-        }
-            break;
+        } break;
+
+        case WM_KEYDOWN:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setKeyState( wParam, false );
+        } break;
+
+        case WM_KEYUP:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setKeyState( wParam, true );
+        } break;
     }
 
     return DefWindowProc( hWnd, uMessage, wParam, lParam );
@@ -209,6 +218,11 @@ void zpBaseApplication::setApplicationFocus( zp_bool focus )
     m_isFocused = focus;
 }
 
+zpInput* zpBaseApplication::getInput()
+{
+    return &m_input;
+}
+
 void zpBaseApplication::runGarbageCollection()
 {
     ZP_PROFILER_BLOCK();
@@ -358,11 +372,17 @@ void zpBaseApplication::processFrame()
 
     runReloadChangedResources();
 
+    ZP_PROFILER_START( InputPoll );
+    m_input.poll();
+    ZP_PROFILER_END( InputPoll );
+
     ZP_PROFILER_START( Update );
     onUpdate( dt, rt );
     ZP_PROFILER_END( Update );
 
+    ZP_PROFILER_START( TransformUpdate );
     m_transformComponentManager.update( dt, rt );
+    ZP_PROFILER_END( TransformUpdate );
 
     ZP_PROFILER_START( LateUpdate );
     onLateUpdate( dt, rt );
