@@ -1,8 +1,9 @@
 #include "zpRendering.h"
 #include <new>
 
-const zp_hash64 ZP_TEXTURE_ID_INVALID = (zp_hash64)-1;
+const zp_hash64 ZP_TEXTURE_ID_INVALID = static_cast<zp_hash64>( -1 );
 const zp_hash64 ZP_TEXTURE_ID_EMPTY = 0;
+const zp_time_t ZP_TEXTURE_NOT_FILE = static_cast<zp_time_t>( -1 );
 
 struct zpTextureData
 {
@@ -270,7 +271,7 @@ void zpTextureManager::teardown()
     m_engine = ZP_NULL;
 }
 
-zp_bool zpTextureManager::loadTexture( const zp_char* textureName, zpTextureHandle& texture )
+zp_bool zpTextureManager::getTexture( const zp_char* textureName, zpTextureHandle& texture )
 {
     zpTextureInstance* foundTextureInstance = ZP_NULL;
     zpTextureInstance** b = m_textureInstances.begin();
@@ -290,17 +291,54 @@ zp_bool zpTextureManager::loadTexture( const zp_char* textureName, zpTextureHand
             return true;
         }
     }
+    
+    if( foundTextureInstance == ZP_NULL )
+    {
+        foundTextureInstance = new( g_globalAllocator.allocate( sizeof( zpTextureInstance ) ) ) zpTextureInstance;
+        m_textureInstances.pushBack( foundTextureInstance );
+    }
+
+    foundTextureInstance->lastModifiedTime = ZP_TEXTURE_NOT_FILE;
+    foundTextureInstance->refCount = 0;
+    foundTextureInstance->instanceId = ++m_newTextureInstanceId;
+    foundTextureInstance->textureName = textureName;
+
+    texture.set( foundTextureInstance->instanceId, foundTextureInstance );
+
+    return true;
+}
+
+zp_bool zpTextureManager::loadTexture( const zp_char* textureFile, zpTextureHandle& texture )
+{
+    zpTextureInstance* foundTextureInstance = ZP_NULL;
+    zpTextureInstance** b = m_textureInstances.begin();
+    zpTextureInstance** e = m_textureInstances.end();
+    for( ; b != e; ++b )
+    {
+        zpTextureInstance* t = ( *b );
+        if( t->refCount == 0 )
+        {
+            m_engine->destroyTexture( t->texture );
+            foundTextureInstance = t;
+            break;
+        }
+        else if( zp_strcmp( textureFile, t->textureName.str() ) == 0 )
+        {
+            texture.set( t->instanceId, t );
+            return true;
+        }
+    }
 
     zp_int r = 0;
     zpTextureData textureData;
-    zp_size_t len = zp_strlen( textureName );
-    if( zp_stricmp( textureName + ( len - 4 ), ".tga" ) == 0 )
+    zp_size_t len = zp_strlen( textureFile );
+    if( zp_stricmp( textureFile + ( len - 4 ), ".tga" ) == 0 )
     {
-        r = LoadTGATextureData( textureName, textureData );
+        r = LoadTGATextureData( textureFile, textureData );
     }
-    else if( zp_stricmp( textureName + ( len - 4 ), ".bmp" ) == 0 )
+    else if( zp_stricmp( textureFile + ( len - 4 ), ".bmp" ) == 0 )
     {
-        r = LoadBMPTextureData( textureName, &textureData );
+        r = LoadBMPTextureData( textureFile, &textureData );
     }
     else
     {
@@ -330,7 +368,7 @@ zp_bool zpTextureManager::loadTexture( const zp_char* textureName, zpTextureHand
     foundTextureInstance->lastModifiedTime = textureData.lastModifiedTime;
     foundTextureInstance->refCount = 0;
     foundTextureInstance->instanceId = ++m_newTextureInstanceId;
-    foundTextureInstance->textureName = textureName;
+    foundTextureInstance->textureName = textureFile;
 
     texture.set( foundTextureInstance->instanceId, foundTextureInstance );
 
@@ -364,7 +402,7 @@ void zpTextureManager::reloadChangedTextures()
     for( ; b != e; ++b )
     {
         zpTextureInstance* t = *b;
-        if( t->refCount > 0 )
+        if( t->refCount > 0 && t->lastModifiedTime != ZP_TEXTURE_NOT_FILE )
         {
             const zp_char* textureName = t->textureName.str();
             zp_time_t lastModTime = zpFile::lastModifiedTime( textureName );

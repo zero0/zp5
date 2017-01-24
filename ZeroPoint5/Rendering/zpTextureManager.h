@@ -49,7 +49,8 @@ public:
     void setup( zpRenderingEngine* engine );
     void teardown();
 
-    zp_bool loadTexture( const zp_char* textureName, zpTextureHandle& texture );
+    zp_bool getTexture( const zp_char* textureName, zpTextureHandle& texture );
+    zp_bool loadTexture( const zp_char* textureFile, zpTextureHandle& texture );
 
     void garbageCollect();
     void reloadChangedTextures();
