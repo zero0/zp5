@@ -58,6 +58,7 @@ protected:
     virtual void onReloadAllResources() {}
     virtual void onReloadChangedResources() {}
 
+    virtual void onHandleInput() {}
     virtual void onUpdate( zp_float dt, zp_float rt ) {}
     virtual void onLateUpdate( zp_float dt, zp_float rt ) {}
 

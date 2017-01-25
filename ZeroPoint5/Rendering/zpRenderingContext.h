@@ -27,10 +27,10 @@ public:
     void setTransform( zpMatrix4fParamF transform );
     void setMaterial( const zpMaterialHandle& material );
 
-    void addVertex( zpVector4fParamF pos, const zpColorf& color );
+    void addVertex( zpVector4fParamF pos, const zpColor32i& color );
 
-    void addVertexData( const zpVector4fData& pos, const zpColorf& color );
-    void addVertexData( const zpVector4fData& pos, const zpColorf& color, const zpVector2f& uv );
+    void addVertexData( const zpVector4fData& pos, const zpColor32i& color );
+    void addVertexData( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv );
 
     void addLineIndex( zp_ushort index0, zp_ushort index1 );
     void addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 );

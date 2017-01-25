@@ -192,11 +192,11 @@ struct zpColor32i
 {
     union
     {
-        zp_uint rgba;
         struct
         {
             zp_byte r, g, b, a;
         };
+        zp_uint rgba;
     };
 };
 

@@ -138,7 +138,7 @@ void zpRenderingContext::setMaterial( const zpMaterialHandle& material )
     cmd->material = material;
 }
 
-void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color )
+void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& color )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -148,29 +148,29 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColorf& color 
     zpMath::Vector4Store4( pos, v );
 
     m_scratchVertexBuffer.write( v, 0, sizeof( v ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
     cmd->vertexCount += 1;
 }
 
-void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColorf& color )
+void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor32i& color )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
     m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
     cmd->vertexCount += 1;
 }
 
-void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColorf& color, const zpVector2f& uv )
+void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, "" );
 
     m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColorf ) );
+    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
     m_scratchVertexBuffer.write( &uv, 0, sizeof( zpVector2f ) );
     cmd->vertexCount += 1;
 }

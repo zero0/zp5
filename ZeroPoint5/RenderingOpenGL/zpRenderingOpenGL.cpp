@@ -326,11 +326,11 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     static zp_int strides[] =
     {
         sizeof( zp_float ) * 0,
-        sizeof( zp_float ) * ( 4 + 4 ),
-        sizeof( zp_float ) * ( 4 + 4 + 2 ),
-        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 ),
-        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 + 4 ),
-        sizeof( zp_float ) * ( 4 + 4 + 2 + 4 + 4 + 2 )
+        sizeof( zp_float ) * ( 4 + 1 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
     };
     ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
 
@@ -361,19 +361,20 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
             glEnableVertexAttribArray( 5 );
-            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 18 ) ) );
+            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (18 - 3) ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
             glEnableVertexAttribArray( 4 );
-            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 14 ) ) );
+            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (14 - 3 )) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
             glEnableVertexAttribArray( 3 );
-            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 10 ) ) );
+            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (10 - 3 )) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
             glEnableVertexAttribArray( 2 );
-            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 8 ) ) );
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (8 - 3) ) ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
             glEnableVertexAttribArray( 1 );
-            glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
+            //glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
+            glVertexAttribPointer( 1, 4, GL_BYTE, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
             glEnableVertexAttribArray( 0 );
             glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 0 ) ) );
             break;
@@ -595,28 +596,28 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glDepthFunc( GL_LEQUAL );
 
     const zp_char* vertVC = ""
-        "\n" "layout(location = 0) in vec4 vertex;"
-        "\n" "layout(location = 1) in vec4 color;"
-        "\n" "out vec4 fragmentColor;"
+        "\n" "layout(location = 0) in highp vec4 vertex;"
+        "\n" "layout(location = 1) in lowp vec4 color;"
+        "\n" "out lowp vec4 fragmentColor;"
         "\n" "void main() {"
         "\n"     "gl_Position = _ObjectToWorld * vertex;"
         "\n"     "fragmentColor = color;"
         "\n" "}"
         "\n";
     const zp_char* fragVC = ""
-        "\n" "in vec4 fragmentColor;"
-        "\n" "out vec4 outColor;"
+        "\n" "in lowp vec4 fragmentColor;"
+        "\n" "out lowp vec4 outColor;"
         "\n" "void main() {"
         "\n"     "outColor = fragmentColor;"
         "\n" "}"
         "\n";
 
     const zp_char* vertVCU = ""
-        "\n" "layout(location = 0) in vec4 vertex;"
-        "\n" "layout(location = 1) in vec4 color;"
-        "\n" "layout(location = 2) in vec2 texcoord;"
-        "\n" "out vec4 fragmentColor;"
-        "\n" "out vec2 uv;"
+        "\n" "layout(location = 0) in highp vec4 vertex;"
+        "\n" "layout(location = 1) in lowp vec4 color;"
+        "\n" "layout(location = 2) in highp vec2 texcoord;"
+        "\n" "out lowp vec4 fragmentColor;"
+        "\n" "out highp vec2 uv;"
         "\n" "void main() {"
         "\n"     "gl_Position = _ObjectToWorld * vertex;"
         "\n"     "fragmentColor = color;"
@@ -625,9 +626,9 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         "\n";
     const zp_char* fragVCU = ""
         "\n" "uniform sampler2D _MainTex;"
-        "\n" "in vec4 fragmentColor;"
-        "\n" "in vec2 uv;"
-        "\n" "out vec4 outColor;"
+        "\n" "in lowp vec4 fragmentColor;"
+        "\n" "in highp vec2 uv;"
+        "\n" "out lowp vec4 outColor;"
         "\n" "void main() {"
         "\n"     "outColor = fragmentColor * texture( _MainTex, uv );"
         "\n" "}"

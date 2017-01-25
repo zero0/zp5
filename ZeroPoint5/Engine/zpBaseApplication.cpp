@@ -425,6 +425,10 @@ void zpBaseApplication::processFrame()
     m_input.poll();
     ZP_PROFILER_END( InputPoll );
 
+    ZP_PROFILER_START( HandleInput );
+    onHandleInput();
+    ZP_PROFILER_END( HandleInput );
+
     ZP_PROFILER_START( Update );
     onUpdate( dt, rt );
     ZP_PROFILER_END( Update );
