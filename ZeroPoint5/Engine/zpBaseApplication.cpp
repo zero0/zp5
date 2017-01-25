@@ -43,6 +43,55 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
             zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
             app->getInput()->setKeyState( wParam, true );
         } break;
+
+        case WM_MOUSEMOVE:
+        {
+            POINTS p = MAKEPOINTS( lParam );
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseLocationState( p.x, p.y );
+        } break;
+
+        case WM_MOUSEWHEEL:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseScrollWheelState( GET_WHEEL_DELTA_WPARAM( wParam ) > 0 ? 1 : -1 );
+        } break;
+
+        case WM_LBUTTONDOWN:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_LEFT, false );
+        } break;
+
+        case WM_LBUTTONUP:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_LEFT, true );
+        } break;
+
+        case WM_RBUTTONDOWN:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_RIGHT, false );
+        } break;
+
+        case WM_RBUTTONUP:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_RIGHT, true );
+        } break;
+
+        case WM_MBUTTONDOWN:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_MIDDLE, false );
+        } break;
+
+        case WM_MBUTTONUP:
+        {
+            zpBaseApplication* app = reinterpret_cast<zpBaseApplication*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
+            app->getInput()->setMouseButtonState( ZP_MOUSE_BUTTON_MIDDLE, true );
+        } break;
     }
 
     return DefWindowProc( hWnd, uMessage, wParam, lParam );
@@ -391,7 +440,7 @@ void zpBaseApplication::processFrame()
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
-
+    
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixTRS( { .10f, -.10f, 0, 1 }, { 0, 0, 0, 1 }, { 1.5f, .5f, 1.f, 0 } ) );
     ctx->setMaterial( t );

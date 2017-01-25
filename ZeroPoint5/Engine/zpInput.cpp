@@ -4,6 +4,15 @@ const zp_byte KEY_DOWN = 0xFF;
 const zp_byte KEY_UP = 0;
 
 zpInput::zpInput()
+    : m_mouseScrollWheel( 0 )
+    , m_mouseScrollWheelBuffer( 0 )
+    , m_mouseScrollWheelDelta( 0 )
+    , m_mouseButtonBuffer( 0 )
+    , m_mouseButtonDownBuffer( 0 )
+    , m_mouseButtonPressBuffer( 0 )
+    , m_mouseLocation( { 0, 0 } )
+    , m_mouseLocationBuffer( { 0, 0 } )
+    , m_mouseLocationDelta( { 0, 0 } )
 {
     zp_memset( m_keyBuffer, 0, sizeof( m_keyBuffer ) );
     zp_memset( m_keyDownBuffer, 0, sizeof( m_keyDownBuffer ) );
@@ -12,7 +21,6 @@ zpInput::zpInput()
 
 zpInput::~zpInput()
 {
-
 }
 
 zp_bool zpInput::isKeyDown( zp_key_code_t key ) const
@@ -106,8 +114,44 @@ zp_char zpInput::keyToChar( zp_key_code_t key ) const
     return c;
 }
 
+zp_bool zpInput::isMouseButtonDown( zpMouseButton button ) const
+{
+    return !!( m_mouseButtonDownBuffer & ( 1 << button ) );
+}
+
+zp_bool zpInput::isMouseButtonUp( zpMouseButton button ) const
+{
+    return !( m_mouseButtonDownBuffer & ( 1 << button ) );
+}
+
+zp_bool zpInput::isMouseButtonPressed( zpMouseButton button ) const
+{
+    return !!( m_mouseButtonPressBuffer & ( 1 << button ) );
+}
+
+const zpVector2i& zpInput::getMouseLocation() const
+{
+    return m_mouseLocation;
+}
+
+const zpVector2i& zpInput::getMouseLocationDelta() const
+{
+    return m_mouseLocationDelta;
+}
+
+zp_int zpInput::getMouseScrollWheel() const
+{
+    return m_mouseScrollWheel;
+}
+
+zp_int zpInput::getMouseScrollWheelDelta() const
+{
+    return m_mouseScrollWheelDelta;
+}
+
 void zpInput::poll()
 {
+    // keyboard poll
     for( zp_size_t k = 0; k < ZP_INPUT_MAX_KEYS; ++k )
     {
         m_keyPressBuffer[ k ] = KEY_UP;
@@ -133,9 +177,87 @@ void zpInput::poll()
             // up
         }
     }
+
+
+    // mouse poll
+    m_mouseButtonPressBuffer = 0;
+    for( zp_uint b = 0; b < zpMouseButton_Count; ++b )
+    {
+        zp_uint buttonMask = ( 1 << b );
+        if( m_mouseButtonBuffer & buttonMask )
+        {
+            if( m_mouseButtonDownBuffer & buttonMask )
+            {
+                // repeat
+            }
+            else
+            {
+                // down
+            }
+
+            m_mouseButtonDownBuffer |= buttonMask;
+        }
+        else if( m_mouseButtonDownBuffer & b )
+        {
+            // up
+            m_mouseButtonDownBuffer &= ~b;
+            m_mouseButtonPressBuffer |= b;
+        }
+    }
+
+    if( m_mouseScrollWheelBuffer != 0 )
+    {
+        m_mouseScrollWheelDelta = m_mouseScrollWheelBuffer;
+        m_mouseScrollWheel += m_mouseScrollWheelBuffer;
+
+        m_mouseScrollWheelBuffer = 0;
+    }
+    else
+    {
+        m_mouseScrollWheelDelta = 0;
+    }
+
+    if( m_mouseLocationBuffer.x || m_mouseLocationBuffer.y )
+    {
+        m_mouseLocationDelta.x = m_mouseLocationBuffer.x - m_mouseLocation.x;
+        m_mouseLocationDelta.y = m_mouseLocationBuffer.y - m_mouseLocation.y;
+
+        m_mouseLocation = m_mouseLocationBuffer;
+
+        m_mouseLocationBuffer.x = 0;
+        m_mouseLocationBuffer.y = 0;
+    }
+    else
+    {
+        m_mouseLocationDelta.x = 0;
+        m_mouseLocationDelta.y = 0;
+    }
 }
 
 void zpInput::setKeyState( zp_size_t keyIndex, zp_bool isUp )
 {
     m_keyBuffer[ keyIndex ] = isUp ? KEY_UP : KEY_DOWN;
+}
+
+void zpInput::setMouseButtonState( zpMouseButton button, zp_bool isUp )
+{
+    if( isUp )
+    {
+        m_mouseButtonBuffer |= ( 1 << button );
+    }
+    else
+    {
+        m_mouseButtonBuffer &= ~( 1 << button );
+    }
+}
+
+void zpInput::setMouseLocationState( zp_int x, zp_int y )
+{
+    m_mouseLocationBuffer.x = x;
+    m_mouseLocationBuffer.y = y;
+}
+
+void zpInput::setMouseScrollWheelState( zp_int scroll )
+{
+    m_mouseScrollWheelBuffer = scroll;
 }

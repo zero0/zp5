@@ -145,8 +145,31 @@ enum zpKeyCode : zp_key_code_t
     ZP_KEY_CODE_VOLUME_MUTE = 0x00AD,
     ZP_KEY_CODE_VOLUME_DOWN,
     ZP_KEY_CODE_VOLUME_UP,
-
 };
+
+
+enum zpMouseButton : zp_uint
+{
+    ZP_MOUSE_BUTTON_0 = 0,
+    ZP_MOUSE_BUTTON_1,
+    ZP_MOUSE_BUTTON_2,
+    ZP_MOUSE_BUTTON_3,
+    ZP_MOUSE_BUTTON_4,
+    ZP_MOUSE_BUTTON_5,
+    ZP_MOUSE_BUTTON_6,
+    ZP_MOUSE_BUTTON_7,
+
+    zpMouseButton_Count,
+    zpMouseButton_Force32 = ZP_FORECE_32BIT,
+
+    // Button alias
+    ZP_MOUSE_BUTTON_LEFT = ZP_MOUSE_BUTTON_0,
+    ZP_MOUSE_BUTTON_RIGHT = ZP_MOUSE_BUTTON_1,
+    ZP_MOUSE_BUTTON_MIDDLE = ZP_MOUSE_BUTTON_2,
+    ZP_MOUSE_BUTTON_SIDE_1 = ZP_MOUSE_BUTTON_3,
+    ZP_MOUSE_BUTTON_SIDE_2 = ZP_MOUSE_BUTTON_4,
+};
+
 
 enum
 {
@@ -169,14 +192,40 @@ public:
 
     zp_char keyToChar( zp_key_code_t key ) const;
 
+    zp_bool isMouseButtonDown( zpMouseButton button ) const;
+    zp_bool isMouseButtonUp( zpMouseButton button ) const;
+    zp_bool isMouseButtonPressed( zpMouseButton button ) const;
+
+    const zpVector2i& getMouseLocation() const;
+    const zpVector2i& getMouseLocationDelta() const;
+
+    zp_int getMouseScrollWheel() const;
+    zp_int getMouseScrollWheelDelta() const;
+
     void poll();
 
     void setKeyState( zp_size_t keyIndex, zp_bool isUp );
+    void setMouseButtonState( zpMouseButton button, zp_bool isUp );
+    void setMouseLocationState( zp_int x, zp_int y );
+    void setMouseScrollWheelState( zp_int scroll );
 
 private:
     zp_byte m_keyBuffer[ ZP_INPUT_MAX_KEYS ];
     zp_byte m_keyDownBuffer[ ZP_INPUT_MAX_KEYS ];
     zp_byte m_keyPressBuffer[ ZP_INPUT_MAX_KEYS ];
+
+    zp_int m_mouseScrollWheel;
+    zp_int m_mouseScrollWheelBuffer;
+    zp_int m_mouseScrollWheelDelta;
+
+    zp_uint m_mouseButtonBuffer;
+    zp_uint m_mouseButtonDownBuffer;
+    zp_uint m_mouseButtonPressBuffer;
+
+    zpVector2i m_mouseLocation;
+    zpVector2i m_mouseLocationBuffer;
+    zpVector2i m_mouseLocationDelta;
+
 };
 
 #endif // !ZP_INPUT_H
