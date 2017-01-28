@@ -125,11 +125,13 @@ zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 );
 //
 
 #ifdef ZP_USE_ASSERTIONS
-#define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); } (void)0
-#define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, msg, __VA_ARGS__ ); } (void)0
+#define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); }         static_cast<void>( 0 )
+#define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, msg, __VA_ARGS__ ); } static_cast<void>( 0 )
+#define ZP_INVALID_CODE_PATH()              zp_assert( __FILE__, __LINE__, "Invalid Code Path" )
 #else
-#define ZP_ASSERT( test, msg, ... )         (void)0
-#define ZP_ASSERT_WARN( test, msg, ... )    (void)0
+#define ZP_ASSERT( test, msg, ... )         static_cast<void>( 0 )
+#define ZP_ASSERT_WARN( test, msg, ... )    static_cast<void>( 0 )
+#define ZP_INVALID_CODE_PATH()              static_cast<void>( 0 )
 #endif
 
 #ifdef ZP_USE_ASSERTIONS
@@ -141,8 +143,8 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
 void zp_printf( const zp_char* text, ... );
 void zp_printfln( const zp_char* text, ... );
 #else
-#define zp_printf( text, ... )      (void)0
-#define zp_printfln( text, ... )    (void)0
+#define zp_printf( text, ... )      static_cast<void>( 0 )
+#define zp_printfln( text, ... )    static_cast<void>( 0 )
 #endif
 
 //

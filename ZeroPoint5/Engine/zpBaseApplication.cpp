@@ -168,7 +168,8 @@ void zpBaseApplication::setup()
 
     t->color = { 1, 1, 1, 1 };
     t->mainTexST = { 1, 1, 0, 0 };
-    m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", t->mainTex );
+    //m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", t->mainTex );
+    m_textureManager.loadTexture( "Assets/cp437_12x12.tga", t->mainTex );
 
     onPostSetup();
 }

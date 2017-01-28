@@ -323,7 +323,7 @@ static zpShader g_shaderVCU;
 
 void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 {
-    static zp_int strides[] =
+    static const zp_int strides[] =
     {
         sizeof( zp_float ) * 0,
         sizeof( zp_float ) * ( 4 + 1 ),
@@ -332,7 +332,17 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
     };
+    static const zp_size_t offsets[] =
+    {
+        sizeof( zp_float ) * 0,
+        sizeof( zp_float ) * ( 4 ),
+        sizeof( zp_float ) * ( 4 + 1 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4),
+    };
     ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
+    ZP_STATIC_ASSERT( ( sizeof( offsets ) / sizeof( offsets[ 0 ] ) ) == zpVertexFormat_Count );
 
     GLuint prog = 0;
     switch( cmd->vertexFormat )
@@ -361,28 +371,28 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
             glEnableVertexAttribArray( 5 );
-            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (18 - 3) ) ) );
+            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
             glEnableVertexAttribArray( 4 );
-            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (14 - 3 )) ) );
+            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
             glEnableVertexAttribArray( 3 );
-            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (10 - 3 )) ) );
+            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
             glEnableVertexAttribArray( 2 );
-            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * (8 - 3) ) ) );
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
             glEnableVertexAttribArray( 1 );
-            //glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
-            glVertexAttribPointer( 1, 4, GL_BYTE, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 4 ) ) );
+            glVertexAttribPointer( 1, 4, GL_BYTE, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
             glEnableVertexAttribArray( 0 );
-            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + ( sizeof( zp_float ) * 0 ) ) );
+            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
             break;
         default:
             break;
     }
 
-    glUniformMatrix4fv( glGetUniformLocation( prog, "_ObjectToWorld" ), 1, GL_FALSE, cmd->transform.m );
+    GLint otw = glGetUniformLocation( prog, "_ObjectToWorld" );
+    glUniformMatrix4fv( otw, 1, GL_FALSE, cmd->transform.m );
 
     if( cmd->material.isValid() )
     {
@@ -711,6 +721,7 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
             break;
 
         default:
+            ZP_INVALID_CODE_PATH();
             break;
     }
 }
@@ -789,7 +800,7 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
         zp_uint blockSize = ( format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) ? 8 : 16;
         zp_uint offset = 0;
         GLsizei imageSize = 0;
-
+        static_cast<void>( 0 );
         switch( textureDimension )
         {
             case ZP_TEXTURE_DIMENSION_1D:
@@ -801,11 +812,14 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
                 glCompressedTexImage2D( target, 0, internalFormat, width, height, 0, imageSize, pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_3D:
+                ZP_INVALID_CODE_PATH();
                 glCompressedTexImage3D( target, 0, internalFormat, width, height, 0, 0, imageSize, pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_CUBE_MAP:
+                ZP_INVALID_CODE_PATH();
                 break;
             default:
+                ZP_INVALID_CODE_PATH();
                 break;
         }
     }
@@ -820,11 +834,14 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
                 glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_3D:
+                ZP_INVALID_CODE_PATH();
                 glTexImage3D( target, 0, internalFormat, width, height, 0, 0, format, type, pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_CUBE_MAP:
+                ZP_INVALID_CODE_PATH();
                 break;
             default:
+                ZP_INVALID_CODE_PATH();
                 break;
         }
     }

@@ -90,15 +90,15 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
         zp_byte idLenght;
         zp_byte colorMapType;
         zp_byte dataTypeCode;
-        zp_short colorMapOrigin;
-        zp_short colorMapLength;
+        zp_ushort colorMapOrigin;
+        zp_ushort colorMapLength;
         zp_byte colorMapDepth;
-        zp_short xOrigin;
-        zp_short yOrigin;
-        zp_short width;
-        zp_short height;
+        zp_ushort xOrigin;
+        zp_ushort yOrigin;
+        zp_ushort width;
+        zp_ushort height;
         zp_byte bitsPerPixel;
-        zp_char imageDescriptor;
+        zp_byte imageDescriptor;
     };
     tgaHeader header;
 
@@ -108,7 +108,18 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
         return 1;
     }
 
-    tgaFile.read( &header, 0, sizeof( tgaHeader ) );
+    tgaFile.read( &header.idLenght, 0, sizeof( zp_byte ) );
+    tgaFile.read( &header.colorMapType, 0, sizeof( zp_byte ) );
+    tgaFile.read( &header.dataTypeCode, 0, sizeof( zp_byte ) );
+    tgaFile.read( &header.colorMapOrigin, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.colorMapLength, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.colorMapDepth, 0, sizeof( zp_byte ) );
+    tgaFile.read( &header.xOrigin, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.yOrigin, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.width, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.height, 0, sizeof( zp_ushort ) );
+    tgaFile.read( &header.bitsPerPixel, 0, sizeof( zp_byte ) );
+    tgaFile.read( &header.imageDescriptor, 0, sizeof( zp_byte ) );
 
     textureData.width = header.width;
     textureData.height = header.height;
@@ -131,15 +142,64 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
             return 1;
     }
 
+    const zp_size_t pixelCount = header.width * header.height;
     const zp_size_t bytesPerPixel = header.bitsPerPixel / 8;
-    const zp_size_t imageSize = header.width * header.height * bytesPerPixel;
+    const zp_size_t imageSize = pixelCount * bytesPerPixel;
     textureData.data.reserve( imageSize );
 
-    zp_size_t len;
-    zp_byte buff[ 8192 ];
-    while( ( len = tgaFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
+    switch( header.dataTypeCode )
     {
-        textureData.data.write( buff, 0, len );
+        // uncompressed rgb
+        case 2:
+        {
+            zp_size_t len;
+            zp_byte buff[ 8192 ];
+            while( ( len = tgaFile.read( buff, 0, sizeof( buff ) ) ) != 0 )
+            {
+                textureData.data.write( buff, 0, len );
+            }
+        } break;
+
+        // compressed RLE rgb
+        case 10:
+        {
+            zp_byte buff[ 4 ];
+            zp_byte chunckHeader;
+            zp_size_t currentPixel = 0;
+
+            do
+            {
+                tgaFile.read( &chunckHeader, 0, sizeof( zp_byte ) );
+
+                if( chunckHeader < 128 )
+                {
+                    ++chunckHeader;
+
+                    for( zp_size_t c = 0; c < chunckHeader; ++c )
+                    {
+                        tgaFile.read( buff, 0, bytesPerPixel );
+                        textureData.data.write( buff, 0, bytesPerPixel );
+                    }
+                }
+                else
+                {
+                    chunckHeader -= 127;
+
+                    tgaFile.read( buff, 0, bytesPerPixel );
+
+                    for( zp_size_t c = 0; c < chunckHeader; ++c )
+                    {
+                        textureData.data.write( buff, 0, bytesPerPixel );
+                    }
+                }
+
+                currentPixel += chunckHeader;
+            } while( currentPixel < pixelCount );
+        } break;
+
+        default:
+            ZP_INVALID_CODE_PATH();
+            break;
     }
 
     zp_byte* d = textureData.data.getBuffer();
