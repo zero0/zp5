@@ -253,3 +253,4 @@ ModelManifest.xml
 **/*.sln
 install_manifest.txt
 **/RelWithDebInfo/
+*.cap

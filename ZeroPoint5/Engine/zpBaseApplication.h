@@ -93,6 +93,7 @@ private:
     zp_handle m_hInstance;
 
     zp_size_t m_frameCount;
+    zp_ulong m_flags;
 
     zp_int m_targetFps;
     zp_int m_targetFixedFps;

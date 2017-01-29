@@ -456,7 +456,7 @@ void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     glUseProgram( 0 );
 }
 
-#ifdef ZP_DEBUG
+#if 0
 struct glDebugBlockS
 {
 public:
@@ -595,7 +595,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 
 #ifdef ZP_DEBUG
     glEnable( GL_DEBUG_OUTPUT );
-    //glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+    glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
     glDebugMessageCallback( _DebugOutputOpenGL, ZP_NULL );
     glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
     glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );

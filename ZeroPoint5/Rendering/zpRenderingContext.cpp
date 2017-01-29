@@ -194,19 +194,20 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
         zp_int maxY = g->bearing.y;
         
         bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), scale );
-        bl = zpMath::Vector4Add( cursor, bl );
-        zpMath::Vector4Store4( bl, p0.m );
-
         tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), scale );
-        tl = zpMath::Vector4Add( cursor, tl );
-        zpMath::Vector4Store4( tl, p1.m );
-        
         tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), scale );
-        tr = zpMath::Vector4Add( cursor, tr );
-        zpMath::Vector4Store4( tr, p2.m );
-
         br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), scale );
+
+        bl = zpMath::Vector4Add( cursor, bl );
+        tl = zpMath::Vector4Add( cursor, tl );
+        tr = zpMath::Vector4Add( cursor, tr );
         br = zpMath::Vector4Add( cursor, br );
+        
+        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( g->advance, 0, 0, 0 ), scale ) );
+
+        zpMath::Vector4Store4( bl, p0.m );
+        zpMath::Vector4Store4( tl, p1.m );
+        zpMath::Vector4Store4( tr, p2.m );
         zpMath::Vector4Store4( br, p3.m );
 
         u0 = { g->uvRect.x,                   g->uvRect.y };
@@ -227,8 +228,6 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
             baseIndexOffset + 3 );
 
         baseIndexOffset += 4;
-
-        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( g->advance, 0, 0, 0 ), scale ) );
 
         prev = curr;
     }
@@ -271,11 +270,19 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& colo
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
-    ZP_ALIGN16 zp_float v[ 4 ];
-    zpMath::Vector4Store4( pos, v );
+    ZP_ALIGN16 zpVector4fData v;
+    zpMath::Vector4Store4( pos, v.m );
 
-    m_scratchVertexBuffer.write( v, 0, sizeof( v ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
+    struct
+    {
+        zpVector4fData p;
+        zpColor32i c;
+    } buff = {
+        v,
+        color,
+    };
+
+    m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
 
@@ -285,8 +292,16 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
-    m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
+    struct
+    {
+        zpVector4fData p;
+        zpColor32i c;
+    } buff = {
+        pos,
+        color,
+    };
+
+    m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
 
@@ -296,9 +311,18 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, "" );
 
-    m_scratchVertexBuffer.write( &pos, 0, sizeof( zpVector4fData ) );
-    m_scratchVertexBuffer.write( &color, 0, sizeof( zpColor32i ) );
-    m_scratchVertexBuffer.write( &uv, 0, sizeof( zpVector2f ) );
+    struct
+    {
+        zpVector4fData p;
+        zpColor32i c;
+        zpVector2f u;
+    } buff = {
+        pos,
+        color,
+        uv,
+    };
+
+    m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
 
@@ -307,8 +331,12 @@ void zpRenderingContext::addLineIndex( zp_ushort index0, zp_ushort index1 )
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index1, 0, sizeof( zp_ushort ) );
+    zp_ushort buff[] = {
+        index0,
+        index1,
+    };
+
+    m_scratchIndexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->indexCount += 2;
 }
 
@@ -317,9 +345,13 @@ void zpRenderingContext::addTriangleIndex( zp_ushort index0, zp_ushort index1, z
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index1, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index2, 0, sizeof( zp_ushort ) );
+    zp_ushort buff[] = {
+        index0,
+        index1,
+        index2,
+    };
+
+    m_scratchIndexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->indexCount += 3;
 }
 
@@ -328,13 +360,17 @@ void zpRenderingContext::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_us
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index1, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index2, 0, sizeof( zp_ushort ) );
+    zp_ushort buff[] = {
+        index0,
+        index1,
+        index2,
 
-    m_scratchIndexBuffer.write( &index2, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index3, 0, sizeof( zp_ushort ) );
-    m_scratchIndexBuffer.write( &index0, 0, sizeof( zp_ushort ) );
+        index2,
+        index3,
+        index0,
+    };
+
+    m_scratchIndexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->indexCount += 6;
 }
 

@@ -1,5 +1,19 @@
 #include "zpEngine.h"
 
+enum zpBaseApplicationFlags : zp_ulong
+{
+    ZP_BASE_APPLICATION_FLAG_IS_RUNNING =       1ULL << 0,
+    ZP_BASE_APPLICATION_FLAG_IS_PAUSED =        1ULL << 1,
+    ZP_BASE_APPLICATION_FLAG_IS_FOCUSED =       1ULL << 2,
+
+    ZP_BASE_APPLICATION_FLAG_SHOULD_RESTART =               1ULL << 3,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_GARBAGE_COLLECT =       1ULL << 4,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_RELOAD_ALL_RESOURCES =  1ULL << 5,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND =   1ULL << 6,
+
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS =          1ULL << 32,
+};
+
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
 
 #ifdef ZP_WINDOWS
@@ -111,6 +125,7 @@ zpBaseApplication::zpBaseApplication()
     : m_hWnd( ZP_NULL )
     , m_hInstance( ZP_NULL )
     , m_frameCount( 0 )
+    , m_flags( 0 )
     , m_targetFps( 60 )
     , m_targetFixedFps( 30 )
     , m_exitCode( ZP_APPLICATION_EXIT_NORMAL )
@@ -509,10 +524,11 @@ void zpBaseApplication::processFrame()
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDrawImmediate();
     
-#if 0
+#if 1
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
-    ctx->setMaterial( t );
+    ctx->setMaterial( tm );
+    ctx->setTransform( projection );
     ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
     ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
     ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
@@ -521,7 +537,8 @@ void zpBaseApplication::processFrame()
     ctx->endDrawImmediate();
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->setMaterial( t );
+    ctx->setMaterial( tm );
+    ctx->setTransform( projection );
     ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
@@ -529,7 +546,8 @@ void zpBaseApplication::processFrame()
     ctx->endDrawImmediate();
     
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->setMaterial( t );
+    ctx->setMaterial( tm );
+    ctx->setTransform( projection );
     ctx->addVertexData( { -1,  0, 0, 1 }, { 1, 0, 0, 1 } );
     ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );
@@ -542,11 +560,17 @@ void zpBaseApplication::processFrame()
     ctx->setTransform( projection );
     const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
     const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
-    zp_float y = 0;
+
+    zp_float y = 5;
+    const zpVector2i& mpos = m_input.getMouseLocation();
+    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%d, %d", mpos.x, mpos.y );
+    ctx->addText( { 5, y, 0, 1 }, buff, 12, {1, 1, 1, 1}, {1,1,1,1} );
+    y += 12;
+
     for( ; bf != ef; ++bf )
     {
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%s@%s %.3f", bf->functionName, bf->eventName, ( bf->endTime - bf->startTime ) * 1000.0f * m_time.getSecondsPerTick() );
-        ctx->addText( { 5, y + 5, 0, 1 }, buff, 12, { 1, 1, 1, 1 }, { 1, 0, 0, 1 } );
+        ctx->addText( { 5, y, 0, 1 }, buff, 12, { 100, 1, 1, 1 }, { 1, 1, 1, 1 } );
         y += 12;
     }
     ctx->endDrawText();
