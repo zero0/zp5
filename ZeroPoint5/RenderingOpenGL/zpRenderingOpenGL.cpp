@@ -417,6 +417,8 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
             }
         }
     }
+
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
 void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
@@ -602,6 +604,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
 
+    glEnable( GL_BLEND );
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
 

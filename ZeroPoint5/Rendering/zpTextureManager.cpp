@@ -135,7 +135,7 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
             break;
 
         case 32:
-            textureData.format = ZP_DISPLAY_FORMAT_RGBA8_UINT;
+            textureData.format = ZP_DISPLAY_FORMAT_RGBA8_UNORM;
             break;
 
         default:
