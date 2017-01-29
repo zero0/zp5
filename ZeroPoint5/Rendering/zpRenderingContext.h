@@ -24,6 +24,10 @@ public:
     void beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat );
     void endDrawImmediate();
 
+    void beginDrawText( zp_byte layer, const zpFontHandle& font );
+    void addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor );
+    void endDrawText();
+
     void setTransform( zpMatrix4fParamF transform );
     void setMaterial( const zpMaterialHandle& material );
 

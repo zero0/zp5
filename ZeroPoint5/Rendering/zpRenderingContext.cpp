@@ -101,6 +101,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
     cmd.material = zpMaterialHandle();
+    cmd.font = zpFontHandle();
 
     ZP_ALIGN16 zpMatrix4fData transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
@@ -115,6 +116,132 @@ void zpRenderingContext::endDrawImmediate()
     cmd->vertexOffset = m_immediateVertexSize;
     cmd->indexOffset = m_immediateIndexSize;
     
+    m_immediateVertexSize = m_scratchVertexBuffer.getPosition();
+    m_immediateIndexSize = m_scratchIndexBuffer.getPosition();
+
+    m_currentCommnad = npos;
+}
+
+void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font )
+{
+    ZP_ASSERT( m_currentCommnad == npos, "" );
+    m_currentCommnad = m_commands.size();
+
+    zpRenderingCommand& cmd = m_commands.pushBackEmpty();
+    cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+    cmd.sortKey.key = 0;
+    cmd.sortKey.layer = layer;
+    cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+    cmd.vertexFormat = ZP_VERTEX_FORMAT_VERTEX_COLOR_UV;
+    cmd.vertexOffset = 0;
+    cmd.vertexCount = 0;
+    cmd.indexOffset = 0;
+    cmd.indexCount = 0;
+    cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
+    cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
+    cmd.material = font->fontMaterial;
+    cmd.font = font;
+
+    ZP_ALIGN16 zpMatrix4fData transformData;
+    zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
+    cmd.transform = transformData;
+}
+
+void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    zp_char prev = '\0';
+    zp_char curr = '\0';
+
+    zpFont* font = cmd->font.operator->();
+
+    zpScalar scale = zpMath::Scalar( static_cast<zp_float>( size ) / static_cast<zp_float>( 12 ) );
+
+    ZP_ALIGN16 zpVector4fData p = pos;
+    zpVector4f cursor = zpMath::Vector4Load4( p.m );
+    zpVector4f origin = cursor;
+    zpVector4f newLine = zpMath::Vector4Scale( zpMath::Vector4( 0, 12, 0, 0 ), scale );
+
+    ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
+    zpVector2f u0, u1, u2, u3;
+
+    zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
+
+    for( ; *text ; ++text )
+    {
+        curr = *text;
+
+        switch( curr )
+        {
+            case '\n':
+                cursor = zpMath::Vector4Add( cursor, newLine );
+                cursor = zpMath::Vector4SetX( cursor, zpMath::Vector4GetX( origin ) );
+                continue;
+
+            case '\r':
+                continue;
+        }
+
+        zpGlyph* g = font->fontGlyphs + curr;
+
+        zpVector4f tl, tr, br, bl;
+
+        zp_int minX = g->bearing.x;
+        zp_int maxX = g->bearing.x + g->size.x;
+        zp_int minY = -( g->size.y - g->bearing.y );
+        zp_int maxY = g->bearing.y;
+        
+        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), scale );
+        bl = zpMath::Vector4Add( cursor, bl );
+        zpMath::Vector4Store4( bl, p0.m );
+
+        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), scale );
+        tl = zpMath::Vector4Add( cursor, tl );
+        zpMath::Vector4Store4( tl, p1.m );
+        
+        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), scale );
+        tr = zpMath::Vector4Add( cursor, tr );
+        zpMath::Vector4Store4( tr, p2.m );
+
+        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), scale );
+        br = zpMath::Vector4Add( cursor, br );
+        zpMath::Vector4Store4( br, p3.m );
+
+        u0 = { g->uvRect.x,                   g->uvRect.y };
+        u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
+        u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
+        u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+
+        // bl -> tl -> tr -> br
+        addVertexData( p0, bottomColor, u0 );
+        addVertexData( p1, topColor, u1 );
+        addVertexData( p2, topColor, u2 );
+        addVertexData( p3, bottomColor, u3 );
+
+        addQuadIndex(
+            baseIndexOffset + 0,
+            baseIndexOffset + 1,
+            baseIndexOffset + 2,
+            baseIndexOffset + 3 );
+
+        baseIndexOffset += 4;
+
+        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( g->advance, 0, 0, 0 ), scale ) );
+
+        prev = curr;
+    }
+}
+
+void zpRenderingContext::endDrawText()
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    cmd->vertexOffset = m_immediateVertexSize;
+    cmd->indexOffset = m_immediateIndexSize;
+
     m_immediateVertexSize = m_scratchVertexBuffer.getPosition();
     m_immediateIndexSize = m_scratchIndexBuffer.getPosition();
 

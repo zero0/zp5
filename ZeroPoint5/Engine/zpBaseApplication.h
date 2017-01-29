@@ -85,6 +85,7 @@ private:
     zpTextureManager m_textureManager;
     zpShaderManager m_shaderManager;
     zpMaterialManager m_materialManager;
+    zpFontManager m_fontManager;
 
     zpTime m_time;
 

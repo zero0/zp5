@@ -151,25 +151,64 @@ void zpBaseApplication::initialize()
 
     onPostInitialize();
 }
-zpMaterialHandle t;
+
+zpMaterialHandle tm;
+zpFontHandle ff;
 
 void zpBaseApplication::setup()
 {
     ZP_PROFILER_BLOCK();
-    
+
     onPreSetup();
 
     m_renderingEngine.setup( m_hWnd );
     m_textureManager.setup( &m_renderingEngine );
     m_shaderManager.setup( &m_renderingEngine );
     m_materialManager.setup( &m_shaderManager, &m_textureManager );
+    m_fontManager.setup( &m_materialManager );
 
-    m_materialManager.getMaterial( "tempMaterial", t );
+    m_materialManager.getMaterial( "tempMaterial", tm );
+    tm->color = { 1, 1, 1, 1 };
+    tm->mainTexST = { 1, 1, 0, 0 };
+    m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tm->mainTex );
 
-    t->color = { 1, 1, 1, 1 };
-    t->mainTexST = { 1, 1, 0, 0 };
-    //m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", t->mainTex );
-    m_textureManager.loadTexture( "Assets/cp437_12x12.tga", t->mainTex );
+    m_fontManager.getFont( "debug.font", ff );
+    m_materialManager.getMaterial( "font.material", ff->fontMaterial );
+    ff->fontMaterial->color = { 1, 1, 1, 1 };
+    ff->fontMaterial->mainTexST = { 1, 1, 0, 0 };
+    m_textureManager.loadTexture( "Assets/cp437_12x12.tga", ff->fontMaterial->mainTex );
+
+    // TODO: remove when done debugging
+    const zp_size_t fixedWidth = 12;
+    const zp_size_t fixedHeight = 12;
+    zp_uint tw = ff->fontMaterial->mainTex->width;
+    zp_uint th = ff->fontMaterial->mainTex->height;
+
+    float invW = 1.f / static_cast<zp_float>( tw );
+    float invH = 1.f / static_cast<zp_float>( th );
+
+    zp_float fw = fixedWidth  * invW;
+    zp_float fh = fixedHeight * invH;
+
+    zp_size_t c = 0;
+    zp_memset( ff->fontGlyphs, 0, sizeof( ff->fontGlyphs ) );
+    for( zp_uint h = 0; h < th; h += fixedHeight )
+    {
+        for( zp_uint w = 0; w < tw; w += fixedWidth )
+        {
+            zpGlyph* g = ff->fontGlyphs + c;
+            g->uvRect.x =       w * invW;
+            g->uvRect.y =       1.0f - ( h * invH ) - fh;
+            g->uvRect.width =   fw;
+            g->uvRect.height =  fh;
+            g->size = { fixedWidth, fixedHeight };
+            g->bearing = { fixedWidth, fixedHeight };
+            g->advance = fixedWidth;
+            g->baseline = 0;
+
+            ++c;
+        }
+    }
 
     onPostSetup();
 }
@@ -197,9 +236,11 @@ void zpBaseApplication::teardown()
     ZP_PROFILER_BLOCK();
     
     onPreTeardown();
-    t.release();
+    tm.release();
+    ff.release();
     runGarbageCollection();
 
+    m_fontManager.teardown();
     m_materialManager.teardown();
     m_shaderManager.teardown();
     m_textureManager.teardown();
@@ -280,6 +321,7 @@ void zpBaseApplication::runGarbageCollection()
     m_objectManager.garbageCollect();
     m_transformComponentManager.garbageCollect();
 
+    m_fontManager.garbageCollect();
     m_materialManager.garbageCollect();
     m_textureManager.garbageCollect();
     m_shaderManager.garbageCollect();
@@ -298,6 +340,7 @@ void zpBaseApplication::runReloadChangedResources()
 {
     ZP_PROFILER_BLOCK();
 
+    m_fontManager.reloadChangedFonts();
     m_materialManager.reloadChangedMaterials();
     m_textureManager.reloadChangedTextures();
 
@@ -442,20 +485,31 @@ void zpBaseApplication::processFrame()
     onLateUpdate( dt, rt );
     ZP_PROFILER_END( LateUpdate );
 
+    zpRecti orthoRect = { 0, 0, 960, 640 };
+    zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
+    zpScalar r = zpMath::Scalar( (zp_float)orthoRect.x + orthoRect.width );
+    zpScalar t = zpMath::Scalar( (zp_float)orthoRect.y );
+    zpScalar b = zpMath::Scalar( (zp_float)orthoRect.y + orthoRect.height );
+    zpScalar n = zpMath::Scalar( -10 );
+    zpScalar f = zpMath::Scalar( 10 );
+
+    zpMatrix4f projection = zpMath::OrthoLH( l, r, t, b, n, f );
+
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
-    
+    zpRectf rect = { 100, 100, 300, 300 };
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
-    ctx->setTransform( zpMath::MatrixTRS( { .10f, -.10f, 0, 1 }, { 0, 0, 0, 1 }, { 1.5f, .5f, 1.f, 0 } ) );
-    ctx->setMaterial( t );
-    ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
-    ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
-    ctx->addVertexData( {  0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
-    ctx->addVertexData( {  0, 0, 0, 1 }, { 1, 1, 1, 1 }, { 1, 0 } );
+    ctx->setMaterial( tm );
+    ctx->setTransform( projection );
+    ctx->addVertexData( { rect.x,               rect.y, 0, 1 },               { 1, 0, 0, 1 }, { 0, 1 } );
+    ctx->addVertexData( { rect.x,               rect.y + rect.height, 0, 1 }, { 0, 1, 0, 1 }, { 0, 0 } );
+    ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 1, 1 }, { 1, 0 } );
+    ctx->addVertexData( { rect.x + rect.height, rect.y, 0, 1 },               { 1, 1, 1, 1 }, { 1, 1 } );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDrawImmediate();
     
+#if 0
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
     ctx->setMaterial( t );
@@ -481,6 +535,22 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
     ctx->endDrawImmediate();
+#endif
+
+    zp_char buff[ 512 ];
+    ctx->beginDrawText( 0, ff );
+    ctx->setTransform( projection );
+    const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
+    const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+    zp_float y = 0;
+    for( ; bf != ef; ++bf )
+    {
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%s@%s %.3f", bf->functionName, bf->eventName, ( bf->endTime - bf->startTime ) * 1000.0f * m_time.getSecondsPerTick() );
+        ctx->addText( { 5, y + 5, 0, 1 }, buff, 12, { 1, 1, 1, 1 }, { 1, 0, 0, 1 } );
+        y += 12;
+    }
+    ctx->endDrawText();
+
     
     m_renderingEngine.present();
 

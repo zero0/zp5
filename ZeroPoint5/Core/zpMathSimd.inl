@@ -8,22 +8,27 @@ namespace zpMath
     {
         return _mm_set1_ps( s );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4( zp_float x, zp_float y, zp_float z, zp_float w )
     {
         return _mm_setr_ps( x, y, z, w );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4( zpScalarParamF x, zpScalarParamF y, zpScalarParamF z, zpScalarParamG w )
     {
         return _mm_setr_ps( AsFloat( x ), AsFloat( y ), AsFloat( z ), AsFloat( w ) );
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL Quaternion( zp_float x, zp_float y, zp_float z, zp_float w )
     {
         return _mm_setr_ps( x, y, z, w );
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL Quaternion( zpScalarParamF x, zpScalarParamF y, zpScalarParamF z, zpScalarParamG w )
     {
         return _mm_setr_ps( AsFloat( x ), AsFloat( y ), AsFloat( z ), AsFloat( w ) );
     }
+
     ZP_FORCE_INLINE zp_float ZP_VECTORCALL AsFloat( zpScalarParamF s )
     {
         ZP_ALIGN16 zp_float v;
@@ -38,14 +43,17 @@ namespace zpMath
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 0, 0, 0, 0 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4GetY( zpVector4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4GetZ( zpVector4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 2, 2, 2, 2 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4GetW( zpVector4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 3, 3, 3, 3 ) );
@@ -59,16 +67,19 @@ namespace zpMath
         s.m128_f32[ 0 ] = x;
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetY( zpVector4fParamF s, zp_float y )
     {
         s.m128_f32[ 1 ] = y;
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetZ( zpVector4fParamF s, zp_float z )
     {
         s.m128_f32[ 2 ] = z;
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetW( zpVector4fParamF s, zp_float w )
     {
         s.m128_f32[ 3 ] = w;
@@ -80,16 +91,19 @@ namespace zpMath
         s.m128_f32[ 0 ] = AsFloat( x );
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetY( zpVector4fParamF s, zpScalarParamF y )
     {
         s.m128_f32[ 1 ] = AsFloat( y );
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetZ( zpVector4fParamF s, zpScalarParamF z )
     {
         s.m128_f32[ 2 ] = AsFloat( z );
         return s;
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4SetW( zpVector4fParamF s, zpScalarParamF w )
     {
         s.m128_f32[ 3 ] = AsFloat( w );
@@ -103,6 +117,7 @@ namespace zpMath
     {
         _mm_store_ps( xyzw, s );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Load4( const zp_float* xyzw )
     {
         return _mm_load_ps( xyzw );
@@ -116,14 +131,17 @@ namespace zpMath
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 0, 0, 0, 0 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL QuaternionGetY( zpQuaternion4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL QuaternionGetZ( zpQuaternion4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 2, 2, 2, 2 ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL QuaternionGetW( zpQuaternion4fParamF s )
     {
         return _mm_shuffle_ps( s, s, _MM_SHUFFLE( 3, 3, 3, 3 ) );
@@ -137,16 +155,19 @@ namespace zpMath
         s.m128_f32[ 0 ] = x;
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetY( zpQuaternion4fParamF s, zp_float y )
     {
         s.m128_f32[ 1 ] = y;
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetZ( zpQuaternion4fParamF s, zp_float z )
     {
         s.m128_f32[ 2 ] = z;
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetW( zpQuaternion4fParamF s, zp_float w )
     {
         s.m128_f32[ 3 ] = w;
@@ -158,16 +179,19 @@ namespace zpMath
         s.m128_f32[ 0 ] = AsFloat( x );
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetY( zpQuaternion4fParamF s, zpScalarParamF y )
     {
         s.m128_f32[ 1 ] = AsFloat( y );
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetZ( zpQuaternion4fParamF s, zpScalarParamF z )
     {
         s.m128_f32[ 2 ] = AsFloat( z );
         return s;
     }
+
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionSetW( zpQuaternion4fParamF s, zpScalarParamF w )
     {
         s.m128_f32[ 3 ] = AsFloat( w );
@@ -182,11 +206,13 @@ namespace zpMath
         zp_float s = AsFloat( a );
         return Scalar( zp_sin( s ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarCos( zpScalarParamF a )
     {
         zp_float s = AsFloat( a );
         return Scalar( zp_cos( s ) );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarTan( zpScalarParamF a )
     {
         zp_float s = AsFloat( a );
@@ -200,17 +226,30 @@ namespace zpMath
     {
         return _mm_add_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarSub( zpScalarParamF a, zpScalarParamF b )
     {
         return _mm_sub_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarMul( zpScalarParamF a, zpScalarParamF b )
     {
         return _mm_mul_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarDiv( zpScalarParamF a, zpScalarParamF b )
     {
         return _mm_div_ps( a, b );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarDegToRad( zpScalarParamF a )
+    {
+        return ScalarMul( a, Scalar( ZP_PIOVER180 ) );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarRadToDeg( zpScalarParamF a )
+    {
+        return ScalarMul( a, Scalar( ZP_180OVERPI ) );
     }
 
     //
@@ -220,14 +259,17 @@ namespace zpMath
     {
         return _mm_add_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Sub( zpVector4fParamF a, zpVector4fParamF b )
     {
         return _mm_sub_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Mul( zpVector4fParamF a, zpVector4fParamF b )
     {
         return _mm_mul_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Div( zpVector4fParamF a, zpVector4fParamF b )
     {
         return _mm_div_ps( a, b );
@@ -236,6 +278,65 @@ namespace zpMath
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Scale( zpVector4fParamF a, zpScalarParamF b )
     {
         return _mm_mul_ps( a, b );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4LengthSquared2( zpVector4fParamF a )
+    {
+        return Vector4Dot2( a, a );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4LengthSquared3( zpVector4fParamF a )
+    {
+        return Vector4Dot3( a, a );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4LengthSquared4( zpVector4fParamF a )
+    {
+        return Vector4Dot4( a, a );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4Length2( zpVector4fParamF a )
+    {
+        return ScalarSqrt( Vector4Dot2( a, a ) );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4Length3( zpVector4fParamF a )
+    {
+        return ScalarSqrt( Vector4Dot3( a, a ) );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4Length4( zpVector4fParamF a )
+    {
+        return ScalarSqrt( Vector4Dot4( a, a ) );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL QuaternionLength4( zpQuaternion4fParamF a )
+    {
+        return ScalarSqrt( Scalar( 0 ) );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Normalize2( zpVector4fParamF a )
+    {
+        zpScalar l = Vector4Length2( a );
+        return ScalarDiv( a, l );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Normalize3( zpVector4fParamF a )
+    {
+        zpScalar l = Vector4Length3( a );
+        return ScalarDiv( a, l );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Normalize4( zpVector4fParamF a )
+    {
+        zpScalar l = Vector4Length4( a );
+        return ScalarDiv( a, l );
+    }
+
+    ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionNormalize4( zpQuaternion4fParamF a )
+    {
+        zpScalar l = QuaternionLength4( a );
+        return ScalarDiv( a, l );
     }
 
     //
@@ -359,15 +460,18 @@ namespace zpMath
         __m128 abs = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x7fffffff ) );
         return _mm_and_ps( a, abs );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarNeg( zpScalarParamF a )
     {
         __m128 neg = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x80000000 ) );
         return _mm_xor_ps( a, neg );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarRcp( zpScalarParamF a )
     {
         return _mm_rcp_ps( a );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarSqrt( zpScalarParamF a )
     {
         return _mm_sqrt_ps( a );
@@ -378,15 +482,18 @@ namespace zpMath
         __m128 abs = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x7fffffff ) );
         return _mm_and_ps( a, abs );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Neg( zpVector4fParamF a )
     {
         __m128 neg = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x80000000 ) );
         return _mm_xor_ps( a, neg );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Rcp( zpVector4fParamF a )
     {
         return _mm_rcp_ps( a );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Sqrt( zpVector4fParamF a )
     {
         return _mm_sqrt_ps( a );
@@ -396,6 +503,7 @@ namespace zpMath
     {
         return _mm_min_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarMin( zpScalarParamF a, zpScalarParamF b )
     {
         return _mm_max_ps( a, b );
@@ -405,6 +513,7 @@ namespace zpMath
     {
         return _mm_min_ps( a, b );
     }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Min( zpVector4fParamF a, zpVector4fParamF b )
     {
         return _mm_max_ps( a, b );
@@ -493,6 +602,14 @@ namespace zpMath
         return s;
     }
 
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixTranspose( zpMatrix4fParamF a )
+    {
+        zpMatrix4f s = a;
+        _MM_TRANSPOSE4_PS( s.m_m1, s.m_m2, s.m_m3, s.m_m4 );
+
+        return s;
+    }
+
     ZP_FORCE_INLINE void ZP_VECTORCALL MatrixStore4( zpMatrix4fParamF s, zp_float* m )
     {
         _mm_store_ps( m + 0, s.m_m1 );
@@ -510,5 +627,194 @@ namespace zpMath
         mat.m_m4 = _mm_load_ps( m + 12 );
 
         return mat;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL LookAtLH( zpVector4fParamF eye, zpVector4fParamF direction, zpVector4fParamF up )
+    {
+        zpVector4f x, y, z;
+        zpScalar ex, ey, ez;
+        zpMatrix4f s;
+
+        z = Vector4Normalize3( direction );
+        x = Vector4Cross3( up, z );
+        x = Vector4Normalize3( x );
+        y = Vector4Cross3( z, x );
+
+        ex = Vector4Dot3( x, eye );
+        ey = Vector4Dot3( y, eye );
+        ez = Vector4Dot3( z, eye );
+
+        ex = Vector4Neg( ex );
+        ey = Vector4Neg( ey );
+        ez = Vector4Neg( ez );
+
+        s.m_m1 = x;
+        s.m_m2 = y;
+        s.m_m3 = z;
+        s.m_m4 = Vector4( 0, 0, 0, 0 );
+
+        s = MatrixTranspose( s );
+
+        s.m_m4 = Vector4( ex, ey, ez, Scalar( 1.0f ) );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL LookAtRH( zpVector4fParamF eye, zpVector4fParamF direction, zpVector4fParamF up )
+    {
+        zpVector4f x, y, z;
+        zpScalar ex, ey, ez;
+        zpMatrix4f s;
+
+        z = Vector4Neg( direction );
+        z = Vector4Normalize3( z );
+        x = Vector4Cross3( up, z );
+        x = Vector4Normalize3( x );
+        y = Vector4Cross3( z, x );
+
+        ex = Vector4Dot3( x, eye );
+        ey = Vector4Dot3( y, eye );
+        ez = Vector4Dot3( z, eye );
+
+        s.m_m1 = x;
+        s.m_m2 = y;
+        s.m_m3 = z;
+        s.m_m4 = Vector4( 0, 0, 0, 0 );
+
+        s = MatrixTranspose( s );
+
+        s.m_m4 = Vector4( ex, ey, ez, Scalar( 1.0f ) );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL PerspectiveLH( zpScalarParamF fovy, zpScalarParamF aspectRatio, zpScalarParamF zNear, zpScalarParamG zFar )
+    {
+        zpScalar yScale, xScale, z, fn, r22, r32, o;
+        z = Scalar( 0.f );
+        o = Scalar( 1.f );
+
+        yScale = ScalarDegToRad( fovy );
+        yScale = ScalarMul( yScale, Scalar( 0.5f ) );
+        yScale = ScalarTan( yScale );
+        yScale = ScalarRcp( yScale );
+
+        xScale = ScalarDiv( yScale, aspectRatio );
+
+        fn = ScalarSub( zFar, zNear );
+
+        r22 = ScalarDiv( zFar, fn );
+
+        r32 = ScalarMul( zNear, r22 );
+        r32 = ScalarNeg( r32 );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( xScale, z, z, z );
+        s.m_m2 = Vector4( z, yScale, z, z );
+        s.m_m3 = Vector4( z, z, r22, o );
+        s.m_m4 = Vector4( z, z, r32, z );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL PerspectiveRH( zpScalarParamF fovy, zpScalarParamF aspectRatio, zpScalarParamF zNear, zpScalarParamG zFar )
+    {
+        zpScalar yScale, xScale, z, nf, r22, r32, no;
+        z = Scalar( 0.f );
+        no = Scalar( -1.f );
+
+        yScale = ScalarDegToRad( fovy );
+        yScale = ScalarMul( yScale, Scalar( 0.5f ) );
+        yScale = ScalarTan( yScale );
+        yScale = ScalarRcp( yScale );
+
+        xScale = ScalarDiv( yScale, aspectRatio );
+
+        nf = ScalarSub( zNear, zFar );
+
+        r22 = ScalarDiv( zFar, nf );
+
+        r32 = ScalarMul( zNear, r22 );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( xScale, z, z, z );
+        s.m_m2 = Vector4( z, yScale, z, z );
+        s.m_m3 = Vector4( z, z, r22, no );
+        s.m_m4 = Vector4( z, z, r32, z );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoLH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar )
+    {
+        zpScalar rml, lmr, rpl, tmb, bmt, tpb, fmn, nmf, h, z, o;
+        zpScalar m00, m11, m22, m30, m31, m32;
+        h = Scalar( 2.f );
+        z = Scalar( 0.f );
+        o = Scalar( 1.f );
+
+        rml = ScalarSub( r, l );
+        lmr = ScalarSub( l, r );
+        tmb = ScalarSub( t, b );
+        bmt = ScalarSub( b, t );
+        fmn = ScalarSub( zFar, zNear );
+        nmf = ScalarSub( zNear, zFar );
+
+        rpl = ScalarAdd( r, l );
+        tpb = ScalarAdd( t, b );
+
+        // scale
+        m00 = ScalarDiv( h, rml );
+        m11 = ScalarDiv( h, tmb );
+        m22 = ScalarRcp( fmn );
+
+        // translate
+        m30 = ScalarDiv( rpl, lmr );
+        m31 = ScalarDiv( tpb, bmt );
+        m32 = ScalarDiv( zNear, nmf );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( m00, z, z, z );
+        s.m_m2 = Vector4( z, m11, z, z );
+        s.m_m3 = Vector4( z, z, m22, z );
+        s.m_m4 = Vector4( m30, m31, m32, o );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoRH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar )
+    {
+        zpScalar rml, lmr, rpl, tmb, bmt, tpb, nmf, h, z, o;
+        zpScalar m00, m11, m22, m30, m31, m32;
+        h = Scalar( 2.f );
+        z = Scalar( 0.f );
+        o = Scalar( 1.f );
+
+        rml = ScalarSub( r, l );
+        lmr = ScalarSub( l, r );
+        tmb = ScalarSub( t, b );
+        bmt = ScalarSub( b, t );
+        nmf = ScalarSub( zNear, zFar );
+
+        rpl = ScalarAdd( r, l );
+        tpb = ScalarAdd( t, b );
+
+        // scale
+        m00 = ScalarDiv( h, rml );
+        m11 = ScalarDiv( h, tmb );
+        m22 = ScalarRcp( nmf );
+
+        // translate
+        m30 = ScalarDiv( rpl, lmr );
+        m31 = ScalarDiv( tpb, bmt );
+        m32 = ScalarDiv( zNear, nmf );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( m00, z, z, z );
+        s.m_m2 = Vector4( z, m11, z, z );
+        s.m_m3 = Vector4( z, z, m22, z );
+        s.m_m4 = Vector4( m30, m31, m32, o );
+
+        return s;
     }
 };

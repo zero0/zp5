@@ -147,6 +147,8 @@ void zp_printfln( const zp_char* text, ... );
 #define zp_printfln( text, ... )    static_cast<void>( 0 )
 #endif
 
+void zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... );
+
 //
 // Includes
 //

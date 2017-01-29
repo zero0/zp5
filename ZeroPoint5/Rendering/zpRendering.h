@@ -248,6 +248,7 @@ class zpRenderingEngine;
 #include "zpTextureManager.h"
 #include "zpShaderManager.h"
 #include "zpMaterialManager.h"
+#include "zpFontManager.h"
 
 struct zpRenderingCommand
 {
@@ -270,6 +271,7 @@ struct zpRenderingCommand
     zpRenderBuffer indexBuffer;
 
     zpMaterialHandle material;
+    zpFontHandle font;
 
     // draw instanced data
     zp_hash64 instanceId;
