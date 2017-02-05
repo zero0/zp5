@@ -1,7 +1,7 @@
 #include "zpEngine.h"
 
 zpObject::zpObject()
-    : m_instanceId( ZP_OBJECT_ID_EMPTY )
+    : m_instanceId( ZP_HANDLE_ID_EMPTY )
     , m_layers( 0 )
     , m_tags( 0 )
 {
@@ -10,7 +10,7 @@ zpObject::zpObject()
 
 zpObject::~zpObject()
 {
-    m_instanceId = ZP_OBJECT_ID_EMPTY;
+    m_instanceId = ZP_HANDLE_ID_EMPTY;
 }
 
 zp_hash64 zpObject::getInstanceId() const

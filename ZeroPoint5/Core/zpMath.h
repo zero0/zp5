@@ -127,6 +127,18 @@ typedef const zpMatrix4f&       zpMatrix4fParamC;
 
 #endif // ZP_USE_SIMD
 
+struct zpScalarData
+{
+    union
+    {
+        struct
+        {
+            zp_float v, r0, r1, r2;
+        };
+        zp_float m[ 4 ];
+    };
+};
+
 struct zpVector4fData
 {
     union
@@ -197,6 +209,83 @@ struct zpColor32i
             zp_byte r, g, b, a;
         };
         zp_uint rgba;
+    };
+};
+
+struct zpVector4fCmp
+{
+    union
+    {
+        struct
+        {
+            zp_int cmpX;
+            zp_int cmpY;
+            zp_int cmpZ;
+            zp_int cmpW;
+        };
+        zp_int cmp[ 4 ];
+    };
+};
+
+//
+// Collision
+//
+
+enum zpCollisionResult
+{
+    ZP_COLLISION_RESULT_NONE = 0,
+    ZP_COLLISION_RESULT_INTERSECT,
+    ZP_COLLISION_RESULT_CONTAINS
+};
+
+struct zpRay
+{
+    zpVector4fData position;
+    zpVector4fData direction;
+};
+
+struct zpBoundingAABB
+{
+    zpVector4fData center;
+    zpVector4fData extents;
+};
+
+struct zpBoundingSphere
+{
+    zpVector4fData center;
+    zp_float radius;
+};
+
+struct zpPlane
+{
+    zpVector4fData normal;
+    zp_float d;
+};
+
+struct zpFrustum
+{
+    union
+    {
+        struct
+        {
+            zpPlane left,
+                    right,
+                    bottom,
+                    top,
+                    near,
+                    far;
+        };
+        zpPlane planes[ 6 ];
+    };
+
+    union
+    {
+        struct
+        {
+            zpVector4fData ntl, ntr, nbl, nbr;
+            zpVector4fData ftl, ftr, fbl, fbr;
+        };
+        zpVector4fData points[ 8 ];
     };
 };
 
@@ -315,6 +404,9 @@ namespace zpMath
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Max( zpVector4fParamF a, zpVector4fParamF b );
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Min( zpVector4fParamF a, zpVector4fParamF b );
 
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarCmp( zpScalarParamF a, zpScalarParamF b );
+    ZP_FORCE_INLINE zpVector4fCmp ZP_VECTORCALL Vector4Cmp( zpVector4fParamF a, zpVector4fParamF b );
+    
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixT( zpVector4fParamF p );
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixTR( zpVector4fParamF p, zpQuaternion4fParamF r );
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixTRS( zpVector4fParamF p, zpQuaternion4fParamF r, zpVector4fParamF s );
@@ -332,6 +424,47 @@ namespace zpMath
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL PerspectiveRH( zpScalarParamF fovy, zpScalarParamF aspectRatio, zpScalarParamF zNear, zpScalarParamG zFar );
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoLH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar );
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoRH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar );
+};
+
+//
+// Non-SIMD Functions
+//
+
+namespace zpMath
+{
+    void PlaneSet( zpPlane& plane, zp_float a, zp_float b, zp_float c, zp_float d );
+    void PlaneSet( zpPlane& plane, zpVector4fParamF p0, zpVector4fParamF p1, zpVector4fParamF p2 );
+    void PlaneSet( zpPlane& plane, const zpVector4fData& p0, const zpVector4fData& p1, const zpVector4fData& p2 );
+
+    zp_int PlaneGetSide( const zpPlane& plane, const zpVector4fData& p );
+    zp_float PlaneDistanceToPoint( const zpPlane& plane, const zpVector4fData& p );
+
+    void FrustrumSetLookTo( zpFrustum& frustrum, const zpVector4fData& eye, const zpVector4fData& direction, const zpVector4fData& up, zp_float ratio, zp_float fovy, zp_float zNear, zp_float zFar );
+}
+
+//
+// Collision
+//
+
+namespace zpCollision
+{
+    // AABB
+    zpCollisionResult Test( const zpBoundingAABB& bounds, const zpVector4fData& pos );
+    zpCollisionResult Test( const zpBoundingAABB& bounds, const zpRay& ray );
+    zpCollisionResult Test( const zpBoundingAABB& bounds, const zpBoundingAABB& box );
+    zpCollisionResult Test( const zpBoundingAABB& bounds, const zpBoundingSphere& sphere );
+
+    // Sphere
+    zpCollisionResult Test( const zpBoundingSphere& bounds, const zpVector4fData& pos );
+    zpCollisionResult Test( const zpBoundingSphere& bounds, const zpRay& ray );
+    zpCollisionResult Test( const zpBoundingSphere& bounds, const zpBoundingAABB& box );
+    zpCollisionResult Test( const zpBoundingSphere& bounds, const zpBoundingSphere& sphere );
+
+    // Frustum
+    zpCollisionResult Test( const zpFrustum& a, const zpVector4fData& pos );
+    zpCollisionResult Test( const zpFrustum& a, const zpRay& b );
+    zpCollisionResult Test( const zpFrustum& a, const zpBoundingAABB& b );
+    zpCollisionResult Test( const zpFrustum& a, const zpBoundingSphere& b );
 };
 
 #ifdef ZP_USE_SIMD

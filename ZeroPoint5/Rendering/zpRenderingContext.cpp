@@ -188,10 +188,10 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
 
         zpVector4f tl, tr, br, bl;
 
-        zp_int minX = g->bearing.x;
-        zp_int maxX = g->bearing.x + g->size.x;
-        zp_int minY = -( g->size.y - g->bearing.y );
-        zp_int maxY = g->bearing.y;
+        zp_float minX = static_cast<zp_float>( g->bearing.x );
+        zp_float maxX = static_cast<zp_float>( g->bearing.x + g->size.x );
+        zp_float minY = static_cast<zp_float>( -( g->size.y - g->bearing.y ) );
+        zp_float maxY = static_cast<zp_float>( g->bearing.y );
         
         bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), scale );
         tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), scale );
@@ -203,7 +203,7 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
         tr = zpMath::Vector4Add( cursor, tr );
         br = zpMath::Vector4Add( cursor, br );
         
-        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( g->advance, 0, 0, 0 ), scale ) );
+        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( static_cast<zp_float>( g->advance ), 0, 0, 0 ), scale ) );
 
         zpMath::Vector4Store4( bl, p0.m );
         zpMath::Vector4Store4( tl, p1.m );

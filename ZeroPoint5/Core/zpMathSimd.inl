@@ -519,6 +519,27 @@ namespace zpMath
         return _mm_max_ps( a, b );
     }
 
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarCmp( zpScalarParamF a, zpScalarParamF b )
+    {
+        __m128 lt = _mm_cmplt_ss( a, b );
+        __m128 gt = _mm_cmpgt_ss( a, b );
+
+        return lt.m128_i32[ 0 ] ? -1 : gt.m128_i32[ 0 ] ? 1 : 0;
+    }
+
+    ZP_FORCE_INLINE zpVector4fCmp ZP_VECTORCALL Vector4Cmp( zpVector4fParamF a, zpVector4fParamF b )
+    {
+        __m128 lt = _mm_cmplt_ps( a, b );
+        __m128 gt = _mm_cmpgt_ps( a, b );
+
+        zpVector4fCmp cmp;
+        cmp.cmp[ 0 ] = lt.m128_i32[ 0 ] ? -1 : gt.m128_i32[ 0 ] ? 1 : 0;
+        cmp.cmp[ 1 ] = lt.m128_i32[ 1 ] ? -1 : gt.m128_i32[ 1 ] ? 1 : 0;
+        cmp.cmp[ 2 ] = lt.m128_i32[ 2 ] ? -1 : gt.m128_i32[ 2 ] ? 1 : 0;
+        cmp.cmp[ 3 ] = lt.m128_i32[ 3 ] ? -1 : gt.m128_i32[ 3 ] ? 1 : 0;
+        return cmp;
+    }
+
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixT( zpVector4fParamF p )
     {
         zpMatrix4f m;

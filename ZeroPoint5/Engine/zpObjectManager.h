@@ -5,12 +5,6 @@
 class zpObject;
 struct zpObjectInstance;
 
-enum : zp_hash64
-{
-    ZP_OBJECT_ID_INVALID = (zp_hash64)-1,
-    ZP_OBJECT_ID_EMPTY = 0,
-};
-
 class zpObjectHandle
 {
 public:

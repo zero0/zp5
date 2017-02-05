@@ -12,9 +12,6 @@ public:
     void removeObject( const zpObjectHandle& handle );
 
 private:
-    zp_hash64 m_instanceId;
-
-    zpString m_sceneName;
     zpVector< zpObjectHandle > m_objectsInScene;
 };
 
@@ -22,6 +19,8 @@ struct zpSceneInstance
 {
     zpScene scene;
     zp_size_t refCount;
+    zp_hash64 m_instanceId;
+    zpString m_sceneName;
 };
 
 class zpSceneManager
@@ -35,8 +34,11 @@ public:
     void markDontDestroyOnLoad( const zpObjectHandle& handle );
     void unmarkDontDestroyOnLoad( const zpObjectHandle& handle );
 
+    void update( zp_float dt, zp_float rt );
+
 private:
     zpVector< zpObjectHandle > m_objectsDontDestroyOnLoad;
+    zpVector< zpSceneInstance* > m_activeScenes;
 
     zp_hash64 m_newSceneInstanceId;
 };

@@ -1,7 +1,7 @@
 #include "zpEngine.h"
 
 zpObjectHandle::zpObjectHandle()
-    : m_instanceId( ZP_OBJECT_ID_INVALID )
+    : m_instanceId( ZP_HANDLE_ID_INVALID )
     , m_objectInstance( ZP_NULL )
 {
 }
@@ -86,7 +86,7 @@ void zpObjectHandle::release()
 {
     releaseRef();
 
-    m_instanceId = ZP_OBJECT_ID_INVALID;
+    m_instanceId = ZP_HANDLE_ID_INVALID;
     m_objectInstance = ZP_NULL;
 }
 
@@ -96,7 +96,7 @@ void zpObjectHandle::release()
 
 zpObjectManager::zpObjectManager()
     : m_activeObjects( 4 )
-    , m_newObjectInstanceId( ZP_OBJECT_ID_EMPTY )
+    , m_newObjectInstanceId( ZP_HANDLE_ID_EMPTY )
 {
 
 }

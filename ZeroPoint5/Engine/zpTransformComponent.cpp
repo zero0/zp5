@@ -76,7 +76,6 @@ void zpTransformComponent::setLocalPositionRotationScale( const zpVector4fData& 
     zpVector4f s = zpMath::Vector4Load4( m_localScale.m );
 
     zpMatrix4f m = zpMath::MatrixTRS( p, r, s );
-
     zpMath::MatrixStore4( m, m_localMatrix.m );
 
     m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
@@ -120,6 +119,8 @@ zpTransformComponentHandle& zpTransformComponent::getParentTransform()
 void zpTransformComponent::setParentTransform( const zpTransformComponentHandle& parent )
 {
     m_parentTransfrom = parent;
+
+    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
 }
 
 void zpTransformComponent::update( zp_float dt, zp_float rt )
@@ -144,12 +145,19 @@ void zpTransformComponent::update( zp_float dt, zp_float rt )
 
 zp_bool zpTransformComponent::isEnabled() const
 {
-    return true;// ( m_flags & ZP_TRANSFORM_FLAG_ENABLED ) == ZP_TRANSFORM_FLAG_ENABLED;
+    return ( m_flags & ZP_TRANSFORM_FLAG_ENABLED ) == ZP_TRANSFORM_FLAG_ENABLED;
 }
 
 void zpTransformComponent::setEnabled( zp_bool enabled )
 {
-
+    if( enabled )
+    {
+        m_flags |= ZP_TRANSFORM_FLAG_ENABLED;
+    }
+    else
+    {
+        m_flags &= ~ZP_TRANSFORM_FLAG_ENABLED;
+    }
 }
 
 zp_hash64 zpTransformComponent::getInstanceId() const
@@ -167,7 +175,7 @@ void zpTransformComponent::setInstanceId( zp_hash64 instanceId )
 //
 
 zpTransformComponentHandle::zpTransformComponentHandle()
-    : m_instanceId( ZP_OBJECT_ID_INVALID )
+    : m_instanceId( ZP_HANDLE_ID_EMPTY )
     , m_transformInstance( ZP_NULL )
 {
 
@@ -262,7 +270,7 @@ void zpTransformComponentHandle::set( zp_hash64 instanceId, zpTransformComponent
 
 zpTransformComponentManager::zpTransformComponentManager()
     : m_activeComponents( 4 )
-    , m_newTransformComponentInstanceId( ZP_OBJECT_ID_EMPTY )
+    , m_newTransformComponentInstanceId( ZP_HANDLE_ID_EMPTY )
 {
 
 }
