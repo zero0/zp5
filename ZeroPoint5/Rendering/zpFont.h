@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ZP_FONT_MANAGER_H
-#define ZP_FONT_MANAGER_H
+#ifndef ZP_FONT_H
+#define ZP_FONT_H
 
 struct zpGlyph
 {
@@ -79,4 +79,4 @@ private:
     zp_hash64 m_newFontInstanceId;
 };
 
-#endif // !ZP_FONT_MANAGER_H
+#endif // !ZP_FONT_H

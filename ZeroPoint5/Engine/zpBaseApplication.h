@@ -86,6 +86,7 @@ private:
     zpShaderManager m_shaderManager;
     zpMaterialManager m_materialManager;
     zpFontManager m_fontManager;
+    zpMeshManager m_meshManager;
 
     zpTime m_time;
 

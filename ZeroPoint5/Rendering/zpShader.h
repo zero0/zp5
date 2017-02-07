@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ZP_SHADER_MANAGER_H
-#define ZP_SHADER_MANAGER_H
+#ifndef ZP_SHADER_H
+#define ZP_SHADER_H
 
 struct zpShaderInstance
 {
@@ -60,4 +60,4 @@ private:
     zp_hash64 m_newShaderInstanceId;
 };
 
-#endif // !ZP_SHADER_MANAGER_H
+#endif // !ZP_SHADER_H

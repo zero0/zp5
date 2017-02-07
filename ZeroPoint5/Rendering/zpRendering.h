@@ -249,6 +249,7 @@ class zpRenderingEngine;
 #include "zpShader.h"
 #include "zpMaterial.h"
 #include "zpFont.h"
+#include "zpMesh.h"
 
 struct zpRenderingCommand
 {

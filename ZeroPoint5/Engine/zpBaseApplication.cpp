@@ -181,6 +181,7 @@ void zpBaseApplication::setup()
     m_shaderManager.setup( &m_renderingEngine );
     m_materialManager.setup( &m_shaderManager, &m_textureManager );
     m_fontManager.setup( &m_materialManager );
+    m_meshManager.setup();
 
     m_materialManager.getMaterial( "tempMaterial", tm );
     tm->color = { 1, 1, 1, 1 };
@@ -255,6 +256,7 @@ void zpBaseApplication::teardown()
     ff.release();
     runGarbageCollection();
 
+    m_meshManager.teardown();
     m_fontManager.teardown();
     m_materialManager.teardown();
     m_shaderManager.teardown();
@@ -336,6 +338,7 @@ void zpBaseApplication::runGarbageCollection()
     m_objectManager.garbageCollect();
     m_transformComponentManager.garbageCollect();
 
+    m_meshManager.garbageCollect();
     m_fontManager.garbageCollect();
     m_materialManager.garbageCollect();
     m_textureManager.garbageCollect();
@@ -355,6 +358,7 @@ void zpBaseApplication::runReloadChangedResources()
 {
     ZP_PROFILER_BLOCK();
 
+    m_meshManager.reloadChangedMeshs();
     m_fontManager.reloadChangedFonts();
     m_materialManager.reloadChangedMaterials();
     m_textureManager.reloadChangedTextures();

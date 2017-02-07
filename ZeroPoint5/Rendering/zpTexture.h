@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ZP_TEXTURE_MANAGER_H
-#define ZP_TEXTURE_MANAGER_H
+#ifndef ZP_TEXTURE_H
+#define ZP_TEXTURE_H
 
 struct zpTextureInstance
 {
@@ -62,4 +62,4 @@ private:
     zp_hash64 m_newTextureInstanceId;
 };
 
-#endif // !ZP_TEXTURE_MANAGER_H
+#endif // !ZP_TEXTURE_H

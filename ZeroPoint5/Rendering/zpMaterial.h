@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ZP_MATERIAL_MANAGER_H
-#define ZP_MATERIAL_MANAGER_H
+#ifndef ZP_MATERIAL_H
+#define ZP_MATERIAL_H
 
 struct zpMaterial
 {
