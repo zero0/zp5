@@ -254,8 +254,6 @@ zpCollisionResult zpCollision::Test( const zpBoundingAABB& bounds, const zpBound
 
 zpCollisionResult zpCollision::Test( const zpBoundingSphere& bounds, const zpVector4fData& pos )
 {
-    return ZP_COLLISION_RESULT_NONE;
-
     zpVector4f dist, a, b;
     zpScalar d;
     zpScalar r = zpMath::Scalar( bounds.radius );
@@ -276,18 +274,15 @@ zpCollisionResult zpCollision::Test( const zpBoundingSphere& bounds, const zpVec
 zpCollisionResult zpCollision::Test( const zpBoundingSphere& bounds, const zpRay& ray )
 {
     return ZP_COLLISION_RESULT_NONE;
-
 }
 
 zpCollisionResult zpCollision::Test( const zpBoundingSphere& bounds, const zpBoundingAABB& box )
 {
     return ZP_COLLISION_RESULT_NONE;
-
 }
 
 zpCollisionResult zpCollision::Test( const zpBoundingSphere& bounds, const zpBoundingSphere& sphere )
 {
-    return ZP_COLLISION_RESULT_NONE;
     zpScalar d, r = zpMath::Scalar( bounds.radius ), g = zpMath::Scalar( sphere.radius );
     zpVector4f dist, a, b;
 

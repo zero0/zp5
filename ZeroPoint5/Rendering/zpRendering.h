@@ -245,10 +245,10 @@ union zpRenderingSortKey
 
 class zpRenderingEngine;
 
-#include "zpTextureManager.h"
-#include "zpShaderManager.h"
-#include "zpMaterialManager.h"
-#include "zpFontManager.h"
+#include "zpTexture.h"
+#include "zpShader.h"
+#include "zpMaterial.h"
+#include "zpFont.h"
 
 struct zpRenderingCommand
 {
