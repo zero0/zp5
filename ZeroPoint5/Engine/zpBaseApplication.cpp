@@ -512,15 +512,27 @@ void zpBaseApplication::processFrame()
     zpScalar n = zpMath::Scalar( -10 );
     zpScalar f = zpMath::Scalar( 10 );
 
-    zpMatrix4f projection = zpMath::OrthoLH( l, r, t, b, n, f );
+    zpScalar fovy = zpMath::Scalar( 45.f );
+    zpScalar ratio = zpMath::Scalar( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
+    zpScalar zn = zpMath::Scalar( 1 );
+    zpScalar zf = zpMath::Scalar( 1000 );
+
+    zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
+    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
+    zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
+    zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
+
+    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+    zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
+    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
     ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
-    zpRectf rect = { 100, 100, 300, 300 };
+    zpRectf rect = { -10, -10, 30, 30 };
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setMaterial( tm );
-    ctx->setTransform( projection );
+    ctx->setTransform( zpMath::MatrixMul( view, proj ) );
     ctx->addVertexData( { rect.x,               rect.y, 0, 1 },               { 255, 0, 0, 255 }, { 0, 1 } );
     ctx->addVertexData( { rect.x,               rect.y + rect.height, 0, 1 }, { 0, 255, 0, 255 }, { 0, 0 } );
     ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 255, 255 }, { 1, 0 } );
@@ -561,7 +573,7 @@ void zpBaseApplication::processFrame()
 
     zp_char buff[ 512 ];
     ctx->beginDrawText( 0, ff );
-    ctx->setTransform( projection );
+    ctx->setTransform( ortho );
     const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
     const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
 
