@@ -461,6 +461,8 @@ void zpRenderingContext::processCommands( zpRenderingCommandProcessFunc func )
 
 void zpRenderingContext::flipBuffers()
 {
+    ZP_PROFILER_BLOCK();
+
     m_commands.clear();
 
     m_currentBufferIndex = ( m_currentBufferIndex + 1 ) % 2;

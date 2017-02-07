@@ -323,7 +323,7 @@ static zpShader g_shaderVCU;
 
 void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
 {
-    static const zp_int strides[] =
+    const zp_int strides[] =
     {
         sizeof( zp_float ) * 0,
         sizeof( zp_float ) * ( 4 + 1 ),
@@ -332,7 +332,7 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
     };
-    static const zp_size_t offsets[] =
+    const zp_size_t offsets[] =
     {
         sizeof( zp_float ) * 0,
         sizeof( zp_float ) * ( 4 ),
@@ -383,7 +383,7 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
             glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
             glEnableVertexAttribArray( 1 );
-            glVertexAttribPointer( 1, 4, GL_BYTE, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
+            glVertexAttribPointer( 1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
             glEnableVertexAttribArray( 0 );
             glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
             break;

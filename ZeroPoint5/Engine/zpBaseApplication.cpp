@@ -521,14 +521,14 @@ void zpBaseApplication::processFrame()
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setMaterial( tm );
     ctx->setTransform( projection );
-    ctx->addVertexData( { rect.x,               rect.y, 0, 1 },               { 1, 0, 0, 1 }, { 0, 1 } );
-    ctx->addVertexData( { rect.x,               rect.y + rect.height, 0, 1 }, { 0, 1, 0, 1 }, { 0, 0 } );
-    ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 1, 1 }, { 1, 0 } );
-    ctx->addVertexData( { rect.x + rect.height, rect.y, 0, 1 },               { 1, 1, 1, 1 }, { 1, 1 } );
+    ctx->addVertexData( { rect.x,               rect.y, 0, 1 },               { 255, 0, 0, 255 }, { 0, 1 } );
+    ctx->addVertexData( { rect.x,               rect.y + rect.height, 0, 1 }, { 0, 255, 0, 255 }, { 0, 0 } );
+    ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 255, 255 }, { 1, 0 } );
+    ctx->addVertexData( { rect.x + rect.height, rect.y, 0, 1 },               { 255, 255, 255, 255 }, { 1, 1 } );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
     
-#if 1
+#if 0
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
     ctx->setMaterial( tm );
@@ -565,17 +565,21 @@ void zpBaseApplication::processFrame()
     const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
     const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
 
+    const zp_uint fontHeight = 12;
+    const zp_uint fontSpacing = 4;
     zp_float y = 5;
-    const zpVector2i& mpos = m_input.getMouseLocation();
-    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%d, %d", mpos.x, mpos.y );
-    ctx->addText( { 5, y, 0, 1 }, buff, 12, {1, 1, 1, 1}, {1,1,1,1} );
-    y += 12;
+    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
+    ctx->addText( { 5, y, 0, 1 }, buff, fontHeight, { 255, 255, 255, 255}, { 255, 255, 255, 255 } );
+    y += fontHeight + fontSpacing;
 
     for( ; bf != ef; ++bf )
     {
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%s@%s %.3f", bf->functionName, bf->eventName, ( bf->endTime - bf->startTime ) * 1000.0f * m_time.getSecondsPerTick() );
-        ctx->addText( { 5, y, 0, 1 }, buff, 12, { 100, 1, 1, 1 }, { 1, 1, 1, 1 } );
-        y += 12;
+        zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+        zp_size_t fm = ( bf->endMemory - bf->startMemory );
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
+        ctx->addText( { 5, y, 0, 1 }, buff, fontHeight, { 255, 255, 255, 255 }, { 255, 255, 255, 255 } );
+        y += fontHeight + fontSpacing;
     }
     ctx->endDraw();
 
@@ -599,7 +603,7 @@ void zpBaseApplication::processFrame()
         sleepTime += spf;
     }
 
-    zp_sleep( static_cast<zp_int>( sleepTime ) );
+    zp_sleep( static_cast<zp_int>( sleepTime + 0.5f ) );
 
     ZP_PROFILER_END( Sleep );
 
