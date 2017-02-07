@@ -8,17 +8,6 @@ const zp_time_t ZP_MESH_NOT_FILE = static_cast<zp_time_t>( -1 );
 struct zpMeshData
 {
     zp_time_t lastModifiedTime;
-
-    zpColorf color;
-
-    zpVector4fData mainTexST;
-    zpVector4fData specTexST;
-    zpVector4fData normTexST;
-
-    zpString shaderName;
-    zpString mainTexName;
-    zpString specTexName;
-    zpString normTexName;
 };
 
 zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
@@ -28,14 +17,6 @@ zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
     //{
     //    return -1;
     //}
-
-    meshData.color = { 1, 1, 1, 1 };
-
-    meshData.mainTexST = { 1, 1, 0, 0 };
-    meshData.specTexST = { 1, 1, 0, 0 };
-    meshData.normTexST = { 1, 1, 0, 0 };
-
-    meshData.mainTexName = "Assets/uv_checker_large.bmp";
 
     return 0;
 }

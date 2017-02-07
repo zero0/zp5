@@ -102,24 +102,11 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
     cmd.material = zpMaterialHandle();
     cmd.font = zpFontHandle();
+    cmd.mesh = zpMeshHandle();
 
     ZP_ALIGN16 zpMatrix4fData transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
     cmd.transform = transformData;
-}
-
-void zpRenderingContext::endDrawImmediate()
-{
-    ZP_ASSERT( m_currentCommnad != npos, "" );
-    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
-
-    cmd->vertexOffset = m_immediateVertexSize;
-    cmd->indexOffset = m_immediateIndexSize;
-    
-    m_immediateVertexSize = m_scratchVertexBuffer.getPosition();
-    m_immediateIndexSize = m_scratchIndexBuffer.getPosition();
-
-    m_currentCommnad = npos;
 }
 
 void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font )
@@ -141,10 +128,40 @@ void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font 
     cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
     cmd.material = font->fontMaterial;
     cmd.font = font;
+    cmd.mesh = zpMeshHandle();
 
     ZP_ALIGN16 zpMatrix4fData transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
     cmd.transform = transformData;
+}
+
+void zpRenderingContext::beginDrawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material )
+{
+    ZP_ASSERT( m_currentCommnad == npos, "" );
+    m_currentCommnad = m_commands.size();
+
+    const zpMesh* m = mesh.operator->();
+    for( zp_size_t i = 0, imax = m->numMeshParts; i < imax; ++i )
+    {
+        const zpMeshPart* p = m->parts + i;
+
+        zpRenderingCommand& cmd = m_commands.pushBackEmpty();
+        cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+        cmd.sortKey.key = 0;
+        cmd.sortKey.layer = layer;
+        cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+        cmd.vertexFormat = m->vertexFormat;
+        cmd.vertexOffset = p->vertexOffset;
+        cmd.vertexCount = p->vertexCount;
+        cmd.indexOffset = p->indexOffset;
+        cmd.indexCount = p->indexCount;
+        cmd.vertexBuffer = m->vertexData;
+        cmd.indexBuffer = m->vertexData;
+        cmd.material = material;
+        cmd.font = zpFontHandle();
+        cmd.mesh = mesh;
+        cmd.transform = transformData;
+    }
 }
 
 void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor )
@@ -233,7 +250,7 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
     }
 }
 
-void zpRenderingContext::endDrawText()
+void zpRenderingContext::endDraw()
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -257,10 +274,48 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     cmd->transform = transformData;
 }
 
+void zpRenderingContext::setTransform( const zpMatrix4fData& transform )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    cmd->transform = transform;
+}
+
+void zpRenderingContext::setTransform( zp_size_t cmdOffset, zpMatrix4fParamF transform )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
+
+    ZP_ALIGN16 zpMatrix4fData transformData;
+    zpMath::MatrixStore4( transform, transformData.m );
+    cmd->transform = transformData;
+}
+
+void zpRenderingContext::setTransform( zp_size_t cmdOffset, const zpMatrix4fData& transform )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
+
+    cmd->transform = transform;
+}
+
 void zpRenderingContext::setMaterial( const zpMaterialHandle& material )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
-    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad; sizeof( zpRenderingCommand );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    cmd->material = material;
+}
+
+void zpRenderingContext::setMaterial( zp_size_t cmdOffset, const zpMaterialHandle& material )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
+
     cmd->material = material;
 }
 

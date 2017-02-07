@@ -22,15 +22,20 @@ public:
     void resetScissorRect();
 
     void beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat );
-    void endDrawImmediate();
-
     void beginDrawText( zp_byte layer, const zpFontHandle& font );
-    void addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor );
-    void endDrawText();
+    void beginDrawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material );
+    void endDraw();
 
     void setTransform( zpMatrix4fParamF transform );
-    void setMaterial( const zpMaterialHandle& material );
+    void setTransform( const zpMatrix4fData& transform );
+    void setTransform( zp_size_t cmdOffset, zpMatrix4fParamF transform );
+    void setTransform( zp_size_t cmdOffset, const zpMatrix4fData& transform );
 
+    void setMaterial( const zpMaterialHandle& material );
+    void setMaterial( zp_size_t cmdOffset, const zpMaterialHandle& material );
+
+    void addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor );
+    
     void addVertex( zpVector4fParamF pos, const zpColor32i& color );
 
     void addVertexData( const zpVector4fData& pos, const zpColor32i& color );

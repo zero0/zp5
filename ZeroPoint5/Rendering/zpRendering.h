@@ -273,6 +273,7 @@ struct zpRenderingCommand
 
     zpMaterialHandle material;
     zpFontHandle font;
+    zpMeshHandle mesh;
 
     // draw instanced data
     zp_hash64 instanceId;

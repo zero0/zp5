@@ -526,7 +526,7 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 1, 1 }, { 1, 0 } );
     ctx->addVertexData( { rect.x + rect.height, rect.y, 0, 1 },               { 1, 1, 1, 1 }, { 1, 1 } );
     ctx->addQuadIndex( 0, 1, 2, 3 );
-    ctx->endDrawImmediate();
+    ctx->endDraw();
     
 #if 1
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
@@ -538,7 +538,7 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
     ctx->addVertexData( { 0, 0, 0, 1 }, { 1, 1, 1, 1 }, { 1, 0 } );
     ctx->addQuadIndex( 0, 1, 2, 3 );
-    ctx->endDrawImmediate();
+    ctx->endDraw();
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
     ctx->setMaterial( tm );
@@ -547,7 +547,7 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
-    ctx->endDrawImmediate();
+    ctx->endDraw();
     
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
     ctx->setMaterial( tm );
@@ -556,7 +556,7 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );
     ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );
     ctx->addTriangleIndex( 0, 1, 2 );
-    ctx->endDrawImmediate();
+    ctx->endDraw();
 #endif
 
     zp_char buff[ 512 ];
@@ -577,7 +577,7 @@ void zpBaseApplication::processFrame()
         ctx->addText( { 5, y, 0, 1 }, buff, 12, { 100, 1, 1, 1 }, { 1, 1, 1, 1 } );
         y += 12;
     }
-    ctx->endDrawText();
+    ctx->endDraw();
 
     
     m_renderingEngine.present();

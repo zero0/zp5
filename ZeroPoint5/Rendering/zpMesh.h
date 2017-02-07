@@ -2,9 +2,22 @@
 #ifndef ZP_MESH_H
 #define ZP_MESH_H
 
+struct zpMeshPart
+{
+    zp_size_t indexOffset;
+    zp_size_t indexCount;
+    zp_size_t vertexOffset;
+    zp_size_t vertexCount;
+    zpBoundingAABB boundingBox;
+};
+
 struct zpMesh
 {
-
+    zpVertexFormat vertexFormat;
+    zp_size_t numMeshParts;
+    zpRenderBuffer vertexData;
+    zpRenderBuffer indexData;
+    zpMeshPart parts[ 8 ];
 };
 
 struct zpMeshInstance
