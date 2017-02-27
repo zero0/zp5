@@ -31,7 +31,9 @@ LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
         case WM_GETMINMAXINFO:
         {
             LPMINMAXINFO lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
-            lpMMI->ptMinTrackSize = { 300, 300 };
+
+            POINT p = { 300, 300 };
+            lpMMI->ptMinTrackSize = p;
         } break;
 
         case WM_KILLFOCUS:
@@ -115,6 +117,7 @@ ZP_FORCE_INLINE void _AdjustWindowSize( zpRecti& windowRect, DWORD windowStyle )
 {
     RECT rc = { 0, 0, windowRect.width, windowRect.height };
     AdjustWindowRectEx( &rc, windowStyle, false, 0 );
+
     windowRect.width = rc.right - rc.left;
     windowRect.height = rc.bottom - rc.top;
 }
@@ -183,15 +186,18 @@ void zpBaseApplication::setup()
     m_fontManager.setup( &m_materialManager );
     m_meshManager.setup();
 
+    zpColorf white = { 1, 1, 1, 1 };
+    zpVector4fData st = { 1, 1, 0, 0 };
+
     m_materialManager.getMaterial( "tempMaterial", tm );
-    tm->color = { 1, 1, 1, 1 };
-    tm->mainTexST = { 1, 1, 0, 0 };
+    tm->color = white;
+    tm->mainTexST = st;
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tm->mainTex );
 
     m_fontManager.getFont( "debug.font", ff );
     m_materialManager.getMaterial( "font.material", ff->fontMaterial );
-    ff->fontMaterial->color = { 1, 1, 1, 1 };
-    ff->fontMaterial->mainTexST = { 1, 1, 0, 0 };
+    ff->fontMaterial->color = white;
+    ff->fontMaterial->mainTexST = st;
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", ff->fontMaterial->mainTex );
 
     // TODO: remove when done debugging
@@ -205,6 +211,8 @@ void zpBaseApplication::setup()
 
     zp_float fw = fixedWidth  * invW;
     zp_float fh = fixedHeight * invH;
+    
+    zpVector2i s = { fixedWidth, fixedHeight };
 
     zp_size_t c = 0;
     zp_memset( ff->fontGlyphs, 0, sizeof( ff->fontGlyphs ) );
@@ -217,8 +225,8 @@ void zpBaseApplication::setup()
             g->uvRect.y =       1.0f - ( h * invH ) - fh;
             g->uvRect.width =   fw;
             g->uvRect.height =  fh;
-            g->size = { fixedWidth, fixedHeight };
-            g->bearing = { fixedWidth, fixedHeight };
+            g->size = s;
+            g->bearing = s;
             g->advance = fixedWidth;
             g->baseline = 0;
 
@@ -515,7 +523,7 @@ void zpBaseApplication::processFrame()
     zpScalar fovy = zpMath::Scalar( 45.f );
     zpScalar ratio = zpMath::Scalar( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
     zpScalar zn = zpMath::Scalar( 1 );
-    zpScalar zf = zpMath::Scalar( 1000 );
+    zpScalar zf = zpMath::Scalar( 100 );
 
     zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
     zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
@@ -526,17 +534,37 @@ void zpBaseApplication::processFrame()
     zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
     zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
 
-    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
-    ctx->setViewport( { 0, 0, 960, 640, 1, 100 } );
-    ctx->clear( { 0.2058f, 0.3066f, 0.4877f, 1.0f }, 1, 0 );
+    zpViewport vp = { 0, 0, 960, 640, 1, 100 };
+
+    zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
+
     zpRectf rect = { -10, -10, 30, 30 };
+    zpVector4fData v0 =  { rect.x,               rect.y, 0, 1 };
+    zpVector4fData v1 =  { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
+    zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
+
+    zpColor32i cr = { 255, 0, 0, 255 };
+    zpColor32i cg = { 0, 255, 0, 255 };
+    zpColor32i cb = { 0, 0, 255, 255 };
+    zpColor32i cw = { 255, 255, 255, 255 };
+
+    zpVector2f uv0 = { 0, 1 };
+    zpVector2f uv1 = { 0, 0 };
+    zpVector2f uv2 = { 1, 0 };
+    zpVector2f uv3 = { 1, 1 };
+
+    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
+    ctx->setViewport( vp );
+    ctx->clear( clearColor, 1, 0 );
+    
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setMaterial( tm );
     ctx->setTransform( zpMath::MatrixMul( view, proj ) );
-    ctx->addVertexData( { rect.x,               rect.y, 0, 1 },               { 255, 0, 0, 255 }, { 0, 1 } );
-    ctx->addVertexData( { rect.x,               rect.y + rect.height, 0, 1 }, { 0, 255, 0, 255 }, { 0, 0 } );
-    ctx->addVertexData( { rect.x + rect.height, rect.y + rect.height, 0, 1 }, { 0, 0, 255, 255 }, { 1, 0 } );
-    ctx->addVertexData( { rect.x + rect.height, rect.y, 0, 1 },               { 255, 255, 255, 255 }, { 1, 1 } );
+    ctx->addVertexData( v0, cr, uv0 );
+    ctx->addVertexData( v1, cg, uv1 );
+    ctx->addVertexData( v2, cb, uv2 );
+    ctx->addVertexData( v3, cw, uv3 );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
     
@@ -571,6 +599,7 @@ void zpBaseApplication::processFrame()
     ctx->endDraw();
 #endif
 
+#if 1
     zp_char buff[ 512 ];
     ctx->beginDrawText( 0, ff );
     ctx->setTransform( ortho );
@@ -580,20 +609,25 @@ void zpBaseApplication::processFrame()
     const zp_uint fontHeight = 12;
     const zp_uint fontSpacing = 4;
     zp_float y = 5;
+
+    zpVector4fData tp = { 5, y, 0, 1 };
     zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
-    ctx->addText( { 5, y, 0, 1 }, buff, fontHeight, { 255, 255, 255, 255}, { 255, 255, 255, 255 } );
+    ctx->addText( tp, buff, fontHeight, cw, cw );
     y += fontHeight + fontSpacing;
 
     for( ; bf != ef; ++bf )
     {
         zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
         zp_size_t fm = ( bf->endMemory - bf->startMemory );
-
+        
+        tp.y = y;
+        
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
-        ctx->addText( { 5, y, 0, 1 }, buff, fontHeight, { 255, 255, 255, 255 }, { 255, 255, 255, 255 } );
+        ctx->addText( tp, buff, fontHeight, cw, cw );
         y += fontHeight + fontSpacing;
     }
     ctx->endDraw();
+#endif
 
     
     m_renderingEngine.present();

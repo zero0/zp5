@@ -10,9 +10,9 @@ zpInput::zpInput()
     , m_mouseButtonBuffer( 0 )
     , m_mouseButtonDownBuffer( 0 )
     , m_mouseButtonPressBuffer( 0 )
-    , m_mouseLocation( { 0, 0 } )
-    , m_mouseLocationBuffer( { 0, 0 } )
-    , m_mouseLocationDelta( { 0, 0 } )
+    , m_mouseLocation()
+    , m_mouseLocationBuffer()
+    , m_mouseLocationDelta()
 {
     zp_memset( m_keyBuffer, 0, sizeof( m_keyBuffer ) );
     zp_memset( m_keyDownBuffer, 0, sizeof( m_keyDownBuffer ) );

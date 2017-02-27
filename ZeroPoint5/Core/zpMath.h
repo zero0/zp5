@@ -192,11 +192,11 @@ struct zpColorf
 {
     union
     {
-        zp_float rgba[4];
         struct
         {
             zp_float r, g, b, a;
         };
+        zp_float rgba[4];
     };
 };
 

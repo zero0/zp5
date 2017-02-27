@@ -182,7 +182,6 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
     zpVector4f newLine = zpMath::Vector4Scale( zpMath::Vector4( 0, 12, 0, 0 ), scale );
 
     ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
-    zpVector2f u0, u1, u2, u3;
 
     zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
 
@@ -227,10 +226,10 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
         zpMath::Vector4Store4( tr, p2.m );
         zpMath::Vector4Store4( br, p3.m );
 
-        u0 = { g->uvRect.x,                   g->uvRect.y };
-        u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
-        u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
-        u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y };
+        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
+        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
+        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
 
         // bl -> tl -> tr -> br
         addVertexData( p0, bottomColor, u0 );

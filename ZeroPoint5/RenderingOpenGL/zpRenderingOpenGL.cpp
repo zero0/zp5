@@ -344,13 +344,13 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
     ZP_STATIC_ASSERT( ( sizeof( offsets ) / sizeof( offsets[ 0 ] ) ) == zpVertexFormat_Count );
 
-    GLuint prog = 0;
+    GLuint prog = 0; //cmd->material->shader->programShader.index;
     switch( cmd->vertexFormat )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
             prog = ( g_shaderVC.programShader.index );
             break;
-
+    
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
             prog = ( g_shaderVCU.programShader.index );
             break;
@@ -555,12 +555,14 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     ZP_ASSERT( r == GLEW_OK, "" );
     zp_printfln( "Using GLEW: %s", glewGetString( GLEW_VERSION ) );
 
+    GLint OpenGLVersion[ 2 ];
+    glGetIntegerv( GL_MAJOR_VERSION, &OpenGLVersion[ 0 ] );
+    glGetIntegerv( GL_MINOR_VERSION, &OpenGLVersion[ 1 ] );
+
 #ifdef ZP_WINDOWS
-    if( WGLEW_ARB_create_context )
+    if( WGLEW_ARB_create_context && OpenGLVersion[ 0 ] > 2 )
     {
-        GLint OpenGLVersion[ 2 ];
-        glGetIntegerv( GL_MAJOR_VERSION, &OpenGLVersion[ 0 ] );
-        glGetIntegerv( GL_MINOR_VERSION, &OpenGLVersion[ 1 ] );
+        zp_printfln( "From GL:    %s", glGetString( GL_VERSION ) );
 
         GLint flags = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
 #ifdef ZP_DEBUG
@@ -596,10 +598,13 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 #ifdef ZP_DEBUG
     glEnable( GL_DEBUG_OUTPUT );
     glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
-    glDebugMessageCallback( _DebugOutputOpenGL, ZP_NULL );
-    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
-    glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
-    glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
+    if( OpenGLVersion[ 0 ] > 2 )
+    {
+        glDebugMessageCallback( _DebugOutputOpenGL, ZP_NULL );
+        glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
+        glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
+        glDebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP, GL_DONT_CARE, 0, 0, GL_FALSE );
+    }
 #endif
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
@@ -608,44 +613,49 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
 
-    const zp_char* vertVC = ""
-        "\n" "layout(location = 0) in highp vec4 vertex;"
-        "\n" "layout(location = 1) in lowp vec4 color;"
-        "\n" "out lowp vec4 fragmentColor;"
-        "\n" "void main() {"
-        "\n"     "gl_Position = _ObjectToWorld * vertex;"
-        "\n"     "fragmentColor = color;"
-        "\n" "}"
+    const zp_char* vertVC =                             ""
+        "\n" "in highp vec4 vertex;                      "
+        "\n" "in lowp vec4 color;                        "
+        "\n" "out lowp vec4 fragmentColor;               "
+        "\n" "void main()                                "
+        "\n" "{                                          "
+        "\n" "   gl_Position = _ObjectToWorld * vertex;  "
+        "\n" "   fragmentColor = color;                  "
+        "\n" "}                                          "
         "\n";
-    const zp_char* fragVC = ""
-        "\n" "in lowp vec4 fragmentColor;"
-        "\n" "out lowp vec4 outColor;"
-        "\n" "void main() {"
-        "\n"     "outColor = fragmentColor;"
-        "\n" "}"
+    const zp_char* fragVC =                 ""
+        "\n" "in lowp vec4 fragmentColor;    "
+        //"\n" "out lowp vec4 outColor;        "
+        "\n" "void main()                    "
+        "\n" "{                              "
+        "\n" "   gl_FragColor  = fragmentColor;   "
+        "\n" "}                              "
         "\n";
 
-    const zp_char* vertVCU = ""
-        "\n" "layout(location = 0) in highp vec4 vertex;"
-        "\n" "layout(location = 1) in lowp vec4 color;"
-        "\n" "layout(location = 2) in highp vec2 texcoord;"
-        "\n" "out lowp vec4 fragmentColor;"
-        "\n" "out highp vec2 uv;"
-        "\n" "void main() {"
-        "\n"     "gl_Position = _ObjectToWorld * vertex;"
-        "\n"     "fragmentColor = color;"
-        "\n"     "uv = texcoord;"
-        "\n" "}"
+    const zp_char* vertVCU =                                ""
+        "\n" "in highp vec4 vertex;                          "
+        "\n" "in lowp vec4 color;                            "
+        "\n" "in highp vec2 texcoord;                        "
+        "\n" "out lowp vec4 fragmentColor;                   "
+        "\n" "out highp vec2 uv;                             "
+        "\n" "void main()                                    "
+        "\n" "{                                              "
+        "\n" "    gl_Position = _ObjectToWorld * vertex;     "
+        "\n" "    fragmentColor = color;                     "
+        "\n" "    uv = texcoord;                             "
+        "\n" "}                                              "
         "\n";
-    const zp_char* fragVCU = ""
-        "\n" "uniform sampler2D _MainTex;"
-        "\n" "in lowp vec4 fragmentColor;"
-        "\n" "in highp vec2 uv;"
-        "\n" "out lowp vec4 outColor;"
-        "\n" "void main() {"
-        "\n"     "outColor = fragmentColor * texture( _MainTex, uv );"
-        "\n" "}"
+    const zp_char* fragVCU =                                        ""
+        "\n" "uniform sampler2D _MainTex;                            "
+        "\n" "in lowp vec4 fragmentColor;                            "
+        "\n" "in highp vec2 uv;                                      "
+        //"\n" "out lowp vec4 outColor;                                "
+        "\n" "void main()                                            "
+        "\n" "{                                                      "
+        "\n" "    gl_FragColor = fragmentColor * tex2D( _MainTex, uv );"
+        "\n" "}                                                      "
         "\n";
+
     CreateShaderOpenGL( vertVC, fragVC, g_shaderVC );
     CreateShaderOpenGL( vertVCU, fragVCU, g_shaderVCU );
 }
@@ -681,6 +691,7 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
                         cmd->viewport.topY,
                         cmd->viewport.width,
                         cmd->viewport.height );
+            glDepthRange( cmd->viewport.minDepth, cmd->viewport.maxDepth );
         }
             break;
 
@@ -691,7 +702,7 @@ void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
                           cmd->clearColor.g,
                           cmd->clearColor.b,
                           cmd->clearColor.a );
-            glClearDepthf( cmd->clearDepth );
+            glClearDepth( cmd->clearDepth );
             glClearStencil( cmd->clearStencil );
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
         }
@@ -869,43 +880,64 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Shader" );
 
-    shader = {};
+    zpShader empty = {};
+    shader = empty;
 
     GLint result;
-    //GLint infoLength;
+    GLint infoLength;
 
     // vertex shader
     shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
 
-    const zp_char* commonHeader =
-        "\n" "#version 330 core"
-        "\n" "uniform struct PerFrame {"
-        "\n"     "vec4 _Time; "
-        "\n" "};"
-        "\n" "uniform mat4 _ObjectToWorld;"
-        //"\n" "uniform struct PerDrawCall {"
-        //"\n"     "mat4 _ObjectToWorld;"
-        //"\n" "};"
-        "\n" "uniform struct Camera {"
-        "\n"     "mat4 _ViewPorjection;"
-        "\n"     "mat4 _InvViewPorjection;"
-        "\n"     "vec4 _CameraUp;"
-        "\n"     "vec4 _CameraLookTo;"
-        "\n"     "vec4 _CameraPosition;"
-        "\n"     "vec4 _CameraData;"
-        "\n" "};"
+    const zp_char* versionHeader =       ""
+        "\n" "#if ( __VERSION__ > 120 )   "
+        "\n" "# version 330 core          "
+        "\n" "# define tex2D( sampler, uv )     texture( sampler, uv )"
+        "\n" "#else                       "
+        "\n" "# version 120               "
+        "\n" "# define tex2D( sampler, uv )     texture2D( sampler, uv )"
+        "\n" "# define highp"
+        "\n" "# define mediump"
+        "\n" "# define lowp"
+        "\n" "#endif                      "
         "\n";
 
-    const zp_char* vsHeader =
-        "\n" "#define VERTEX"
+    const zp_char* commonHeader =           ""
+        "\n" "uniform struct PerFrame        "
+        "\n" "{                              "
+        "\n" "    vec4 _Time;                "
+        "\n" "};                             "
+        "\n" "uniform mat4 _ObjectToWorld;   "
+        "\n" "uniform struct PerDrawCall     "
+        "\n" "{                              "
+        "\n" "    mat4 _ObjectToWorld;       "
+        "\n" "};                             "
+        "\n" "uniform struct Camera          "
+        "\n" "{                              "
+        "\n" "    mat4 _ViewPorjection;      "
+        "\n" "    mat4 _InvViewPorjection;   "
+        "\n" "    vec4 _CameraUp;            "
+        "\n" "    vec4 _CameraLookTo;        "
+        "\n" "    vec4 _CameraPosition;      "
+        "\n" "    vec4 _CameraData;          "
+        "\n" "};                             "
         "\n";
 
-    const zp_char* psHeader =
-        "\n" "#define FRAGMENT"
+    const zp_char* vsHeader = ""
+        "\n" "#define VERTEX   "
+        "\n" "# define in attribute"
+        "\n" "# define out varying"
+        "\n";
+
+    const zp_char* psHeader = ""
+        "\n" "#define FRAGMENT "
+        "\n" "# define in varying"
+        "\n" "# define out"
         "\n";
 
     const zp_char* vs[] =
     {
+        versionHeader,
         commonHeader,
         vsHeader,
         vertexShaderSource
@@ -914,19 +946,20 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     glCompileShader( shader.vertexShader.index );
 
     glGetShaderiv( shader.vertexShader.index, GL_COMPILE_STATUS, &result );
-    //glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    //if( infoLength )
-    //{
-    //    zp_char buffer[ 512 ];
-    //    glGetShaderInfoLog( shader.vertexShader.index, 512, ZP_NULL, buffer );
-    //    zp_printfln( "Vertex Shader Error: %s", buffer );
-    //}
+    glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetShaderInfoLog( shader.vertexShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Vertex Shader Error: %s", buffer );
+    }
 
     // fragment shader
     shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
 
     const zp_char* ps[] =
     {
+        versionHeader,
         commonHeader,
         psHeader,
         fragmentShaderSource
@@ -935,13 +968,13 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     glCompileShader( shader.fragmentShader.index );
 
     glGetShaderiv( shader.fragmentShader.index, GL_COMPILE_STATUS, &result );
-    //glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    //if( infoLength )
-    //{
-    //    zp_char buffer[ 512 ];
-    //    glGetShaderInfoLog( shader.fragmentShader.index, 512, ZP_NULL, buffer );
-    //    zp_printfln( "Fragment Shader Error: %s", buffer );
-    //}
+    glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetShaderInfoLog( shader.fragmentShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Fragment Shader Error: %s", buffer );
+    }
 
     // program
     shader.programShader.index = glCreateProgram();
@@ -950,13 +983,13 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     glLinkProgram( shader.programShader.index );
 
     glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
-    //glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    //if( infoLength )
-    //{
-    //    zp_char buffer[ 512 ];
-    //    glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
-    //    zp_printfln( "Program Link Error: %s", buffer );
-    //}
+    glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+    if( infoLength )
+    {
+        zp_char buffer[ 512 ];
+        glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
+        zp_printfln( "Program Link Error: %s", buffer );
+    }
 
     glDetachShader( shader.programShader.index, shader.vertexShader.index );
     glDetachShader( shader.programShader.index, shader.fragmentShader.index );

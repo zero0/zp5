@@ -10,7 +10,10 @@ file( GLOB BLACKJACK_SOURCE "src/*.cpp" )
 file( GLOB BLACKJACK_HEADER "src/*.h" )
 file( GLOB BLACKJACK_INLINE "src/*.inl" )
 
-set( BLACKJACK_BIN ${PROJECT_NAME}_Win64 )
+set( PLATFORM_NAME Win )
+set( PLATFORM_ARCH x86 )
+
+set( BLACKJACK_BIN ${PROJECT_NAME}_${PLATFORM_NAME}_${PLATFORM_ARCH} )
 set( BLACKJACK_ASSETS "Assets/" )
 
 source_group( Blackjack\\Headers FILES
@@ -51,3 +54,4 @@ set_target_properties( Blackjack PROPERTIES
 )
 
 install( TARGETS Blackjack RUNTIME DESTINATION bin )
+install( DIRECTORY Assets DESTINATION bin )

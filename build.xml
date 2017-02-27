@@ -4,7 +4,6 @@
     <description>
     </description>
 
-
     <property name="platform.32" value="x86" />
     <property name="platform.64" value="x64" />
 
@@ -14,7 +13,18 @@
     <property name="install.32.dir" value="install_${platform.32}" basedir="${basedir}" />
     <property name="install.64.dir" value="install_${platform.64}" basedir="${basedir}" />
 
-    <property name="vc.dir" location="C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/" />
+    <property name="vs.10" value="10" />
+    <property name="vs.14" value="14" />
+    <property name="vs.10.year" value="2010" />
+    <property name="vs.14.year" value="2015" />
+    <!--
+    <property name="user.config" location="user.properties" />
+    <property file="${user.config}" />
+    -->
+    <property name="current.vs" value="${vs.10}" />
+    <property name="current.vs.year" value="${vs.10.year}" />
+    
+    <property name="vc.dir" location="D:/Program Files (x86)/Microsoft Visual Studio ${current.vs}.0/VC/" />
     <property name="vc.exe" location="${vc.dir}/vcvarsall.bat" />
     <property name="devenv.exe" value="devenv" />
 
@@ -69,9 +79,9 @@
         <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
         <property name="install.dir" value="install_${platform}" basedir="${basedir}" />
 
-        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+        <property name="zp.sln" value="${build.dir}/ZeroPoint.sln" />
 
-        <condition property="gen" value="Visual Studio 14 2015 Win64" else="Visual Studio 14 2015">
+        <condition property="gen" value="Visual Studio ${current.vs} ${current.vs.year} Win64" else="Visual Studio ${current.vs} ${current.vs.year}">
             <equals arg1="${platform}" arg2="${platform.64}" />
         </condition>
 
@@ -90,7 +100,7 @@
         <echo>Building Platform ${mode} ${platform}</echo>
         <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
 
-        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+        <property name="zp.sln" value="${build.dir}/ZeroPoint.sln" />
 
         <exec executable="cmd">
             <arg value="/c" />
@@ -110,7 +120,7 @@
         <echo>Installing Platform ${mode} ${platform}</echo>
         <property name="build.dir" value="build_${platform}" basedir="${basedir}" />
 
-        <property name="zp.sln" value="${build.dir}/ZP4.sln" />
+        <property name="zp.sln" value="${build.dir}/ZeroPoint.sln" />
         
         <exec executable="cmd">
             <arg value="/c" />

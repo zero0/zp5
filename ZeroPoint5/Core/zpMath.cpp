@@ -16,7 +16,8 @@ zp_float zp_tan( zp_float r )
 
 void zpMath::PlaneSet( zpPlane& plane, zp_float a, zp_float b, zp_float c, zp_float d )
 {
-    plane.normal = { a, b, c, 0 };
+    zpVector4fData n = { a, b, c, 0 };
+    plane.normal = n;
     plane.d = d;
 }
 

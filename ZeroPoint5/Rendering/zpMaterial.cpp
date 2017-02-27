@@ -29,11 +29,13 @@ zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materialData )
     //    return -1;
     //}
 
-    materialData.color = { 1, 1, 1, 1 };
+    zpColorf c = { 1, 1, 1, 1 };
+    materialData.color = c;
 
-    materialData.mainTexST = { 1, 1, 0, 0 };
-    materialData.specTexST = { 1, 1, 0, 0 };
-    materialData.normTexST = { 1, 1, 0, 0 };
+    zpVector4fData st = { 1, 1, 0, 0, };
+    materialData.mainTexST = st;
+    materialData.specTexST = st;
+    materialData.normTexST = st;
 
     materialData.mainTexName = "Assets/uv_checker_large.bmp";
 
