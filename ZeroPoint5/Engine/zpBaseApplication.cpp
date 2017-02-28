@@ -186,17 +186,16 @@ void zpBaseApplication::setup()
     m_fontManager.setup( &m_materialManager );
     m_meshManager.setup();
 
-    zpColorf white = { 1, 1, 1, 1 };
     zpVector4fData st = { 1, 1, 0, 0 };
 
     m_materialManager.getMaterial( "tempMaterial", tm );
-    tm->color = white;
+    tm->color = zpColor::White;
     tm->mainTexST = st;
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tm->mainTex );
 
     m_fontManager.getFont( "debug.font", ff );
     m_materialManager.getMaterial( "font.material", ff->fontMaterial );
-    ff->fontMaterial->color = white;
+    ff->fontMaterial->color = zpColor::White;
     ff->fontMaterial->mainTexST = st;
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", ff->fontMaterial->mainTex );
 
@@ -535,11 +534,6 @@ void zpBaseApplication::processFrame()
     zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
     zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
 
-    zpColor32i cr = { 255, 0, 0, 255 };
-    zpColor32i cg = { 0, 255, 0, 255 };
-    zpColor32i cb = { 0, 0, 255, 255 };
-    zpColor32i cw = { 255, 255, 255, 255 };
-
     zpVector2f uv0 = { 0, 1 };
     zpVector2f uv1 = { 0, 0 };
     zpVector2f uv2 = { 1, 0 };
@@ -552,10 +546,10 @@ void zpBaseApplication::processFrame()
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
     ctx->setMaterial( tm );
     ctx->setTransform( zpMath::MatrixMul( view, proj ) );
-    ctx->addVertexData( v0, cr, uv0 );
-    ctx->addVertexData( v1, cg, uv1 );
-    ctx->addVertexData( v2, cb, uv2 );
-    ctx->addVertexData( v3, cw, uv3 );
+    ctx->addVertexData( v0, zpColor32::Red, uv0 );
+    ctx->addVertexData( v1, zpColor32::Green, uv1 );
+    ctx->addVertexData( v2, zpColor32::Blue, uv2 );
+    ctx->addVertexData( v3, zpColor32::White, uv3 );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
 
@@ -639,7 +633,6 @@ void zpBaseApplication::debugDrawGUI()
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
 
-    zpColor32i cw = { 255, 255, 255, 255 };
     zpRecti orthoRect = { 0, 0, 960, 640 };
     zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
     zpScalar r = zpMath::Scalar( (zp_float)orthoRect.x + orthoRect.width );
@@ -662,7 +655,7 @@ void zpBaseApplication::debugDrawGUI()
 
     zpVector4fData tp = { 5, y, 0, 1 };
     zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
-    ctx->addText( tp, buff, fontHeight, cw, cw );
+    ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
     y += fontHeight + fontSpacing;
 
     for( ; bf != ef; ++bf )
@@ -673,7 +666,7 @@ void zpBaseApplication::debugDrawGUI()
         tp.y = y;
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
-        ctx->addText( tp, buff, fontHeight, cw, cw );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
         y += fontHeight + fontSpacing;
     }
     ctx->endDraw();

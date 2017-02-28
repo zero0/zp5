@@ -467,6 +467,44 @@ namespace zpCollision
     zpCollisionResult Test( const zpFrustum& a, const zpBoundingSphere& b );
 };
 
+//
+// Colors
+//
+
+namespace zpColor
+{
+    const zpColorf Clear =     { 0, 0, 0, 0 };
+    const zpColorf Invisible = { 1, 1, 1, 0 };
+
+    const zpColorf White = { 1, 1, 1, 1 };
+    const zpColorf Black = { 0, 0, 0, 1 };
+
+    const zpColorf Red =   { 1, 0, 0, 1 };
+    const zpColorf Green = { 0, 1, 0, 1 };
+    const zpColorf Blue =  { 0, 0, 1, 1 };
+
+    const zpColorf Magenta = { 1, 0, 1, 1 };
+    const zpColorf Yellow =  { 1, 1, 0, 1 };
+    const zpColorf Cyan =    { 0, 1, 1, 1 };
+};
+
+namespace zpColor32
+{
+    const zpColor32i Clear =     { 0x00, 0x00, 0x00, 0x00 };
+    const zpColor32i Invisible = { 0xFF, 0xFF, 0xFF, 0x00 };
+
+    const zpColor32i White = { 0xFF, 0xFF, 0xFF, 0xFF };
+    const zpColor32i Black = { 0x00, 0x00, 0x00, 0xFF };
+
+    const zpColor32i Red =   { 0xFF, 0x00, 0x00, 0xFF };
+    const zpColor32i Green = { 0x00, 0xFF, 0x00, 0xFF };
+    const zpColor32i Blue =  { 0x00, 0x00, 0xFF, 0xFF };
+
+    const zpColor32i Magenta = { 0xFF, 0x00, 0xFF, 0xFF };
+    const zpColor32i Yellow =  { 0xFF, 0xFF, 0x00, 0xFF };
+    const zpColor32i Cyan =    { 0x00, 0xFF, 0xFF, 0xFF };
+};
+
 #ifdef ZP_USE_SIMD
 #include "zpMathSimd.inl"
 #else // !ZP_USE_SIMD
