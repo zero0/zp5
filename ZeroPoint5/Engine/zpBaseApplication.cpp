@@ -501,19 +501,18 @@ void zpBaseApplication::processFrame()
     // update
     update( dt, rt );
 
-
     zpRecti orthoRect = { 0, 0, 960, 640 };
-    zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
-    zpScalar r = zpMath::Scalar( (zp_float)orthoRect.x + orthoRect.width );
-    zpScalar t = zpMath::Scalar( (zp_float)orthoRect.y );
-    zpScalar b = zpMath::Scalar( (zp_float)orthoRect.y + orthoRect.height );
-    zpScalar n = zpMath::Scalar( -10 );
-    zpScalar f = zpMath::Scalar( 10 );
+    zp_float l = static_cast<zp_float>( orthoRect.x );
+    zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
+    zp_float t = static_cast<zp_float>( orthoRect.y );
+    zp_float b = static_cast<zp_float>( orthoRect.y + orthoRect.height );
+    zp_float n = static_cast<zp_float>( -10 );
+    zp_float f = static_cast<zp_float>( 10 );
 
-    zpScalar fovy = zpMath::Scalar( 45.f );
-    zpScalar ratio = zpMath::Scalar( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
-    zpScalar zn = zpMath::Scalar( 1 );
-    zpScalar zf = zpMath::Scalar( 100 );
+    zp_float fovy =  ( 45.f );
+    zp_float ratio = ( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
+    zp_float zn =    ( 1 );
+    zp_float zf =    ( 100 );
 
     zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
     zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
@@ -604,6 +603,10 @@ void zpBaseApplication::handleInput()
     {
         exit( ZP_APPLICATION_EXIT_NORMAL );
     }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_F5 ) )
+    {
+        restart();
+    }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_TAB ) )
     {
         m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS;
@@ -634,12 +637,12 @@ void zpBaseApplication::debugDrawGUI()
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
 
     zpRecti orthoRect = { 0, 0, 960, 640 };
-    zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
-    zpScalar r = zpMath::Scalar( (zp_float)orthoRect.x + orthoRect.width );
-    zpScalar t = zpMath::Scalar( (zp_float)orthoRect.y );
-    zpScalar b = zpMath::Scalar( (zp_float)orthoRect.y + orthoRect.height );
-    zpScalar n = zpMath::Scalar( -10 );
-    zpScalar f = zpMath::Scalar( 10 );
+    zp_float l = static_cast<zp_float>( orthoRect.x );
+    zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
+    zp_float t = static_cast<zp_float>( orthoRect.y );
+    zp_float b = static_cast<zp_float>( orthoRect.y + orthoRect.height );
+    zp_float n = static_cast<zp_float>( -10 );
+    zp_float f = static_cast<zp_float>( 10 );
 
     zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
 

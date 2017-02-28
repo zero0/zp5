@@ -814,7 +814,7 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
         zp_uint blockSize = ( format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) ? 8 : 16;
         zp_uint offset = 0;
         GLsizei imageSize = 0;
-        static_cast<void>( 0 );
+
         switch( textureDimension )
         {
             case ZP_TEXTURE_DIMENSION_1D:

@@ -766,6 +766,63 @@ namespace zpMath
         return s;
     }
 
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL PerspectiveLH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar )
+    {
+        zp_float yScale, xScale, z, fn, r22, r32, o;
+        z = ( 0.f );
+        o = ( 1.f );
+
+        yScale = ZP_DEG_TO_RAD( fovy );
+        yScale = ( yScale * ( 0.5f ) );
+        yScale = zp_tan( yScale );
+        yScale = ( 1.f / yScale );
+
+        xScale = ( yScale / aspectRatio );
+
+        fn = ( zFar - zNear );
+
+        r22 = ( zFar / fn );
+
+        r32 = ( zNear * r22 );
+        r32 = ( -r32 );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( xScale, z, z, z );
+        s.m_m2 = Vector4( z, yScale, z, z );
+        s.m_m3 = Vector4( z, z, r22, o );
+        s.m_m4 = Vector4( z, z, r32, z );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL PerspectiveRH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar )
+    {
+        zp_float yScale, xScale, z, nf, r22, r32, no;
+        z = ( 0.f );
+        no = ( -1.f );
+
+        yScale = ZP_DEG_TO_RAD( fovy );
+        yScale = ( yScale * ( 0.5f ) );
+        yScale = zp_tan( yScale );
+        yScale = ( 1.f / yScale );
+
+        xScale = ( yScale / aspectRatio );
+
+        nf = ( zNear - zFar );
+
+        r22 = ( zFar / nf );
+
+        r32 = ( zNear * r22 );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( xScale, z, z, z );
+        s.m_m2 = Vector4( z, yScale, z, z );
+        s.m_m3 = Vector4( z, z, r22, no );
+        s.m_m4 = Vector4( z, z, r32, z );
+
+        return s;
+    }
+
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoLH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar )
     {
         zpScalar rml, lmr, rpl, tmb, bmt, tpb, fmn, nmf, h, z, o;
@@ -829,6 +886,79 @@ namespace zpMath
         m30 = ScalarDiv( rpl, lmr );
         m31 = ScalarDiv( tpb, bmt );
         m32 = ScalarDiv( zNear, nmf );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( m00, z, z, z );
+        s.m_m2 = Vector4( z, m11, z, z );
+        s.m_m3 = Vector4( z, z, m22, z );
+        s.m_m4 = Vector4( m30, m31, m32, o );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoLH( zp_float l, zp_float r, zp_float t, zp_float b, zp_float zNear, zp_float zFar )
+    {
+        zp_float rml, lmr, rpl, tmb, bmt, tpb, fmn, nmf, h, z, o;
+        zp_float m00, m11, m22, m30, m31, m32;
+        h = ( 2.f );
+        z = ( 0.f );
+        o = ( 1.f );
+
+        rml = ( r - l );
+        lmr = ( l - r );
+        tmb = ( t - b );
+        bmt = ( b - t );
+        fmn = ( zFar - zNear );
+        nmf = ( zNear - zFar );
+
+        rpl = ( r + l );
+        tpb = ( t + b );
+
+        // scale
+        m00 = ( h / rml );
+        m11 = ( h / tmb );
+        m22 = ( 1.f / fmn );
+
+        // translate
+        m30 = ( rpl / lmr );
+        m31 = ( tpb / bmt );
+        m32 = ( zNear / nmf );
+
+        zpMatrix4f s;
+        s.m_m1 = Vector4( m00, z, z, z );
+        s.m_m2 = Vector4( z, m11, z, z );
+        s.m_m3 = Vector4( z, z, m22, z );
+        s.m_m4 = Vector4( m30, m31, m32, o );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL OrthoRH( zp_float l, zp_float r, zp_float t, zp_float b, zp_float zNear, zp_float zFar )
+    {
+        zp_float rml, lmr, rpl, tmb, bmt, tpb, nmf, h, z, o;
+        zp_float m00, m11, m22, m30, m31, m32;
+        h = ( 2.f );
+        z = ( 0.f );
+        o = ( 1.f );
+
+        rml = ( r - l );
+        lmr = ( l - r );
+        tmb = ( t - b );
+        bmt = ( b - t );
+        nmf = ( zNear - zFar );
+
+        rpl = ( r + l );
+        tpb = ( t + b );
+
+        // scale
+        m00 = ( h / rml );
+        m11 = ( h / tmb );
+        m22 = ( 1.f / nmf );
+
+        // translate
+        m30 = ( rpl / lmr );
+        m31 = ( tpb / bmt );
+        m32 = ( zNear / nmf );
 
         zpMatrix4f s;
         s.m_m1 = Vector4( m00, z, z, z );
