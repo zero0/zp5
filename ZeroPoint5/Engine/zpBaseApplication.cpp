@@ -1,17 +1,17 @@
 #include "zpEngine.h"
 
-enum zpBaseApplicationFlags : zp_ulong
+enum zpBaseApplicationFlags
 {
-    ZP_BASE_APPLICATION_FLAG_IS_RUNNING =       1ULL << 0,
-    ZP_BASE_APPLICATION_FLAG_IS_PAUSED =        1ULL << 1,
-    ZP_BASE_APPLICATION_FLAG_IS_FOCUSED =       1ULL << 2,
+    ZP_BASE_APPLICATION_FLAG_IS_RUNNING,
+    ZP_BASE_APPLICATION_FLAG_IS_PAUSED,
+    ZP_BASE_APPLICATION_FLAG_IS_FOCUSED,
 
-    ZP_BASE_APPLICATION_FLAG_SHOULD_RESTART =               1ULL << 3,
-    ZP_BASE_APPLICATION_FLAG_SHOULD_GARBAGE_COLLECT =       1ULL << 4,
-    ZP_BASE_APPLICATION_FLAG_SHOULD_RELOAD_ALL_RESOURCES =  1ULL << 5,
-    ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND =   1ULL << 6,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_RESTART,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_GARBAGE_COLLECT,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_RELOAD_ALL_RESOURCES,
+    ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND,
 
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS =          1ULL << 32,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS,
 };
 
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
@@ -343,6 +343,7 @@ void zpBaseApplication::runGarbageCollection()
 {
     ZP_PROFILER_BLOCK();
 
+    m_sceneManager.garbageCollect();
     m_objectManager.garbageCollect();
     m_transformComponentManager.garbageCollect();
 
@@ -490,27 +491,17 @@ void zpBaseApplication::processFrame()
         runReloadAllResources();
     }
 
+#ifdef ZP_USE_HOT_RELOAD
+    // hot reload resources
     runReloadChangedResources();
+#endif
 
-    ZP_PROFILER_START( InputPoll );
-    m_input.poll();
-    ZP_PROFILER_END( InputPoll );
+    // handle input
+    handleInput();
 
-    ZP_PROFILER_START( HandleInput );
-    onHandleInput();
-    ZP_PROFILER_END( HandleInput );
+    // update
+    update( dt, rt );
 
-    ZP_PROFILER_START( Update );
-    onUpdate( dt, rt );
-    ZP_PROFILER_END( Update );
-
-    ZP_PROFILER_START( TransformUpdate );
-    m_transformComponentManager.update( dt, rt );
-    ZP_PROFILER_END( TransformUpdate );
-
-    ZP_PROFILER_START( LateUpdate );
-    onLateUpdate( dt, rt );
-    ZP_PROFILER_END( LateUpdate );
 
     zpRecti orthoRect = { 0, 0, 960, 640 };
     zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
@@ -567,70 +558,16 @@ void zpBaseApplication::processFrame()
     ctx->addVertexData( v3, cw, uv3 );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
-    
-#if 0
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
-    ctx->setTransform( zpMath::MatrixT( { .5f, -.5f, 0, 1 } ) );
-    ctx->setMaterial( tm );
-    ctx->setTransform( projection );
-    ctx->addVertexData( { -1, 0, 0, 1 }, { 1, 0, 0, 1 }, { 0, 0 } );
-    ctx->addVertexData( { -1, 1, 0, 1 }, { 0, 1, 0, 1 }, { 0, 1 } );
-    ctx->addVertexData( { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, { 1, 1 } );
-    ctx->addVertexData( { 0, 0, 0, 1 }, { 1, 1, 1, 1 }, { 1, 0 } );
-    ctx->addQuadIndex( 0, 1, 2, 3 );
-    ctx->endDraw();
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->setMaterial( tm );
-    ctx->setTransform( projection );
-    ctx->addVertexData( {  0,  1, 0, 1 }, { 1, 0, 0, 1 } );
-    ctx->addVertexData( {  1,  0, 0, 1 }, { 0, 1, 0, 1 } );
-    ctx->addVertexData( {  0,  0, 0, 1 }, { 0, 0, 1, 1 } );
-    ctx->addTriangleIndex( 0, 1, 2 );
-    ctx->endDraw();
-    
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    ctx->setMaterial( tm );
-    ctx->setTransform( projection );
-    ctx->addVertexData( { -1,  0, 0, 1 }, { 1, 0, 0, 1 } );
-    ctx->addVertexData( { 0,  -1, 0, 1 }, { 0, 1, 0, 1 } );
-    ctx->addVertexData( { -1,  -1, 0, 1 }, { 0, 0, 1, 1 } );
-    ctx->addTriangleIndex( 0, 1, 2 );
-    ctx->endDraw();
-#endif
-
-#if 1
-    zp_char buff[ 512 ];
-    ctx->beginDrawText( 0, ff );
-    ctx->setTransform( ortho );
-    const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
-    const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
-
-    const zp_uint fontHeight = 12;
-    const zp_uint fontSpacing = 4;
-    zp_float y = 5;
-
-    zpVector4fData tp = { 5, y, 0, 1 };
-    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
-    ctx->addText( tp, buff, fontHeight, cw, cw );
-    y += fontHeight + fontSpacing;
-
-    for( ; bf != ef; ++bf )
+    // draw debug when toggled on
+    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS ) )
     {
-        zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
-        zp_size_t fm = ( bf->endMemory - bf->startMemory );
-        
-        tp.y = y;
-        
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
-        ctx->addText( tp, buff, fontHeight, cw, cw );
-        y += fontHeight + fontSpacing;
+        debugDrawGUI();
     }
-    ctx->endDraw();
-#endif
 
-    
+    ZP_PROFILER_START( Present );
     m_renderingEngine.present();
+    ZP_PROFILER_END( Present );
 
     ZP_PROFILER_END( ProcessFrame );
 
@@ -655,4 +592,89 @@ void zpBaseApplication::processFrame()
 
     //zp_printfln( "MS: %f", d );
     ZP_PROFILER_FINALIZE();
+}
+
+void zpBaseApplication::handleInput()
+{
+    ZP_PROFILER_BLOCK();
+
+    ZP_PROFILER_START( InputPoll );
+    m_input.poll();
+    ZP_PROFILER_END( InputPoll );
+
+    ZP_PROFILER_START( HandleInput );
+    onHandleInput();
+    ZP_PROFILER_END( HandleInput );
+
+    if( m_input.isKeyPressed( ZP_KEY_CODE_ESC ) )
+    {
+        exit( ZP_APPLICATION_EXIT_NORMAL );
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_TAB ) )
+    {
+        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS;
+    }
+}
+
+void zpBaseApplication::update( zp_float dt, zp_float rt )
+{
+    ZP_PROFILER_BLOCK();
+
+    ZP_PROFILER_START( Update );
+    onUpdate( dt, rt );
+    ZP_PROFILER_END( Update );
+
+    ZP_PROFILER_START( TransformUpdate );
+    m_transformComponentManager.update( dt, rt );
+    ZP_PROFILER_END( TransformUpdate );
+
+    ZP_PROFILER_START( LateUpdate );
+    onLateUpdate( dt, rt );
+    ZP_PROFILER_END( LateUpdate );
+}
+
+void zpBaseApplication::debugDrawGUI()
+{
+    ZP_PROFILER_BLOCK();
+
+    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
+
+    zpColor32i cw = { 255, 255, 255, 255 };
+    zpRecti orthoRect = { 0, 0, 960, 640 };
+    zpScalar l = zpMath::Scalar( (zp_float)orthoRect.x );
+    zpScalar r = zpMath::Scalar( (zp_float)orthoRect.x + orthoRect.width );
+    zpScalar t = zpMath::Scalar( (zp_float)orthoRect.y );
+    zpScalar b = zpMath::Scalar( (zp_float)orthoRect.y + orthoRect.height );
+    zpScalar n = zpMath::Scalar( -10 );
+    zpScalar f = zpMath::Scalar( 10 );
+
+    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+
+    zp_char buff[ 512 ];
+    ctx->beginDrawText( 0, ff );
+    ctx->setTransform( ortho );
+    const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
+    const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+
+    const zp_uint fontHeight = 12;
+    const zp_uint fontSpacing = 4;
+    zp_float y = 5;
+
+    zpVector4fData tp = { 5, y, 0, 1 };
+    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
+    ctx->addText( tp, buff, fontHeight, cw, cw );
+    y += fontHeight + fontSpacing;
+
+    for( ; bf != ef; ++bf )
+    {
+        zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+        zp_size_t fm = ( bf->endMemory - bf->startMemory );
+
+        tp.y = y;
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
+        ctx->addText( tp, buff, fontHeight, cw, cw );
+        y += fontHeight + fontSpacing;
+    }
+    ctx->endDraw();
 }

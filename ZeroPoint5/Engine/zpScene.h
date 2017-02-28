@@ -8,11 +8,19 @@ public:
     zpScene();
     ~zpScene();
 
+    zp_hash64 getInstanceId() const;
+
     void addObject( const zpObjectHandle& handle );
     void removeObject( const zpObjectHandle& handle );
 
 private:
+    void setInstanceId( zp_hash64 instanceId );
+
+    zp_hash64 m_instanceId;
+
     zpVector< zpObjectHandle > m_objectsInScene;
+
+    friend class zpSceneManager;
 };
 
 struct zpSceneInstance
@@ -23,18 +31,52 @@ struct zpSceneInstance
     zpString m_sceneName;
 };
 
+class zpSceneHandle
+{
+public:
+    zpSceneHandle();
+    zpSceneHandle( const zpSceneHandle& other );
+    zpSceneHandle( zpSceneHandle&& other );
+    ~zpSceneHandle();
+
+    zpSceneHandle& operator=( const zpSceneHandle& other );
+    zpSceneHandle& operator=( zpSceneHandle&& other );
+
+    const zpScene* operator->() const;
+    zpScene* operator->();
+
+    zp_bool isValid() const;
+    void release();
+
+    zp_bool operator==( const zpSceneHandle& other ) const;
+
+private:
+    void addRef();
+    void releaseRef();
+
+    void set( zp_hash64 instanceId, zpSceneInstance* sceneInstance );
+
+    zp_hash64 m_instanceId;
+    zpSceneInstance* m_sceneInstance;
+
+    friend class zpSceneManager;
+};
+
 class zpSceneManager
 {
 public:
     zpSceneManager();
     ~zpSceneManager();
 
-    void loadScene( const zp_char* sceneName );
+    void createScene( zpSceneHandle& handle );
+    void loadScene( const zp_char* sceneName, zpSceneHandle& handle );
 
     void markDontDestroyOnLoad( const zpObjectHandle& handle );
     void unmarkDontDestroyOnLoad( const zpObjectHandle& handle );
 
     void update( zp_float dt, zp_float rt );
+
+    void garbageCollect();
 
 private:
     zpVector< zpObjectHandle > m_objectsDontDestroyOnLoad;

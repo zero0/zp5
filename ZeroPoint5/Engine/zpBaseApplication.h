@@ -75,10 +75,16 @@ private:
     zp_bool processMessages();
     void processFrame();
 
+    void handleInput();
+    void update( zp_float dt, zp_float rt );
+
+    void debugDrawGUI();
+
     zpInput m_input;
 
     zpRenderingEngine m_renderingEngine;
 
+    zpSceneManager m_sceneManager;
     zpObjectManager m_objectManager;
     zpTransformComponentManager m_transformComponentManager;
 

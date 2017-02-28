@@ -22,6 +22,8 @@ public:
     zp_bool isValid() const;
     void release();
 
+    zp_bool operator==( const zpObjectHandle& other ) const;
+
 private:
     void addRef();
     void releaseRef();

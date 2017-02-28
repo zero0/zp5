@@ -90,6 +90,13 @@ void zpObjectHandle::release()
     m_objectInstance = ZP_NULL;
 }
 
+zp_bool zpObjectHandle::operator==( const zpObjectHandle& other ) const
+{
+    const zp_bool eq = m_instanceId == other.m_instanceId && m_objectInstance == other.m_objectInstance;
+    return eq;
+}
+
+
 //
 //
 //

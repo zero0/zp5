@@ -73,7 +73,8 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData* textureData )
     zp_byte* d = textureData->data.getBuffer();
 
     // swap BGR to RGB
-    for( zp_size_t i = 0; i < imageSize; i += bytesPerPixel )
+    zp_size_t imgSize = imageSize;
+    for( zp_size_t i = 0; i < imgSize; i += bytesPerPixel )
     {
         d[ i ] ^= d[ i + 2 ] ^= d[ i ] ^= d[ i + 2 ];
     }

@@ -34,7 +34,7 @@ struct zpProfilerFrame
     zp_long lineNumber;
     const zp_char* eventName;
 
-    zp_time_t parentFrame;
+    zp_size_t parentFrame;
 
     zp_time_t startTime;
     zp_time_t endTime;

@@ -108,7 +108,7 @@ public:
     void update( zp_float dt, zp_float rt );
 
     void createTransformComponent( zpTransformComponentHandle& handle );
-    void createTransformComponent( zpTransformComponentDesc* desc, zpTransformComponentHandle& handle );
+    void createTransformComponent( zpTransformComponentHandle& handle, zpTransformComponentDesc* desc );
 
     void garbageCollect();
 

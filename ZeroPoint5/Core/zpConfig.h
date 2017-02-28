@@ -7,6 +7,7 @@
 #define ZP_VERSION_PATCH    1
 #define ZP_VERSION          "0.0.1"
 
+#define ZP_USE_HOT_RELOAD
 #define ZP_USE_ASSERTIONS
 #define ZP_USE_PRINT
 #define ZP_USE_PROFILER

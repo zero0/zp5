@@ -314,13 +314,16 @@ void zpTransformComponentManager::createTransformComponent( zpTransformComponent
     m_activeComponents.pushBack( instance );
 }
 
-void zpTransformComponentManager::createTransformComponent( zpTransformComponentDesc* desc, zpTransformComponentHandle& handle )
+void zpTransformComponentManager::createTransformComponent( zpTransformComponentHandle& handle, zpTransformComponentDesc* desc )
 {
     createTransformComponent( handle );
 
-    handle->setLocalPositionRotationScale( desc->localPosition, desc->localRotation, desc->localScale );
-    handle->setParentObject( desc->parentObject );
-    handle->setParentTransform( desc->parentObject->getAllComponents()->transform );
+    if( desc )
+    {
+        handle->setLocalPositionRotationScale( desc->localPosition, desc->localRotation, desc->localScale );
+        handle->setParentObject( desc->parentObject );
+        handle->setParentTransform( desc->parentObject->getAllComponents()->transform );
+    }
 }
 
 void zpTransformComponentManager::garbageCollect()

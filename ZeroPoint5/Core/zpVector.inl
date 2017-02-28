@@ -176,6 +176,21 @@ template< typename T, typename Allocator >
 zp_size_t zpVector< T, Allocator >::eraseAll( const T& val )
 {
     zp_size_t numErased = 0;
+    for( zp_size_t i = 0; i < m_size; ++i )
+    {
+        T* t = m_data + i;
+        if( *t == val )
+        {
+            ++numErased;
+
+            t->~T();
+
+            m_data[ i ] = (T&&)m_data[ m_size - 1 ];
+            --m_size;
+            --i;
+        }
+
+    }
     return numErased;
 }
 
@@ -221,6 +236,19 @@ template< typename T, typename Allocator >
 zp_size_t zpVector< T, Allocator >::indexOf( const T& val ) const
 {
     zp_size_t index = npos;
+
+    const T* b = m_data;
+    const T* e = m_data + m_size;
+    for( ; b != e; ++b )
+    {
+        if( *b == val )
+        {
+            index = b - m_data;
+            break;
+        }
+
+    }
+
     return index;
 }
 
@@ -228,6 +256,19 @@ template< typename T, typename Allocator >
 zp_size_t zpVector< T, Allocator >::lastIndexOf( const T& val ) const
 {
     zp_size_t index = npos;
+
+    const T* b = m_data;
+    const T* e = m_data + m_size;
+    for( ; b != e; )
+    {
+        --e;
+        if( *e == val )
+        {
+            index = e - m_data;
+            break;
+        }
+    }
+
     return index;
 }
 

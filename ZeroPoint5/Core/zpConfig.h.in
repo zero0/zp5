@@ -7,6 +7,7 @@
 #define ZP_VERSION_PATCH    @ZP_VERSION_PATCH@
 #define ZP_VERSION          "@ZP_VERSION@"
 
+#cmakedefine ZP_USE_HOT_RELOAD
 #cmakedefine ZP_USE_ASSERTIONS
 #cmakedefine ZP_USE_PRINT
 #cmakedefine ZP_USE_PROFILER
