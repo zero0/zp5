@@ -533,10 +533,10 @@ void zpBaseApplication::processFrame()
     zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
     zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
 
-    zpVector2f uv0 = { 0, 1 };
-    zpVector2f uv1 = { 0, 0 };
-    zpVector2f uv2 = { 1, 0 };
-    zpVector2f uv3 = { 1, 1 };
+    zpVector2f uv0 = { 0, 0 };
+    zpVector2f uv1 = { 0, 1 };
+    zpVector2f uv2 = { 1, 1 };
+    zpVector2f uv3 = { 1, 0 };
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( vp );
