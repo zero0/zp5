@@ -86,7 +86,9 @@ private:
 
     zpSceneManager m_sceneManager;
     zpObjectManager m_objectManager;
+
     zpTransformComponentManager m_transformComponentManager;
+    zpParticleEmitterComponentManager m_particleEmitterComponentManager;
 
     zpTextureManager m_textureManager;
     zpShaderManager m_shaderManager;

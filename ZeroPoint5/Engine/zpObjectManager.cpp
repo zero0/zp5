@@ -176,3 +176,13 @@ void zpObjectManager::garbageCollect()
         }
     }
 }
+
+const zpObjectInstance* const* zpObjectManager::beginActiveObjects() const
+{
+    return m_activeObjects.begin();
+}
+
+const zpObjectInstance* const* zpObjectManager::endActiveObjects() const
+{
+    return m_activeObjects.end();
+}

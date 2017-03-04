@@ -172,6 +172,7 @@ void zpBaseApplication::initialize()
 
 zpMaterialHandle tm;
 zpFontHandle ff;
+zpObjectHandle ooo;
 
 void zpBaseApplication::setup()
 {
@@ -261,6 +262,7 @@ void zpBaseApplication::teardown()
     onPreTeardown();
     tm.release();
     ff.release();
+    ooo.release();
     runGarbageCollection();
 
     m_meshManager.teardown();
@@ -345,6 +347,7 @@ void zpBaseApplication::runGarbageCollection()
     m_sceneManager.garbageCollect();
     m_objectManager.garbageCollect();
     m_transformComponentManager.garbageCollect();
+    m_particleEmitterComponentManager.garbageCollect();
 
     m_meshManager.garbageCollect();
     m_fontManager.garbageCollect();
@@ -607,9 +610,18 @@ void zpBaseApplication::handleInput()
     {
         restart();
     }
-    else if( m_input.isKeyPressed( ZP_KEY_CODE_TAB ) )
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_G ) )
+    {
+        garbageCollect();
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_F1 ) )
     {
         m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS;
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_O ) )
+    {
+        m_objectManager.createObject( ooo );
+        ooo->setName( "Test Object" );
     }
 }
 
@@ -624,6 +636,10 @@ void zpBaseApplication::update( zp_float dt, zp_float rt )
     ZP_PROFILER_START( TransformUpdate );
     m_transformComponentManager.update( dt, rt );
     ZP_PROFILER_END( TransformUpdate );
+
+    ZP_PROFILER_START( ParticleEmitterUpdate );
+    m_particleEmitterComponentManager.update( dt, rt );
+    ZP_PROFILER_END( ParticleEmitterUpdate );
 
     ZP_PROFILER_START( LateUpdate );
     onLateUpdate( dt, rt );
@@ -672,5 +688,30 @@ void zpBaseApplication::debugDrawGUI()
         ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
         y += fontHeight + fontSpacing;
     }
+
+    y += fontHeight + fontSpacing;
+
+    const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
+    const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();
+   
+    if( bo != eo )
+    {
+        tp.y = y;
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Objects (%d)", ( eo - bo ) );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+        y += fontHeight + fontSpacing;
+
+        for( ; bo != eo; ++bo )
+        {
+            tp.y = y;
+            const zpObjectInstance* inst = (*bo);
+            const zpObject* obj = &inst->object;
+            zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "- '%s'@%d (%d)", obj->getName().str(), obj->getInstanceId(), inst->refCount );
+            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+            y += fontHeight + fontSpacing;
+        }
+    }
+
     ctx->endDraw();
 }

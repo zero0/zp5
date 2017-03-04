@@ -50,6 +50,9 @@ public:
 
     void garbageCollect();
 
+    const zpObjectInstance* const* beginActiveObjects() const;
+    const zpObjectInstance* const* endActiveObjects() const;
+
 private:
     zpVector< zpObjectInstance* > m_activeObjects;
 
