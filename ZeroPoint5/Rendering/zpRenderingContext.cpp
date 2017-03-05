@@ -185,10 +185,8 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
 
     zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
 
-    for( ; *text ; ++text )
+    for( ; ( curr = *text ); ++text )
     {
-        curr = *text;
-
         switch( curr )
         {
             case '\n':
@@ -335,7 +333,7 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& colo
         v,
         color,
     };
-
+    
     m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
@@ -354,7 +352,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
         pos,
         color,
     };
-
+    
     m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
@@ -375,7 +373,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
         color,
         uv,
     };
-
+    
     m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
@@ -385,7 +383,7 @@ void zpRenderingContext::addLineIndex( zp_ushort index0, zp_ushort index1 )
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    zp_ushort buff[] = {
+    const zp_ushort buff[] = {
         index0,
         index1,
     };
@@ -399,7 +397,7 @@ void zpRenderingContext::addTriangleIndex( zp_ushort index0, zp_ushort index1, z
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    zp_ushort buff[] = {
+    const zp_ushort buff[] = {
         index0,
         index1,
         index2,
@@ -414,7 +412,7 @@ void zpRenderingContext::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_us
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    zp_ushort buff[] = {
+    const zp_ushort buff[] = {
         index0,
         index1,
         index2,

@@ -673,8 +673,8 @@ void zpBaseApplication::debugDrawGUI()
     zp_float y = 5;
 
     zpVector4fData tp = { 5, y, 0, 1 };
-    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %6s %s", "Ms", "Mem", "Function" );
-    ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
+    ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
     y += fontHeight + fontSpacing;
 
     for( ; bf != ef; ++bf )
@@ -684,8 +684,8 @@ void zpBaseApplication::debugDrawGUI()
 
         tp.y = y;
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %6d %s@%s", ft, fm, bf->functionName, bf->eventName );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
         y += fontHeight + fontSpacing;
     }
 
@@ -698,8 +698,8 @@ void zpBaseApplication::debugDrawGUI()
     {
         tp.y = y;
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Objects (%d)", ( eo - bo ) );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Objects (%Iu)", ( eo - bo ) );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
         y += fontHeight + fontSpacing;
 
         for( ; bo != eo; ++bo )
@@ -707,8 +707,9 @@ void zpBaseApplication::debugDrawGUI()
             tp.y = y;
             const zpObjectInstance* inst = (*bo);
             const zpObject* obj = &inst->object;
-            zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "- '%s'@%d (%d)", obj->getName().str(), obj->getInstanceId(), inst->refCount );
-            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::White );
+
+            zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "- '%s'@%lu (%Iu)", obj->getName().str(), obj->getInstanceId(), inst->refCount );
+            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
             y += fontHeight + fontSpacing;
         }
     }

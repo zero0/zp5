@@ -484,6 +484,9 @@ namespace zpColor
 
     const zpColorf White = { 1, 1, 1, 1 };
     const zpColorf Black = { 0, 0, 0, 1 };
+    const zpColorf Grey25 = { 0.25f, 0.25f, 0.25f, 1.0f };
+    const zpColorf Grey50 = { 0.5f, 0.5f, 0.5f, 1.0f };
+    const zpColorf Grey75 = { 0.75f, 0.75f, 0.75f, 1.0f };
 
     const zpColorf Red =   { 1, 0, 0, 1 };
     const zpColorf Green = { 0, 1, 0, 1 };
@@ -501,6 +504,9 @@ namespace zpColor32
 
     const zpColor32i White = { 0xFF, 0xFF, 0xFF, 0xFF };
     const zpColor32i Black = { 0x00, 0x00, 0x00, 0xFF };
+    const zpColor32i Grey25 = { 0x3F, 0x3F, 0x3F, 0xFF };
+    const zpColor32i Grey50 = { 0x7F, 0x7F, 0x7F, 0xFF };
+    const zpColor32i Grey75 = { 0xBF, 0xBF, 0xBF, 0xFF };
 
     const zpColor32i Red =   { 0xFF, 0x00, 0x00, 0xFF };
     const zpColor32i Green = { 0x00, 0xFF, 0x00, 0xFF };
