@@ -94,7 +94,7 @@ enum zpTopology : zp_uint
 
 enum zpRenderingCommandType : zp_uint
 {
-    ZP_RENDERING_COMMNAD_NOOP,
+    ZP_RENDERING_COMMNAD_NOOP = 0,
 
     ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT,
     ZP_RENDERING_COMMNAD_SET_VIEWPORT,
@@ -111,7 +111,7 @@ enum zpRenderingCommandType : zp_uint
 
 enum zpVertexFormat : zp_uint
 {
-    ZP_VERTEX_FORMAT_NONE,
+    ZP_VERTEX_FORMAT_NONE = 0,
 
     ZP_VERTEX_FORMAT_VERTEX_COLOR,
     ZP_VERTEX_FORMAT_VERTEX_COLOR_UV,
@@ -184,29 +184,26 @@ enum zpTextureType : zp_uint
     zpTextureType_Force32 = ZP_FORECE_32BIT
 };
 
+enum zpViewportType : zp_uint
+{
+    ZP_VIEWPORT_TYPE_FULLSCREEN = 0,
+
+    ZP_VIEWPORT_TYPE_TOP,
+    ZP_VIEWPORT_TYPE_BOTTOM,
+
+    ZP_VIEWPORT_TYPE_TOP_LEFT,
+    ZP_VIEWPORT_TYPE_TOP_RIGHT,
+    ZP_VIEWPORT_TYPE_BOTTOM_LEFT,
+    ZP_VIEWPORT_TYPE_BOTTOM_RIGHT,
+
+    zpViewportType_Count,
+    zpViewportType_Force32 = ZP_FORECE_32BIT
+};
+
 union zpRenderHandle
 {
     zp_handle ptr;
     zp_uint index;
-};
-
-struct zpTexture
-{
-    zp_uint width;
-    zp_uint height;
-    zpTextureDimension textureDimension;
-    zpTextureType type;
-    zpDisplayFormat format;
-
-    zpRenderHandle texture;
-};
-
-struct zpShader
-{
-    zpRenderHandle programShader;
-    zpRenderHandle vertexShader;
-    zpRenderHandle fragmentShader;
-    zpRenderHandle geometryShader;
 };
 
 struct zpRenderBuffer
@@ -233,12 +230,12 @@ union zpRenderingSortKey
 {
     struct
     {
-        zp_byte anchor : 1;
+        zp_bool anchor : 1;
         zp_byte viewport : 3;
         zp_byte layer : 4;
         zp_uint depth : 24;
         zp_uint material : 30;
-        zp_uint pass : 2;
+        zp_byte pass : 2;
     };
     zp_ulong key;
 };
@@ -250,6 +247,7 @@ class zpRenderingEngine;
 #include "zpMaterial.h"
 #include "zpFont.h"
 #include "zpMesh.h"
+#include "zpCamera.h"
 
 struct zpRenderingCommand
 {

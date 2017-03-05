@@ -30,6 +30,7 @@ public:
 
     zp_size_t getMemoryUsed() const;
     zp_size_t getTotalMemory() const;
+    zp_size_t getNumAllocations() const;
 
 private:
     zp_size_t m_minChunkSize;

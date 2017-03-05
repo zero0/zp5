@@ -2,6 +2,17 @@
 #ifndef ZP_TEXTURE_H
 #define ZP_TEXTURE_H
 
+struct zpTexture
+{
+    zp_uint width;
+    zp_uint height;
+    zpTextureDimension textureDimension;
+    zpTextureType type;
+    zpDisplayFormat format;
+
+    zpRenderHandle texture;
+};
+
 struct zpTextureInstance
 {
     zpString textureName;

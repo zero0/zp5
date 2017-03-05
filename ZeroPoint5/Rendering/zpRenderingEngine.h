@@ -30,7 +30,6 @@ public:
     void destroyShader( zpShader& shader );
 
 private:
-    //zpRenderingEngineImpl m_engine;
     zpRenderingContext m_immidiateContext;
 
     zp_handle m_hDC;

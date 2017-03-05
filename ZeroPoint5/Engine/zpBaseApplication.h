@@ -77,6 +77,7 @@ private:
 
     void handleInput();
     void update( zp_float dt, zp_float rt );
+    void render();
 
     void debugDrawGUI();
 
@@ -95,6 +96,7 @@ private:
     zpMaterialManager m_materialManager;
     zpFontManager m_fontManager;
     zpMeshManager m_meshManager;
+    zpCameraManager m_cameraManager;
 
     zpTime m_time;
 

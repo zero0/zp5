@@ -11,7 +11,14 @@ enum zpBaseApplicationFlags
     ZP_BASE_APPLICATION_FLAG_SHOULD_RELOAD_ALL_RESOURCES,
     ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND,
 
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS,
+
+    zpBaseApplicationFlags_Count,
+    zpBaseApplicationFlags_Force32 = ZP_FORECE_32BIT,
+
+    ZP_BASE_APPLICATION_FLAG_IS_DEBUG_ACTIVE = ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS ) |
+                                               ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS )
 };
 
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
@@ -173,6 +180,7 @@ void zpBaseApplication::initialize()
 zpMaterialHandle tm;
 zpFontHandle ff;
 zpObjectHandle ooo;
+zpCameraHandle cam;
 
 void zpBaseApplication::setup()
 {
@@ -186,6 +194,7 @@ void zpBaseApplication::setup()
     m_materialManager.setup( &m_shaderManager, &m_textureManager );
     m_fontManager.setup( &m_materialManager );
     m_meshManager.setup();
+    m_cameraManager.setup();
 
     zpVector4fData st = { 1, 1, 0, 0 };
 
@@ -263,8 +272,10 @@ void zpBaseApplication::teardown()
     tm.release();
     ff.release();
     ooo.release();
+    cam.release();
     runGarbageCollection();
 
+    m_cameraManager.teardown();
     m_meshManager.teardown();
     m_fontManager.teardown();
     m_materialManager.teardown();
@@ -349,6 +360,7 @@ void zpBaseApplication::runGarbageCollection()
     m_transformComponentManager.garbageCollect();
     m_particleEmitterComponentManager.garbageCollect();
 
+    m_cameraManager.garbageCollect();
     m_meshManager.garbageCollect();
     m_fontManager.garbageCollect();
     m_materialManager.garbageCollect();
@@ -504,66 +516,8 @@ void zpBaseApplication::processFrame()
     // update
     update( dt, rt );
 
-    zpRecti orthoRect = { 0, 0, 960, 640 };
-    zp_float l = static_cast<zp_float>( orthoRect.x );
-    zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
-    zp_float t = static_cast<zp_float>( orthoRect.y );
-    zp_float b = static_cast<zp_float>( orthoRect.y + orthoRect.height );
-    zp_float n = static_cast<zp_float>( -10 );
-    zp_float f = static_cast<zp_float>( 10 );
-
-    zp_float fovy =  ( 45.f );
-    zp_float ratio = ( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
-    zp_float zn =    ( 1 );
-    zp_float zf =    ( 100 );
-
-    zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
-    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
-    zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
-    zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
-
-    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
-    zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
-    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
-
-    zpViewport vp = { 0, 0, 960, 640, 1, 100 };
-
-    zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
-
-    zpRectf rect = { -10, -10, 30, 30 };
-    zpVector4fData v0 =  { rect.x,               rect.y, 0, 1 };
-    zpVector4fData v1 =  { rect.x,               rect.y + rect.height, 0, 1 };
-    zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
-    zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
-
-    zpVector2f uv0 = { 0, 0 };
-    zpVector2f uv1 = { 0, 1 };
-    zpVector2f uv2 = { 1, 1 };
-    zpVector2f uv3 = { 1, 0 };
-
-    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
-    ctx->setViewport( vp );
-    ctx->clear( clearColor, 1, 0 );
-    
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
-    ctx->setMaterial( tm );
-    ctx->setTransform( zpMath::MatrixMul( view, proj ) );
-    ctx->addVertexData( v0, zpColor32::Red, uv0 );
-    ctx->addVertexData( v1, zpColor32::Green, uv1 );
-    ctx->addVertexData( v2, zpColor32::Blue, uv2 );
-    ctx->addVertexData( v3, zpColor32::White, uv3 );
-    ctx->addQuadIndex( 0, 1, 2, 3 );
-    ctx->endDraw();
-
-    // draw debug when toggled on
-    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS ) )
-    {
-        debugDrawGUI();
-    }
-
-    ZP_PROFILER_START( Present );
-    m_renderingEngine.present();
-    ZP_PROFILER_END( Present );
+    // render
+    render();
 
     ZP_PROFILER_END( ProcessFrame );
 
@@ -616,12 +570,25 @@ void zpBaseApplication::handleInput()
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F1 ) )
     {
-        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_STATS;
+        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS;
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_F2 ) )
+    {
+        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_O ) )
     {
         m_objectManager.createObject( ooo );
         ooo->setName( "Test Object" );
+
+        m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform );
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_C ) )
+    {
+        m_cameraManager.createCamera( cam );
+        cam->projectionType = ZP_CAMERA_PROJECTION_PERSPECTIVE;
+        cam->flags |= 0xFF;
+        cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
     }
 }
 
@@ -641,9 +608,79 @@ void zpBaseApplication::update( zp_float dt, zp_float rt )
     m_particleEmitterComponentManager.update( dt, rt );
     ZP_PROFILER_END( ParticleEmitterUpdate );
 
+    ZP_PROFILER_START( CameraUpdate );
+    m_cameraManager.update( dt, rt );
+    ZP_PROFILER_END( CameraUpdate );
+
     ZP_PROFILER_START( LateUpdate );
     onLateUpdate( dt, rt );
     ZP_PROFILER_END( LateUpdate );
+}
+
+void zpBaseApplication::render()
+{
+    ZP_PROFILER_BLOCK();
+
+    zpRecti orthoRect = { 0, 0, 960, 640 };
+    zp_float l = static_cast<zp_float>( orthoRect.x );
+    zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
+    zp_float t = static_cast<zp_float>( orthoRect.y );
+    zp_float b = static_cast<zp_float>( orthoRect.y + orthoRect.height );
+    zp_float n = static_cast<zp_float>( -10 );
+    zp_float f = static_cast<zp_float>( 10 );
+
+    zp_float fovy =  ( 45.f );
+    zp_float ratio = ( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
+    zp_float zn =    ( 1 );
+    zp_float zf =    ( 100 );
+
+    zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
+    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
+    zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
+    zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
+
+    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+    zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
+    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
+
+    zpViewport vp = { 0, 0, 960, 640, 1, 100 };
+
+    zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
+
+    zpRectf rect = { -10, -10, 30, 30 };
+    zpVector4fData v0 =  { rect.x,               rect.y, 0, 1 };
+    zpVector4fData v1 =  { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
+    zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
+
+    zpVector2f uv0 = { 0, 0 };
+    zpVector2f uv1 = { 0, 1 };
+    zpVector2f uv2 = { 1, 1 };
+    zpVector2f uv3 = { 1, 0 };
+
+    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
+    ctx->setViewport( vp );
+    ctx->clear( clearColor, 1, 0 );
+
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
+    ctx->setMaterial( tm );
+    ctx->setTransform( zpMath::MatrixMul( view, proj ) );
+    ctx->addVertexData( v0, zpColor32::Red, uv0 );
+    ctx->addVertexData( v1, zpColor32::Green, uv1 );
+    ctx->addVertexData( v2, zpColor32::Blue, uv2 );
+    ctx->addVertexData( v3, zpColor32::White, uv3 );
+    ctx->addQuadIndex( 0, 1, 2, 3 );
+    ctx->endDraw();
+
+    // draw debug when toggled on
+    if( m_flags & ZP_BASE_APPLICATION_FLAG_IS_DEBUG_ACTIVE )
+    {
+        debugDrawGUI();
+    }
+
+    ZP_PROFILER_START( Present );
+    m_renderingEngine.present();
+    ZP_PROFILER_END( Present );
 }
 
 void zpBaseApplication::debugDrawGUI()
@@ -662,40 +699,74 @@ void zpBaseApplication::debugDrawGUI()
 
     zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
 
-    zp_char buff[ 512 ];
-    ctx->beginDrawText( 0, ff );
-    ctx->setTransform( ortho );
-    const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
-    const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
-
     const zp_uint fontHeight = 12;
     const zp_uint fontSpacing = 4;
     zp_float y = 5;
-
     zpVector4fData tp = { 5, y, 0, 1 };
-    zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
-    ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-    y += fontHeight + fontSpacing;
 
-    for( ; bf != ef; ++bf )
+    zp_char buff[ 512 ];
+
+    ctx->beginDrawText( 0, ff );
+    ctx->setTransform( ortho );
+
+    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS ) )
     {
-        zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
-        zp_size_t fm = ( bf->endMemory - bf->startMemory );
+        const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
+        const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+        
+        tp.y = y;
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+        y += fontHeight + fontSpacing;
+
+        for( ; bf != ef; ++bf )
+        {
+            zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+            zp_size_t fm = ( bf->endMemory - bf->startMemory );
+
+            tp.y = y;
+
+            zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+            y += fontHeight + fontSpacing;
+        }
+
+        y += fontHeight + fontSpacing;
 
         tp.y = y;
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s", "Mem", "Allocs" );
+        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+        y += fontHeight + fontSpacing;
+
+        tp.y = y;
+
+        zp_size_t memUsed = g_globalAllocator.getMemoryUsed();
+        zp_float mem = 0.f;
+        zp_char memSize = 'U';
+
+        if( memUsed > ZP_MEMORY_MB( 1 ) )
+        {
+            mem = static_cast<zp_float>( memUsed ) / static_cast<zp_float>( ZP_MEMORY_MB( 1 ) );
+            memSize = 'M';
+        }
+        else
+        {
+            mem = static_cast<zp_float>( memUsed ) / static_cast<zp_float>( ZP_MEMORY_KB( 1 ) );
+            memSize = 'K';
+        }
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f%c %7Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
         ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
         y += fontHeight + fontSpacing;
     }
-
-    y += fontHeight + fontSpacing;
-
-    const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
-    const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();
-   
-    if( bo != eo )
+    
+    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS ) )
     {
+        const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
+        const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();
+        
         tp.y = y;
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Objects (%Iu)", ( eo - bo ) );
@@ -704,14 +775,29 @@ void zpBaseApplication::debugDrawGUI()
 
         for( ; bo != eo; ++bo )
         {
-            tp.y = y;
             const zpObjectInstance* inst = (*bo);
             const zpObject* obj = &inst->object;
+
+            tp.y = y;
 
             zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "- '%s'@%lu (%Iu)", obj->getName().str(), obj->getInstanceId(), inst->refCount );
             ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
             y += fontHeight + fontSpacing;
+
+            const zpTransformComponent* txn = obj->getAllComponents()->transform.operator->();
+            if( txn )
+            {
+                tp.y = y;
+
+                const zpVector4fData& localPos = txn->getLocalPosition();
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- 'Txn'@%lu [%3.3f %3.3f %3.3f]", txn->getInstanceId(), localPos.x, localPos.y, localPos.z );
+                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+                y += fontHeight + fontSpacing;
+            }
         }
+
+        y += fontHeight + fontSpacing;
     }
 
     ctx->endDraw();

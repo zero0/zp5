@@ -3,8 +3,8 @@
 
 enum : zp_size_t
 {
-    ZP_TRANSFORM_FLAG_ENABLED = 1 << 0,
-    ZP_TRANSFORM_FLAG_DIRTY =   1 << 1,
+    ZP_TRANSFORM_FLAG_ENABLED,
+    ZP_TRANSFORM_FLAG_DIRTY,
 };
 
 zpTransformComponent::zpTransformComponent()
@@ -34,7 +34,7 @@ void zpTransformComponent::setParentObject( const zpObjectHandle& parent )
 {
     m_parentObject = parent;
 
-    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
+    m_flags |= ( 1 << ZP_TRANSFORM_FLAG_DIRTY );
 }
 
 const zpObjectHandle& zpTransformComponent::getParentObject() const
@@ -53,7 +53,7 @@ void zpTransformComponent::setLocalPosition( const zpVector4fData& position )
     zpMatrix4f m = zpMath::MatrixTRS( p, r, s );
     zpMath::MatrixStore4( m, m_localMatrix.m );
 
-    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
+    m_flags |= ( 1 << ZP_TRANSFORM_FLAG_DIRTY );
 }
 
 void zpTransformComponent::setLocalPositionRotation( const zpVector4fData& position, const zpQuaternion4fData& rotation )
@@ -68,7 +68,7 @@ void zpTransformComponent::setLocalPositionRotation( const zpVector4fData& posit
     zpMatrix4f m = zpMath::MatrixTRS( p, r, s );
     zpMath::MatrixStore4( m, m_localMatrix.m );
 
-    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
+    m_flags |= ( 1 << ZP_TRANSFORM_FLAG_DIRTY );
 }
 
 void zpTransformComponent::setLocalPositionRotationScale( const zpVector4fData& position, const zpQuaternion4fData& rotation, const zpVector4fData& scale )
@@ -84,7 +84,7 @@ void zpTransformComponent::setLocalPositionRotationScale( const zpVector4fData& 
     zpMatrix4f m = zpMath::MatrixTRS( p, r, s );
     zpMath::MatrixStore4( m, m_localMatrix.m );
 
-    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
+    m_flags |= ( 1 << ZP_TRANSFORM_FLAG_DIRTY );
 }
 
 const zpVector4fData& zpTransformComponent::getLocalPosition() const
@@ -126,44 +126,43 @@ void zpTransformComponent::setParentTransform( const zpTransformComponentHandle&
 {
     m_parentTransfrom = parent;
 
-    m_flags |= ZP_TRANSFORM_FLAG_DIRTY;
+    m_flags |= ( 1 << ZP_TRANSFORM_FLAG_DIRTY );
 }
 
 void zpTransformComponent::update( zp_float dt, zp_float rt )
 {
-    if( ( m_flags & ZP_TRANSFORM_FLAG_DIRTY ) == ZP_TRANSFORM_FLAG_DIRTY )
+    if( m_flags & ( 1 << ZP_TRANSFORM_FLAG_DIRTY ) )
     {
-        zpMatrix4f world = zpMath::MatrixLoad4( m_localMatrix.m );
+        ZP_ALIGN16 zpMatrix4fData mat = m_localMatrix;
+
+        zpMatrix4f world = zpMath::MatrixLoad4( mat.m );
         zpTransformComponentHandle parent = m_parentTransfrom;
 
         while( parent.isValid() )
         {
-            zpMatrix4f local = zpMath::MatrixLoad4( parent->getLocalMatrix().m );
+            mat = parent->getLocalMatrix();
+
+            zpMatrix4f local = zpMath::MatrixLoad4( mat.m );
             world = zpMath::MatrixMul( world, local );
             parent = parent->getParentTransform();
         }
 
-        zpMath::MatrixStore4( world, m_worldMatrix.m );
+        zpMath::MatrixStore4( world, mat.m );
 
-        m_flags &= ~ZP_TRANSFORM_FLAG_DIRTY;
+        m_worldMatrix = mat;
+
+        m_flags &= ~( 1 << ZP_TRANSFORM_FLAG_DIRTY );
     }
 }
 
 zp_bool zpTransformComponent::isEnabled() const
 {
-    return ( m_flags & ZP_TRANSFORM_FLAG_ENABLED ) == ZP_TRANSFORM_FLAG_ENABLED;
+    return ( m_flags & ( 1 << ZP_TRANSFORM_FLAG_ENABLED ) ) == ( 1 << ZP_TRANSFORM_FLAG_ENABLED );
 }
 
 void zpTransformComponent::setEnabled( zp_bool enabled )
 {
-    if( enabled )
-    {
-        m_flags |= ZP_TRANSFORM_FLAG_ENABLED;
-    }
-    else
-    {
-        m_flags &= ~ZP_TRANSFORM_FLAG_ENABLED;
-    }
+    m_flags ^= ( ( enabled ? -1 : 0 ) ^ m_flags ) & ( 1 << ZP_TRANSFORM_FLAG_ENABLED );
 }
 
 zp_hash64 zpTransformComponent::getInstanceId() const

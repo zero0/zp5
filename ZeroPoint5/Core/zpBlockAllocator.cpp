@@ -263,3 +263,8 @@ zp_size_t zpBlockAllocator::getTotalMemory() const
 {
     return m_totalMemory;
 }
+
+zp_size_t zpBlockAllocator::getNumAllocations() const
+{
+    return m_numAllocs;
+}

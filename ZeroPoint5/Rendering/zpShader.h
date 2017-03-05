@@ -2,6 +2,14 @@
 #ifndef ZP_SHADER_H
 #define ZP_SHADER_H
 
+struct zpShader
+{
+    zpRenderHandle programShader;
+    zpRenderHandle vertexShader;
+    zpRenderHandle fragmentShader;
+    zpRenderHandle geometryShader;
+};
+
 struct zpShaderInstance
 {
     zpString shaderName;

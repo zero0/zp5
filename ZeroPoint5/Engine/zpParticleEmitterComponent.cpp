@@ -232,7 +232,7 @@ zp_bool zpParticleEmitterComponentManager::findComponentByID( zp_hash64 instance
     for( ; b != e; ++b )
     {
         zpParticleEmitterComponentInstance* t = *b;
-        zp_hash64 id = t->particleEmitter.getInstanceId();
+        const zp_hash64 id = t->particleEmitter.getInstanceId();
         if( id == instanceId )
         {
             handle.set( id, t );
