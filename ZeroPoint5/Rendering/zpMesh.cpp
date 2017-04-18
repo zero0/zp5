@@ -66,11 +66,11 @@ zpMeshHandle& zpMeshHandle::operator=( zpMeshHandle&& other )
     return *this;
 }
 
-const zpMesh* zpMeshHandle::operator->() const
+const zpMesh* zpMeshHandle::get() const
 {
     return isValid() ? &m_meshInstance->mesh : ZP_NULL;
 }
-zpMesh* zpMeshHandle::operator->()
+zpMesh* zpMeshHandle::get()
 {
     return isValid() ? &m_meshInstance->mesh : ZP_NULL;
 }

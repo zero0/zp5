@@ -64,11 +64,11 @@ zpFontHandle& zpFontHandle::operator=( zpFontHandle&& other )
     return *this;
 }
 
-const zpFont* zpFontHandle::operator->() const
+const zpFont* zpFontHandle::get() const
 {
     return isValid() ? &m_fontInstance->font : ZP_NULL;
 }
-zpFont* zpFontHandle::operator->()
+zpFont* zpFontHandle::get()
 {
     return isValid() ? &m_fontInstance->font : ZP_NULL;
 }

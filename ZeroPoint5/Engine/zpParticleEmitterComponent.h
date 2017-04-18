@@ -125,8 +125,17 @@ public:
     zpParticleEmitterComponentHandle& operator=( const zpParticleEmitterComponentHandle& other );
     zpParticleEmitterComponentHandle& operator=( zpParticleEmitterComponentHandle&& other );
 
-    const zpParticleEmitterComponent* operator->() const;
-    zpParticleEmitterComponent* operator->();
+    ZP_FORCE_INLINE const zpParticleEmitterComponent* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpParticleEmitterComponent* operator->()
+    {
+        return get();
+    }
+
+    const zpParticleEmitterComponent* get() const;
+    zpParticleEmitterComponent* get();
 
     zp_bool isValid() const;
     void release();

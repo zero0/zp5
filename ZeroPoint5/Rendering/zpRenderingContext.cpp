@@ -140,7 +140,7 @@ void zpRenderingContext::beginDrawMesh( zp_byte layer, const zpMatrix4fData& tra
     ZP_ASSERT( m_currentCommnad == npos, "" );
     m_currentCommnad = m_commands.size();
 
-    const zpMesh* m = mesh.operator->();
+    const zpMesh* m = mesh.get();
     for( zp_size_t i = 0, imax = m->numMeshParts; i < imax; ++i )
     {
         const zpMeshPart* p = m->parts + i;
@@ -172,7 +172,7 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
     zp_char prev = '\0';
     zp_char curr = '\0';
 
-    zpFont* font = cmd->font.operator->();
+    zpFont* font = cmd->font.get();
 
     zpScalar scale = zpMath::Scalar( static_cast<zp_float>( size ) / static_cast<zp_float>( 12 ) );
 

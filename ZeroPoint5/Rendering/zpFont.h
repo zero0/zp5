@@ -37,8 +37,17 @@ public:
     zpFontHandle& operator=( const zpFontHandle& other );
     zpFontHandle& operator=( zpFontHandle&& other );
 
-    const zpFont* operator->() const;
-    zpFont* operator->();
+    ZP_FORCE_INLINE const zpFont* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpFont* operator->()
+    {
+        return get();
+    }
+    
+    const zpFont* get() const;
+    zpFont* get();
 
     zp_bool isValid() const;
     void release();

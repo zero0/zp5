@@ -105,12 +105,12 @@ zpParticleEmitterComponentHandle& zpParticleEmitterComponentHandle::operator=( z
     return *this;
 }
 
-const zpParticleEmitterComponent* zpParticleEmitterComponentHandle::operator->() const
+const zpParticleEmitterComponent* zpParticleEmitterComponentHandle::get() const
 {
     return isValid() ? &m_particleEmitterInstance->particleEmitter : ZP_NULL;
 }
 
-zpParticleEmitterComponent* zpParticleEmitterComponentHandle::operator->()
+zpParticleEmitterComponent* zpParticleEmitterComponentHandle::get()
 {
     return isValid() ? &m_particleEmitterInstance->particleEmitter : ZP_NULL;
 }

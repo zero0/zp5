@@ -40,8 +40,17 @@ public:
     zpMeshHandle& operator=( const zpMeshHandle& other );
     zpMeshHandle& operator=( zpMeshHandle&& other );
 
-    const zpMesh* operator->() const;
-    zpMesh* operator->();
+    ZP_FORCE_INLINE const zpMesh* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpMesh* operator->()
+    {
+        return get();
+    }
+
+    const zpMesh* get() const;
+    zpMesh* get();
 
     zp_bool isValid() const;
     void release();

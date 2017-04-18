@@ -16,8 +16,17 @@ public:
     zpTransformComponentHandle& operator=( const zpTransformComponentHandle& other );
     zpTransformComponentHandle& operator=( zpTransformComponentHandle&& other );
 
-    const zpTransformComponent* operator->() const;
-    zpTransformComponent* operator->();
+    ZP_FORCE_INLINE const zpTransformComponent* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpTransformComponent* operator->()
+    {
+        return get();
+    }
+
+    const zpTransformComponent* get() const;
+    zpTransformComponent* get();
 
     zp_bool isValid() const;
     void release();

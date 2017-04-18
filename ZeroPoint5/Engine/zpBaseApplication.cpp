@@ -791,7 +791,7 @@ void zpBaseApplication::debugDrawGUI()
             ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
             y += fontHeight + fontSpacing;
 
-            const zpTransformComponent* txn = obj->getAllComponents()->transform.operator->();
+            const zpTransformComponent* txn = obj->getAllComponents()->transform.get();
             if( txn )
             {
                 tp.y = y;

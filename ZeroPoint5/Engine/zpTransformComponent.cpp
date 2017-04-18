@@ -222,12 +222,12 @@ zpTransformComponentHandle& zpTransformComponentHandle::operator=( zpTransformCo
     return *this;
 }
 
-const zpTransformComponent* zpTransformComponentHandle::operator->() const
+const zpTransformComponent* zpTransformComponentHandle::get() const
 {
     return isValid() ? &m_transformInstance->transform : ZP_NULL;
 }
 
-zpTransformComponent* zpTransformComponentHandle::operator->()
+zpTransformComponent* zpTransformComponentHandle::get()
 {
     return isValid() ? &m_transformInstance->transform : ZP_NULL;
 }
