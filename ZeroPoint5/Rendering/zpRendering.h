@@ -240,6 +240,12 @@ union zpRenderingSortKey
     zp_ulong key;
 };
 
+struct zpSortRenderCommandData
+{
+    zpRenderingSortKey key;
+    zp_size_t index;
+};
+
 class zpRenderingEngine;
 
 #include "zpTexture.h"

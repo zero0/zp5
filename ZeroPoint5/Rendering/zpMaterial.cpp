@@ -21,7 +21,7 @@ struct zpMaterialData
     zpString normTexName;
 };
 
-zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materialData )
+static zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materialData )
 {
     //zpFile materialFile( filepath, ZP_FILE_MODE_BINARY_READ );
     //if( materialFile.getResult() != ZP_FILE_SUCCESS )

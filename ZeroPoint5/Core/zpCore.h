@@ -55,6 +55,8 @@
 
 #define ZP_ARRAY_SIZE( a )          ( sizeof( a ) / sizeof( a[ 0 ] ) )
 
+#define ZP_CONSTEXPR                constexpr
+
 #if __cplusplus
 #define ZP_NULL    nullptr
 #else
@@ -121,6 +123,31 @@ zp_int zp_strcmp( const zp_char* str1, const zp_char* str2 );
 zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 );
 
 //
+// Template function
+//
+
+template<typename T>
+ZP_FORCE_INLINE void zp_swap( T& a, T& b );
+
+template<typename T>
+ZP_FORCE_INLINE void zp_move_swap( T& a, T& b );
+
+template<typename T>
+ZP_FORCE_INLINE void zp_move_swap( T&& a, T&& b );
+
+template<typename T>
+ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_forward( T& a );
+
+template<typename T>
+ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_forward( T&& a );
+
+template<typename T>
+ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_move( T&& a );
+
+template<typename T, typename Cmp>
+void zp_qsort( T* begin, T* end, Cmp cmp );
+
+//
 // Macros
 //
 
@@ -163,6 +190,8 @@ void zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const z
 #include "zpDataBuffer.h"
 #include "zpFile.h"
 #include "zpProfiler.h"
+
+#include "zpCore.inl"
 
 extern zpBlockAllocator g_globalAllocator;
 

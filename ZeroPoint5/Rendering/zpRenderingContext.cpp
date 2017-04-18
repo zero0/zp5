@@ -5,7 +5,7 @@
 #endif
 
 zpRenderingContext::zpRenderingContext()
-    : m_currentCommnad( static_cast< zp_size_t >( -1 ) )
+    : m_currentCommnad( npos )
     , m_commands( 512 )
     , m_scratchVertexBuffer( ZP_MEMORY_MB( 1 ) )
     , m_scratchIndexBuffer( ZP_MEMORY_MB( 1 ) )
@@ -466,4 +466,9 @@ void zpRenderingContext::flipBuffers()
 
     m_immediateIndexSize = 0;
     m_immediateVertexSize = 0;
+}
+
+const zpVector< zpRenderingCommand >& zpRenderingContext::getCommands() const
+{
+    return m_commands;
 }

@@ -10,7 +10,7 @@
 #include <GL\glew.h>
 #include <GL\wglew.h>
 
-ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
+static ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
 {
     static GLenum mapping[] =
     {
@@ -28,7 +28,7 @@ ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
     return mapping[ topology ];
 }
 
-ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
+static ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
 {
     static GLenum mapping[] =
     {
@@ -47,7 +47,7 @@ ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
     return mapping[ type ];
 }
 
-ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
+static ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
 {
     static GLenum mapping[] =
     {
@@ -61,7 +61,7 @@ ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
     return mapping[ bindType ];
 }
 
-ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDimenision )
+static ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDimenision )
 {
     static GLenum mapping[] =
     {
@@ -76,7 +76,7 @@ ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDime
     return mapping[ textureDimenision ];
 }
 
-ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFormat )
+static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFormat )
 {
     static GLint mapping[] =
     {
@@ -151,7 +151,7 @@ ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFor
     return mapping[ displayFormat ];
 }
 
-ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
+static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
 {
     static GLint mapping[] =
     {
@@ -226,7 +226,7 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
     return mapping[ displayFormat ];
 }
 
-ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
+static ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
 {
     static GLenum mapping[] =
     {
@@ -301,7 +301,7 @@ ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
     return mapping[ displayFormat ];
 }
 
-ZP_FORCE_INLINE zp_bool _IsCompressedDisplayFormat( zpDisplayFormat displayFormat )
+static ZP_FORCE_INLINE zp_bool _IsCompressedDisplayFormat( zpDisplayFormat displayFormat )
 {
     switch( displayFormat )
     {
@@ -321,7 +321,7 @@ static GLuint g_vaos[ zpVertexFormat_Count ];
 static zpShader g_shaderVC;
 static zpShader g_shaderVCU;
 
-void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
+static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 {
     const zp_int strides[] =
     {
@@ -421,7 +421,7 @@ void BindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
-void UnbindVertexFormatForRenderCommand( zpRenderingCommand* cmd )
+static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 {
     switch( cmd->vertexFormat )
     {
@@ -478,7 +478,7 @@ ZP_FORCE_INLINE glDebugBlockS::~glDebugBlockS()
 #define glDebugBlock( source, message ) (void)0
 #endif
 
-void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
+static void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
 {
     const zp_char* src = "   ";
     const zp_char* typ = "   ";
@@ -614,8 +614,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glDepthFunc( GL_LEQUAL );
 
     const zp_char* vertVC =                             ""
-        "\n" "in highp vec4 vertex;                      "
-        "\n" "in lowp vec4 color;                        "
+        "\n" "layout(location = 0) in highp vec4 vertex;                      "
+        "\n" "layout(location = 1) in lowp vec4 color;                        "
         "\n" "out lowp vec4 fragmentColor;               "
         "\n" "void main()                                "
         "\n" "{                                          "
@@ -633,9 +633,9 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         "\n";
 
     const zp_char* vertVCU =                                ""
-        "\n" "in highp vec4 vertex;                          "
-        "\n" "in lowp vec4 color;                            "
-        "\n" "in highp vec2 texcoord;                        "
+        "\n" "layout(location = 0) in highp vec4 vertex;                          "
+        "\n" "layout(location = 1) in lowp vec4 color;                            "
+        "\n" "layout(location = 2) in highp vec2 texcoord;                        "
         "\n" "out lowp vec4 fragmentColor;                   "
         "\n" "out highp vec2 uv;                             "
         "\n" "void main()                                    "
@@ -670,7 +670,7 @@ void TeardownRenderingOpenGL( zp_handle hContext )
     wglDeleteContext( context );
 }
 
-void ProcessRenderingCommandOpenGL( zpRenderingCommand* cmd )
+void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
 {
     switch( cmd->type )
     {
@@ -890,16 +890,16 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
     shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
 
     const zp_char* versionHeader =       ""
-        "\n" "#if ( __VERSION__ > 120 )   "
+        //"\n" "#if ( __VERSION__ > 120 )   "
         "\n" "# version 330 core          "
         "\n" "# define tex2D( sampler, uv )     texture( sampler, uv )"
-        "\n" "#else                       "
-        "\n" "# version 120               "
-        "\n" "# define tex2D( sampler, uv )     texture2D( sampler, uv )"
-        "\n" "# define highp"
-        "\n" "# define mediump"
-        "\n" "# define lowp"
-        "\n" "#endif                      "
+        //"\n" "#else                       "
+        //"\n" "# version 120               "
+        //"\n" "# define tex2D( sampler, uv )     texture2D( sampler, uv )"
+        //"\n" "# define highp"
+        //"\n" "# define mediump"
+        //"\n" "# define lowp"
+        //"\n" "#endif                      "
         "\n";
 
     const zp_char* commonHeader =           ""
@@ -925,14 +925,14 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
 
     const zp_char* vsHeader = ""
         "\n" "#define VERTEX   "
-        "\n" "# define in attribute"
-        "\n" "# define out varying"
+        //"\n" "# define in attribute"
+        //"\n" "# define out varying"
         "\n";
 
     const zp_char* psHeader = ""
         "\n" "#define FRAGMENT "
-        "\n" "# define in varying"
-        "\n" "# define out"
+        //"\n" "# define in varying"
+        //"\n" "# define out"
         "\n";
 
     const zp_char* vs[] =

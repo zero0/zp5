@@ -27,7 +27,7 @@ enum zpBaseApplicationFlags
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam )
+static LRESULT CALLBACK _WinProc( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam )
 {
     switch( uMessage )
     {
@@ -727,7 +727,14 @@ void zpBaseApplication::debugDrawGUI()
 
             tp.y = y;
 
-            zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+            if( bf->eventName )
+            {
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+            }
+            else
+            {
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s", ft, fm, bf->functionName );
+            }
             ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
             y += fontHeight + fontSpacing;
         }

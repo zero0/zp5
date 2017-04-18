@@ -10,7 +10,7 @@ struct zpMeshData
     zp_time_t lastModifiedTime;
 };
 
-zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
+static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
 {
     //zpFile meshFile( filepath, ZP_FILE_MODE_BINARY_READ );
     //if( meshFile.getResult() != ZP_FILE_SUCCESS )

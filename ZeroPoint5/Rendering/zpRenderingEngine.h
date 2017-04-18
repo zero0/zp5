@@ -30,7 +30,11 @@ public:
     void destroyShader( zpShader& shader );
 
 private:
+    void renderingPassForward( zpRenderingContext& context );
+
     zpRenderingContext m_immidiateContext;
+
+    zpVector< zpSortRenderCommandData > m_sortedCommands;
 
     zp_handle m_hDC;
     zp_handle m_hContext;

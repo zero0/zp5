@@ -49,8 +49,10 @@ public:
     void processCommands( zpRenderingCommandProcessFunc func );
     void flipBuffers();
 
+    const zpVector< zpRenderingCommand >& getCommands() const;
+
 private:
-    static const zp_size_t npos = -1;
+    static const zp_size_t npos = static_cast<zp_size_t>( -1 );
     zp_size_t m_currentCommnad;
 
     zpVector< zpRenderingCommand > m_commands;
