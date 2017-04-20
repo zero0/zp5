@@ -90,6 +90,7 @@ private:
 
     zpTransformComponentManager m_transformComponentManager;
     zpParticleEmitterComponentManager m_particleEmitterComponentManager;
+    zpMeshRendererComponentManager m_meshRendererComponentManager;
 
     zpTextureManager m_textureManager;
     zpShaderManager m_shaderManager;

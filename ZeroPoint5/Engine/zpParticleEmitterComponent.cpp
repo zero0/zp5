@@ -3,13 +3,13 @@
 
 enum : zp_size_t
 {
-    ZP_PARTICLE_EMITTER_FLAG_ENABLED,
-    ZP_PARTICLE_EMITTER_FLAG_DIRTY,
+    ZP_MESH_RENDERER_FLAG_ENABLED,
+    ZP_MESH_RENDERER_FLAG_DIRTY,
 };
 
 zpParticleEmitterComponent::zpParticleEmitterComponent()
     : m_instanceID( 0 )
-    , m_flags( ZP_PARTICLE_EMITTER_FLAG_DIRTY )
+    , m_flags( ZP_MESH_RENDERER_FLAG_DIRTY )
     , m_parentObject()
 {
 }
@@ -22,7 +22,7 @@ void zpParticleEmitterComponent::setParentObject( const zpObjectHandle& parent )
 {
     m_parentObject = parent;
 
-    m_flags |= ZP_PARTICLE_EMITTER_FLAG_DIRTY;
+    m_flags |= ZP_MESH_RENDERER_FLAG_DIRTY;
 }
 
 const zpObjectHandle& zpParticleEmitterComponent::getParentObject() const
@@ -32,20 +32,20 @@ const zpObjectHandle& zpParticleEmitterComponent::getParentObject() const
 
 void zpParticleEmitterComponent::update( zp_float dt, zp_float rt )
 {
-    if( m_flags & ( 1 << ZP_PARTICLE_EMITTER_FLAG_DIRTY ) )
+    if( m_flags & ( 1 << ZP_MESH_RENDERER_FLAG_DIRTY ) )
     {
-        m_flags &= ~( 1 << ZP_PARTICLE_EMITTER_FLAG_DIRTY );
+        m_flags &= ~( 1 << ZP_MESH_RENDERER_FLAG_DIRTY );
     }
 }
 
 zp_bool zpParticleEmitterComponent::isEnabled() const
 {
-    return ( m_flags & ( 1 << ZP_PARTICLE_EMITTER_FLAG_ENABLED ) ) == ( 1 << ZP_PARTICLE_EMITTER_FLAG_ENABLED );
+    return ( m_flags & ( 1 << ZP_MESH_RENDERER_FLAG_ENABLED ) ) == ( 1 << ZP_MESH_RENDERER_FLAG_ENABLED );
 }
 
 void zpParticleEmitterComponent::setEnabled( zp_bool enabled )
 {
-    m_flags ^= ( ( enabled ? -1 : 0 ) ^ m_flags ) & ( 1 << ZP_PARTICLE_EMITTER_FLAG_ENABLED );
+    m_flags ^= ( ( enabled ? -1 : 0 ) ^ m_flags ) & ( 1 << ZP_MESH_RENDERER_FLAG_ENABLED );
 }
 
 zp_hash64 zpParticleEmitterComponent::getInstanceId() const

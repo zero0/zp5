@@ -6,6 +6,7 @@ struct zpAllComponents
 {
     zpTransformComponentHandle transform;
     zpParticleEmitterComponentHandle particleEmitter;
+    zpMeshRendererComponentHandle meshRenderer;
 };
 
 #endif // !ZP_ALL_COMPONENTS_H

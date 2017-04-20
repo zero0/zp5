@@ -359,6 +359,7 @@ void zpBaseApplication::runGarbageCollection()
     m_objectManager.garbageCollect();
     m_transformComponentManager.garbageCollect();
     m_particleEmitterComponentManager.garbageCollect();
+    m_meshRendererComponentManager.garbageCollect();
 
     m_cameraManager.garbageCollect();
     m_meshManager.garbageCollect();
@@ -608,6 +609,10 @@ void zpBaseApplication::update( zp_float dt, zp_float rt )
     m_particleEmitterComponentManager.update( dt, rt );
     ZP_PROFILER_END( ParticleEmitterUpdate );
 
+    ZP_PROFILER_START( MeshRendererUpdate );
+    m_meshRendererComponentManager.update( dt, rt );
+    ZP_PROFILER_END( MeshRendererUpdate );
+
     ZP_PROFILER_START( CameraUpdate );
     m_cameraManager.update( dt, rt );
     ZP_PROFILER_END( CameraUpdate );
@@ -671,6 +676,10 @@ void zpBaseApplication::render()
     ctx->addVertexData( v3, zpColor32::White, uv3 );
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
+
+    ZP_PROFILER_START( MeshRendererRender );
+    m_meshRendererComponentManager.render( ctx );
+    ZP_PROFILER_END( MeshRendererRender );
 
     // draw debug when toggled on
     if( m_flags & ZP_BASE_APPLICATION_FLAG_IS_DEBUG_ACTIVE )
@@ -794,11 +803,43 @@ void zpBaseApplication::debugDrawGUI()
             const zpTransformComponent* txn = obj->getAllComponents()->transform.get();
             if( txn )
             {
+                const zpVector4fData& localPos = txn->getLocalPosition();
+                const zpQuaternion4fData& localRot = txn->getLocalRotation();
+                const zpVector4fData& localScale = txn->getLocalScale();
+
                 tp.y = y;
 
-                const zpVector4fData& localPos = txn->getLocalPosition();
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Transform@%lu", txn->getInstanceId() );
+                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+                y += fontHeight + fontSpacing;
 
-                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- 'Txn'@%lu [%3.3f %3.3f %3.3f]", txn->getInstanceId(), localPos.x, localPos.y, localPos.z );
+                tp.y = y;
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Position [%3.3f %3.3f %3.3f %3.3f]", localPos.x, localPos.y, localPos.z, localPos.w );
+                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+                y += fontHeight + fontSpacing;
+
+                tp.y = y;
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Rotation [%3.3f %3.3f %3.3f %3.3f]", localRot.x, localRot.y, localRot.z, localRot.w );
+                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+                y += fontHeight + fontSpacing;
+
+                tp.y = y;
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Scale    [%3.3f %3.3f %3.3f %3.3f]", localScale.x, localScale.y, localScale.z, localScale.w );
+                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
+                y += fontHeight + fontSpacing;
+            }
+
+            const zpParticleEmitterComponent* part = obj->getAllComponents()->particleEmitter.get();
+            if( part )
+            {
+                //zp_bool a = part->isAnyPlaying();
+
+                tp.y = y;
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Particle Emitter@%lu\n", part->getInstanceId() );
                 ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
                 y += fontHeight + fontSpacing;
             }

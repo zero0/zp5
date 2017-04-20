@@ -28,6 +28,7 @@ enum : zp_hash64
 
 #include "zpTransformComponent.h"
 #include "zpParticleEmitterComponent.h"
+#include "zpMeshRendererComponent.h"
 
 #include "zpAllComponents.h"
 

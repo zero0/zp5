@@ -80,11 +80,13 @@ static void SortRenderCommands( const zpVector<zpRenderingCommand>& commands, zp
             return a.key.layer < b.key.layer;
         } );
 
+        // sort materials
         zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
         {
             return a.key.material < b.key.material;
         } );
 
+        // sort passes
         zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
         {
             return a.key.pass < b.key.pass;

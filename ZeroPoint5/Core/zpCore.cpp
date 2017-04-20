@@ -169,56 +169,67 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
 #endif // !ZP_USE_ASSERTIONS
 
 #ifdef ZP_USE_PRINT
-void zp_printf( const zp_char* text, ... )
+zp_int zp_printf( const zp_char* text, ... )
 {
     zp_char buff[ ZP_PRINT_BUFFER_SIZE ];
+    zp_int r;
 
     va_list vl;
     va_start( vl, text );
 #ifdef ZP_USE_SAFE_FUNCTIONS
     vsprintf_s( buff, text, vl );
-    printf_s( buff );
+    r = printf_s( buff );
 #else // !ZP_USE_SAFE_FUNCTIONS
     vsprintf( buff, text, vl );
-    printf( buff );
+    r = printf( buff );
 #endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
 #if defined( ZP_WINDOWS ) && defined( ZP_DEBUG )
     OutputDebugString( buff );
 #endif // !ZP_WINDOWS && !ZP_DEBUG
+
+    return r;
 }
-void zp_printfln( const zp_char* text, ... )
+
+zp_int zp_printfln( const zp_char* text, ... )
 {
     zp_char buff[ ZP_PRINT_BUFFER_SIZE ];
+    zp_int r;
 
     va_list vl;
     va_start( vl, text );
 #ifdef ZP_USE_SAFE_FUNCTIONS
     zp_int end = vsprintf_s( buff, text, vl );
     sprintf_s( buff + end, sizeof( buff ) - end, "\n" );
-    printf_s( buff );
+    r = printf_s( buff );
 #else // !ZP_USE_SAFE_FUNCTIONS
     zp_int end = vsprintf( buff, text, vl );
     sprintf( buff + end, "\n" );
-    printf( buff );
+    r = printf( buff );
 #endif // ZP_USE_SAFE_FUNCTIONS
     va_end( vl );
 
 #if defined( ZP_WINDOWS ) && defined( ZP_DEBUG )
     OutputDebugString( buff );
 #endif // !ZP_WINDOWS && !ZP_DEBUG
+
+    return r;
 }
 #endif // !ZP_USE_PRINT
 
-void zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... )
+zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... )
 {
     va_list vl;
+    zp_int r;
+
     va_start( vl, format );
 #ifdef ZP_USE_SAFE_FUNCTIONS
-    vsnprintf_s( dest, destSize, maxCount, format, vl );
+    r = vsnprintf_s( dest, destSize, maxCount, format, vl );
 #else
-    vsnprintf( dest, destSize, format, vl );
+    r = vsnprintf( dest, destSize, format, vl );
 #endif
     va_end( vl );
+
+    return r;
 }

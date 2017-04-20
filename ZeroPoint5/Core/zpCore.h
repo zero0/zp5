@@ -167,14 +167,14 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
 #endif
 
 #ifdef ZP_USE_PRINT
-void zp_printf( const zp_char* text, ... );
-void zp_printfln( const zp_char* text, ... );
+zp_int zp_printf( const zp_char* text, ... );
+zp_int zp_printfln( const zp_char* text, ... );
 #else
 #define zp_printf( text, ... )      static_cast<void>( 0 )
 #define zp_printfln( text, ... )    static_cast<void>( 0 )
 #endif
 
-void zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... );
+zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... );
 
 //
 // Includes
