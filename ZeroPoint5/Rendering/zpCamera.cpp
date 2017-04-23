@@ -134,9 +134,6 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
             {
                 zp_bool isViewProjectionDirty = false;
 
-                zpMatrix4f view;
-                zpMatrix4f projection;
-
                 if( cam->flags & ( 1 << ZP_CAMERA_FLAG_VIEW_DIRTY ) )
                 {
                     ZP_ALIGN16 zpVector4fData p = cam->position;
@@ -147,19 +144,20 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
                     zpVector4f dir = zpMath::Vector4Load4( f.m );
                     zpVector4f up  = zpMath::Vector4Load4( u.m );
 
-                    view = zpMath::LookAtLH( eye, dir, up );
+                    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
+                    
+                    ZP_ALIGN16 zpMatrix4fData mat;
+                    zpMath::MatrixStore4( view, mat.m );
+                    cam->viewMatrix = mat;
 
                     isViewProjectionDirty = true;
                     cam->flags &= ~( 1 << ZP_CAMERA_FLAG_VIEW_DIRTY );
                 }
-                else
-                {
-                    ZP_ALIGN16 zpMatrix4fData mat = cam->viewMatrix;
-                    view = zpMath::MatrixLoad4( mat.m );
-                }
 
                 if( cam->flags & ( 1 << ZP_CAMERA_FLAG_PROJECTION_DIRTY ) )
                 {
+                    zpMatrix4f projection;
+
                     switch( cam->projectionType )
                     {
                     case ZP_CAMERA_PROJECTION_ORTHO:
@@ -201,22 +199,31 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
                         break;
                     }
 
+                    ZP_ALIGN16 zpMatrix4fData mat;
+                    zpMath::MatrixStore4( projection, mat.m );
+                    cam->projectionMatrix = mat;
+
                     isViewProjectionDirty = true;
                     cam->flags &= ~( 1 << ZP_CAMERA_FLAG_PROJECTION_DIRTY );
-                }
-                else
-                {
-                    ZP_ALIGN16 zpMatrix4fData mat = cam->projectionMatrix;
-                    projection = zpMath::MatrixLoad4( mat.m );
                 }
 
                 if( isViewProjectionDirty )
                 {
-                    zpMatrix4f viewProjection = zpMath::MatrixMul( view, projection );
+                    ZP_ALIGN16 zpMatrix4fData vMat = cam->viewMatrix;
+                    ZP_ALIGN16 zpMatrix4fData pMat = cam->projectionMatrix;
+                    ZP_ALIGN16 zpMatrix4fData vpMat;
 
-                    ZP_ALIGN16 zpMatrix4fData mat;
-                    zpMath::MatrixStore4( viewProjection, mat.m );
-                    cam->viewProjectionMatrix = mat;
+                    zpMatrix4f view = zpMath::MatrixLoad4( vMat.m );
+                    zpMatrix4f projection = zpMath::MatrixLoad4( pMat.m );
+
+                    zpMatrix4f viewProjection = zpMath::MatrixMul( view, projection );
+                    zpMatrix4f invViewProjection = zpMath::MatrixIdentity();
+
+                    zpMath::MatrixStore4( viewProjection, vpMat.m );
+                    cam->viewProjectionMatrix = vpMat;
+
+                    zpMath::MatrixStore4( invViewProjection, vpMat.m );
+                    cam->invViewProjectionMatrix = vpMat;
                 }
             }
         }
@@ -241,7 +248,20 @@ void zpCameraManager::createCamera( zpCameraHandle& handle )
 
 zp_bool zpCameraManager::findCameraForLayer( zp_uint layerIndex, zpCameraHandle& handle ) const
 {
-    return false;
+    zp_bool found = false;
+
+    for( zp_size_t i = 0, imax = m_cameraInstances.size(); i != imax; ++i )
+    {
+        zpCameraInstance* b = m_cameraInstances[ i ];
+        if( b->refCount && ( b->camera.layerMask & ( 1 << layerIndex ) ))
+        {
+            handle.set( b->instanceId, b );
+            found = true;
+            break;
+        }
+    }
+
+    return found;
 }
 
 void zpCameraManager::garbageCollect()
