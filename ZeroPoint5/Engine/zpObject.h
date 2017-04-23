@@ -26,13 +26,26 @@ public:
     const zpAllComponents* getAllComponents() const;
     zpAllComponents* getAllComponents();
 
+    void setActive( zp_bool isActive );
+    zp_bool isActive() const;
+
+    void destroy();
+
 private:
+    enum
+    {
+        ZP_OBJECT_FLAG_ACTIVE,
+        ZP_OBJECT_FLAG_SHOULD_DESTROY,
+    };
+
     void setInstanceId( zp_hash64 instanceId );
+    zp_bool shouldDestroy() const;
 
     zp_hash64 m_instanceId;
 
     zp_ulong m_layers;
     zp_ulong m_tags;
+    zp_ulong m_flags;
 
     zpString m_name;
 

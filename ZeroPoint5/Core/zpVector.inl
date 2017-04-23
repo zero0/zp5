@@ -115,7 +115,7 @@ void zpVector< T, Allocator >::pushFront( const T& val )
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
-        m_array[ i ] = (T&&)m_array[ i - 1 ];
+        m_array[ i ] = zp_move( zp_forward( m_array[ i - 1 ] ) );
     }
 
     ++m_size;
@@ -130,7 +130,7 @@ T& zpVector< T, Allocator >::pushFrontEmpty()
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
-        m_array[ i ] = (T&&)m_array[ i - 1 ];
+        m_array[ i ] = zp_move( zp_forward( m_array[ i - 1 ] ) );
     }
 
     ++m_size;
@@ -157,7 +157,7 @@ void zpVector< T, Allocator >::popFront()
 
         for( zp_size_t i = 1; i < m_size; ++i )
         {
-            m_data[ i - 1 ] = (T&&)m_array[ i ];
+            m_data[ i - 1 ] = zp_move( zp_forward( m_array[ i ] ) );
         }
 
         --m_size;
@@ -168,7 +168,7 @@ template< typename T, typename Allocator >
 void zpVector< T, Allocator >::erase( zp_size_t index )
 {
     ( m_data + index )->~T();
-    m_data[ index ] = (T&&)m_data[ m_size - 1 ];
+    m_data[ index ] = zp_move( zp_forward( m_data[ m_size - 1 ] ) );
     --m_size;
 }
 
@@ -185,7 +185,7 @@ zp_size_t zpVector< T, Allocator >::eraseAll( const T& val )
 
             t->~T();
 
-            m_data[ i ] = (T&&)m_data[ m_size - 1 ];
+            m_data[ i ] = zp_move( zp_forward( m_data[ m_size - 1 ] ) );
             --m_size;
             --i;
         }
@@ -341,9 +341,14 @@ void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
 
         if( m_data )
         {
+            //if( m_size )
+            //{
+            //    zp_memcpy( newArray, sizeof( T ) * m_capacity, m_data, sizeof( T ) * m_size );
+            //}
+
             for( zp_size_t i = 0; i != m_size; ++i )
             {
-                newArray[ i ] = (T&&)m_data[ i ];
+                newArray[ i ] = zp_move( zp_forward( m_data[ i ] ) );
             }
 
             m_allocator.free( m_data );

@@ -41,11 +41,11 @@ zpObjectHandle& zpObjectHandle::operator=( zpObjectHandle&& other )
     return *this;
 }
 
-const zpObject* zpObjectHandle::operator->() const
+const zpObject* zpObjectHandle::get() const
 {
     return isValid() ? &m_objectInstance->object : ZP_NULL;
 }
-zpObject* zpObjectHandle::operator->()
+zpObject* zpObjectHandle::get()
 {
     return isValid() ? &m_objectInstance->object : ZP_NULL;
 }
@@ -113,6 +113,16 @@ zpObjectManager::~zpObjectManager()
 
 }
 
+void zpObjectManager::setup()
+{
+
+}
+
+void zpObjectManager::teardown()
+{
+
+}
+
 void zpObjectManager::createObject( zpObjectHandle& handle )
 {
     zp_hash64 instanceId = ++m_newObjectInstanceId;
@@ -127,6 +137,16 @@ void zpObjectManager::createObject( zpObjectHandle& handle )
     handle.set( instanceId, instance );
 
     m_activeObjects.pushBack( instance );
+}
+
+void zpObjectManager::destroyObject( zpObjectHandle& handle )
+{
+    if( handle.isValid() )
+    {
+        handle->destroy();
+
+        handle.release();
+    }
 }
 
 zp_bool zpObjectManager::findObjectByID( zp_hash64 instanceId, zpObjectHandle& handle ) const
@@ -164,7 +184,7 @@ void zpObjectManager::garbageCollect()
     for( zp_size_t i = 0, imax = m_activeObjects.size(); i != imax; ++i )
     {
         zpObjectInstance* b = m_activeObjects[ i ];
-        if( b->refCount == 0 )
+        if( b->refCount == 0 || b->object.shouldDestroy() )
         {
             ( &b->object )->~zpObject();
             g_globalAllocator.free( b );

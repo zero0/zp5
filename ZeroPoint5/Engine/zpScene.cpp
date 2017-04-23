@@ -8,7 +8,7 @@ zpScene::zpScene()
 
 zpScene::~zpScene()
 {
-
+    destroyAllObjectsInScene();
 }
 
 zp_hash64 zpScene::getInstanceId() const
@@ -18,12 +18,28 @@ zp_hash64 zpScene::getInstanceId() const
 
 void zpScene::addObject( const zpObjectHandle& handle )
 {
-    m_objectsInScene.pushBack( handle );
+    m_objectsInScene.pushBackEmpty() = handle;
 }
 
 void zpScene::removeObject( const zpObjectHandle& handle )
 {
     m_objectsInScene.eraseAll( handle );
+}
+
+void zpScene::removeAllObjects()
+{
+    m_objectsInScene.clear();
+}
+
+void zpScene::destroyAllObjectsInScene()
+{
+    zpObjectHandle* b = m_objectsInScene.begin();
+    zpObjectHandle* e = m_objectsInScene.end();
+    for( ; b != e; ++b )
+    {
+        b->get()->destroy();
+    }
+    m_objectsInScene.clear();
 }
 
 void zpScene::setInstanceId( zp_hash64 instanceId )
@@ -142,6 +158,16 @@ zpSceneManager::zpSceneManager()
 }
 
 zpSceneManager::~zpSceneManager()
+{
+
+}
+
+void zpSceneManager::setup()
+{
+
+}
+
+void zpSceneManager::teardown()
 {
 
 }

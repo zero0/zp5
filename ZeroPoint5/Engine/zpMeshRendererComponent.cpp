@@ -40,10 +40,13 @@ void zpMeshRendererComponent::update( zp_float dt, zp_float rt )
 
 void zpMeshRendererComponent::render( zpRenderingContext* ctx )
 {
-    const zpMatrix4fData& transform = m_parentObject->getAllComponents()->transform->getWorldMatrix();
+    if( m_mesh.isValid() && m_material.isValid() )
+    {
+        const zpMatrix4fData& transform = m_parentObject->getAllComponents()->transform->getWorldMatrix();
 
-    ctx->beginDrawMesh( m_renderLayer, transform, m_mesh, m_material );
-    ctx->endDraw();
+        ctx->beginDrawMesh( m_renderLayer, transform, m_mesh, m_material );
+        ctx->endDraw();
+    }
 }
 
 
@@ -65,6 +68,24 @@ zp_hash64 zpMeshRendererComponent::getInstanceId() const
 void zpMeshRendererComponent::setInstanceId( zp_hash64 instanceId )
 {
     m_instanceID = instanceId;
+}
+
+void zpMeshRendererComponent::setMesh( const zpMeshHandle& mesh )
+{
+    m_mesh = mesh;
+}
+const zpMeshHandle& zpMeshRendererComponent::getMesh() const
+{
+    return m_mesh;
+}
+
+void zpMeshRendererComponent::setMaterial( const zpMaterialHandle& material )
+{
+    m_material = material;
+}
+const zpMaterialHandle& zpMeshRendererComponent::getMaterial() const
+{
+    return m_material;
 }
 
 //

@@ -40,6 +40,7 @@ private:
     zp_size_t m_totalMemory;
 
     zpMemoryChunk m_memoryChunkHead;
+
 };
 
 #endif // !ZP_BLOCK_ALLOCATOR_H

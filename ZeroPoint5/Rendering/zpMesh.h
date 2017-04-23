@@ -2,6 +2,11 @@
 #ifndef ZP_MESH_H
 #define ZP_MESH_H
 
+enum : zp_size_t
+{
+    ZP_MESH_MAX_MESH_PARTS = 8
+};
+
 struct zpMeshPart
 {
     zp_size_t indexOffset;
@@ -14,10 +19,10 @@ struct zpMeshPart
 struct zpMesh
 {
     zpVertexFormat vertexFormat;
-    zp_size_t numMeshParts;
     zpRenderBuffer vertexData;
     zpRenderBuffer indexData;
-    zpMeshPart parts[ 8 ];
+    zp_size_t numMeshParts;
+    zpMeshPart parts[ ZP_MESH_MAX_MESH_PARTS ];
 };
 
 struct zpMeshInstance
@@ -85,7 +90,8 @@ public:
 
 private:
     zpVector< zpMeshInstance* > m_meshInstances;
-
+    
+    zpRenderingEngine* m_renderingEngine;
     zp_hash64 m_newMeshInstanceId;
 };
 

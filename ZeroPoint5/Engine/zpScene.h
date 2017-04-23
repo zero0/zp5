@@ -13,6 +13,10 @@ public:
     void addObject( const zpObjectHandle& handle );
     void removeObject( const zpObjectHandle& handle );
 
+    void removeAllObjects();
+
+    void destroyAllObjectsInScene();
+
 private:
     void setInstanceId( zp_hash64 instanceId );
 
@@ -67,6 +71,9 @@ class zpSceneManager
 public:
     zpSceneManager();
     ~zpSceneManager();
+
+    void setup();
+    void teardown();
 
     void createScene( zpSceneHandle& handle );
     void loadScene( const zp_char* sceneName, zpSceneHandle& handle );

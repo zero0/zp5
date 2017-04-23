@@ -715,13 +715,10 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
             BindVertexFormatForRenderCommand( cmd );
 
             GLenum mode = _TopologyToMode( cmd->topology );
-            glDrawRangeElementsBaseVertex( mode,
-                                           static_cast<GLuint>( ( cmd->indexOffset / sizeof( zp_ushort ) ) ),
-                                           static_cast<GLuint>( ( cmd->indexOffset / sizeof( zp_ushort ) ) + cmd->indexCount ),
-                                           static_cast<GLsizei>( cmd->indexCount ), 
-                                           GL_UNSIGNED_SHORT,
-                                           ZP_NULL,
-                                           0 );
+            glDrawElements( mode,
+                            static_cast<GLsizei>( cmd->indexCount ),
+                            GL_UNSIGNED_SHORT,
+                            reinterpret_cast<void*>( cmd->indexOffset ) );
 
 
             UnbindVertexFormatForRenderCommand( cmd );

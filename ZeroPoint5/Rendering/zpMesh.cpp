@@ -8,6 +8,11 @@ const zp_time_t ZP_MESH_NOT_FILE = static_cast<zp_time_t>( -1 );
 struct zpMeshData
 {
     zp_time_t lastModifiedTime;
+    zpVertexFormat vertexFormat;
+    zpDataBuffer vertexBuffer;
+    zpDataBuffer indexBuffer;
+    zp_size_t numMeshParts;
+    zpMeshPart parts[ ZP_MESH_MAX_MESH_PARTS ];
 };
 
 static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
@@ -17,6 +22,73 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
     //{
     //    return -1;
     //}
+
+    zpRectf rect = { -10, -10, 30, 30 };
+
+    zp_ushort index[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    struct Vertex
+    {
+        zpVector4fData p;
+        zpColor32i c;
+        zpVector2f u;
+    };
+
+    zpVector4fData v0 = { rect.x,               rect.y, 0, 1 };
+    zpVector4fData v1 = { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4fData v2 = { rect.x + rect.height, rect.y + rect.height, 0, 1 };
+    zpVector4fData v3 = { rect.x + rect.height, rect.y, 0, 1 };
+
+    zpVector2f uv0 = { 0, 0 };
+    zpVector2f uv1 = { 0, 1 };
+    zpVector2f uv2 = { 1, 1 };
+    zpVector2f uv3 = { 1, 0 };
+
+    Vertex vert[] = {
+        { v0, zpColor32::Red, uv0 },
+        { v1, zpColor32::Green, uv1 },
+        { v2, zpColor32::Blue, uv2 },
+        { v3, zpColor32::White, uv3 },
+    };
+
+    meshData.numMeshParts = 1;
+    meshData.vertexFormat = ZP_VERTEX_FORMAT_VERTEX_COLOR_UV;
+    meshData.indexBuffer.write( index, 0, sizeof( index ) );
+    meshData.vertexBuffer.write( vert, 0, sizeof( vert ) );
+    zpMeshPart& part = meshData.parts[ 0 ];
+    part.indexCount = 6;
+    part.indexOffset = 0;
+    part.vertexCount = 4;
+    part.vertexOffset = 0;
+
+    return 0;
+}
+
+static zp_int BuildMeshFromData( const zpMeshData& meshData, zpMesh& mesh, zpRenderingEngine* renderingEngine )
+{
+    mesh.vertexFormat = meshData.vertexFormat;
+    mesh.numMeshParts = meshData.numMeshParts;
+    zp_memset( mesh.parts, 0, sizeof( mesh.parts ) );
+
+    for( zp_size_t i = 0; i < meshData.numMeshParts; ++i )
+    {
+        mesh.parts[ i ] = meshData.parts[ i ];
+    }
+
+    renderingEngine->createRenderBuffer( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_IMMUTABLE, meshData.vertexBuffer.getLength(), meshData.vertexBuffer.getBuffer(), mesh.vertexData );
+    renderingEngine->createRenderBuffer( ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_IMMUTABLE, meshData.indexBuffer.getLength(), meshData.indexBuffer.getBuffer(), mesh.indexData );
+   
+    return 0;
+}
+
+
+static zp_int DestroyMesh( zpMesh& mesh, zpRenderingEngine* renderingEngine )
+{
+    renderingEngine->destoryRenderBuffer( mesh.vertexData );
+    renderingEngine->destoryRenderBuffer( mesh.indexData );
 
     return 0;
 }
@@ -146,6 +218,8 @@ zp_bool zpMeshManager::loadMesh( const zp_char* meshFile, zpMeshHandle& mesh )
         zpMeshInstance* t = ( *b );
         if( t->refCount == 0 )
         {
+            DestroyMesh( t->mesh, m_renderingEngine );
+
             foundMeshInstance = t;
             break;
         }
@@ -170,6 +244,8 @@ zp_bool zpMeshManager::loadMesh( const zp_char* meshFile, zpMeshHandle& mesh )
     foundMeshInstance->instanceId = ++m_newMeshInstanceId;
     foundMeshInstance->meshName = meshFile;
 
+    BuildMeshFromData( meshData, foundMeshInstance->mesh, m_renderingEngine );
+
     mesh.set( foundMeshInstance->instanceId, foundMeshInstance );
 
     return true;
@@ -185,6 +261,8 @@ zp_bool zpMeshManager::getMesh( const zp_char* meshName, zpMeshHandle& mesh )
         zpMeshInstance* t = ( *b );
         if( t->refCount == 0 )
         {
+            DestroyMesh( t->mesh, m_renderingEngine );
+
             foundMeshInstance = t;
             break;
         }
@@ -201,10 +279,15 @@ zp_bool zpMeshManager::getMesh( const zp_char* meshName, zpMeshHandle& mesh )
         m_meshInstances.pushBack( foundMeshInstance );
     }
 
+    zpMeshData meshData;
+    LoadMeshData( "", meshData );
+
     foundMeshInstance->lastModifiedTime = ZP_MESH_NOT_FILE;
     foundMeshInstance->refCount = 0;
     foundMeshInstance->instanceId = ++m_newMeshInstanceId;
     foundMeshInstance->meshName = meshName;
+
+    BuildMeshFromData( meshData, foundMeshInstance->mesh, m_renderingEngine );
 
     mesh.set( foundMeshInstance->instanceId, foundMeshInstance );
 
@@ -218,6 +301,8 @@ void zpMeshManager::garbageCollect()
         zpMeshInstance* b = m_meshInstances[ i ];
         if( b->refCount == 0 )
         {
+            DestroyMesh( b->mesh, m_renderingEngine );
+
             b->~zpMeshInstance();
 
             g_globalAllocator.free( b );
@@ -244,6 +329,8 @@ void zpMeshManager::reloadChangedMeshs()
             if( m->lastModifiedTime != lastModTime )
             {
                 zp_int r;
+                r = DestroyMesh( m->mesh, m_renderingEngine );
+
                 zpMeshData meshData;
                 r = LoadMeshData( meshName, meshData );
 
@@ -252,6 +339,7 @@ void zpMeshManager::reloadChangedMeshs()
                     continue;
                 }
 
+                r = BuildMeshFromData( meshData, m->mesh, m_renderingEngine );
             }
         }
     }

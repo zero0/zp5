@@ -4,6 +4,7 @@ zpObject::zpObject()
     : m_instanceId( ZP_HANDLE_ID_EMPTY )
     , m_layers( 0 )
     , m_tags( 0 )
+    , m_flags( 0 )
 {
 
 }
@@ -28,10 +29,6 @@ void zpObject::setName( const zp_char* name )
     m_name = name;
 }
 
-void zpObject::setInstanceId( zp_hash64 instanceId )
-{
-    m_instanceId = instanceId;
-}
 
 zp_ulong zpObject::getLayers() const
 {
@@ -45,14 +42,7 @@ void zpObject::setLayers( zp_ulong layers )
 
 void zpObject::markOnLayer( zp_int layerIndex, zp_bool onLayer )
 {
-    if( onLayer )
-    {
-        m_layers |= ( 1ULL << layerIndex );
-    }
-    else
-    {
-        m_layers &= ~( 1ULL << layerIndex );
-    }
+    m_layers ^= ( ( onLayer ? -1 : 0 ) ^ m_layers ) & ( 1ULL << layerIndex );
 }
 
 zp_bool zpObject::isOnLayer( zp_int layerIndex ) const
@@ -73,14 +63,7 @@ void zpObject::setTags( zp_ulong tags )
 
 void zpObject::markOnTag( zp_int tagIndex, zp_bool tagged )
 {
-    if( tagged )
-    {
-        m_tags |= ( 1ULL << tagIndex );
-    }
-    else
-    {
-        m_tags &= ~( 1ULL << tagIndex );
-    }
+    m_tags ^= ( ( tagged ? -1 : 0 ) ^ m_tags ) & ( 1ULL << tagIndex );
 }
 
 zp_bool zpObject::hasTag( zp_int tagIndex ) const
@@ -97,4 +80,31 @@ const zpAllComponents* zpObject::getAllComponents() const
 zpAllComponents* zpObject::getAllComponents()
 {
     return &m_allComponents;
+}
+
+void zpObject::setActive( zp_bool isActive )
+{
+    m_flags ^= ( ( isActive ? -1 : 0 ) ^ m_flags ) & ( 1ULL << ZP_OBJECT_FLAG_ACTIVE );
+}
+
+zp_bool zpObject::isActive() const
+{
+    return ( m_flags & ( 1ULL << ZP_OBJECT_FLAG_ACTIVE ) ) == ( 1ULL << ZP_OBJECT_FLAG_ACTIVE );
+}
+
+void zpObject::destroy()
+{
+    setActive( false );
+    m_flags |= ( 1ULL << ZP_OBJECT_FLAG_SHOULD_DESTROY );
+    m_instanceId = ZP_HANDLE_ID_EMPTY;
+}
+
+void zpObject::setInstanceId( zp_hash64 instanceId )
+{
+    m_instanceId = instanceId;
+}
+
+zp_bool zpObject::shouldDestroy() const
+{
+    return ( m_flags & ( 1ULL << ZP_OBJECT_FLAG_SHOULD_DESTROY ) ) == ( 1ULL << ZP_OBJECT_FLAG_SHOULD_DESTROY );
 }

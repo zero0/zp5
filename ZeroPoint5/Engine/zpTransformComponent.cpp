@@ -8,9 +8,9 @@ enum : zp_size_t
 };
 
 zpTransformComponent::zpTransformComponent()
-    : m_localPosition()
-    , m_localRotation()
-    , m_localScale()
+    : m_localPosition( { 0, 0, 0, 1 } )
+    , m_localRotation( { 0, 0, 0, 1 } )
+    , m_localScale( { 1, 1, 1, 0 } )
     , m_localMatrix()
     , m_worldMatrix()
     , m_instanceID( 0 )
@@ -18,12 +18,6 @@ zpTransformComponent::zpTransformComponent()
     , m_parentTransfrom()
     , m_parentObject()
 {
-    zpVector4fData ip = { 0, 0, 0, 1 };
-    zpQuaternion4fData ir = { 0, 0, 0, 1 };
-    zpVector4fData is = { 1, 1, 1, 0 };
-    m_localPosition = ip;
-    m_localRotation = ir;
-    m_localScale = is;
 }
 
 zpTransformComponent::~zpTransformComponent()

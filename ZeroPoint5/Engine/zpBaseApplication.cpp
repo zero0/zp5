@@ -179,14 +179,18 @@ void zpBaseApplication::initialize()
 
 zpMaterialHandle tm;
 zpFontHandle ff;
-zpObjectHandle ooo;
+zpMeshHandle mh;
 zpCameraHandle cam;
+zpSceneHandle sc;
 
 void zpBaseApplication::setup()
 {
     ZP_PROFILER_BLOCK();
 
     onPreSetup();
+
+    m_sceneManager.setup();
+    m_objectManager.setup();
 
     m_renderingEngine.setup( m_hWnd );
     m_textureManager.setup( &m_renderingEngine );
@@ -208,6 +212,9 @@ void zpBaseApplication::setup()
     ff->fontMaterial->color = zpColor::White;
     ff->fontMaterial->mainTexST = st;
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", ff->fontMaterial->mainTex );
+
+    m_meshManager.getMesh( "default.mesh", mh );
+    m_sceneManager.createScene( sc );
 
     // TODO: remove when done debugging
     const zp_size_t fixedWidth = 12;
@@ -269,11 +276,17 @@ void zpBaseApplication::teardown()
     ZP_PROFILER_BLOCK();
     
     onPreTeardown();
+
     tm.release();
     ff.release();
-    ooo.release();
     cam.release();
+    mh.release();
+    sc.release();
+
     runGarbageCollection();
+
+    m_objectManager.teardown();
+    m_sceneManager.teardown();
 
     m_cameraManager.teardown();
     m_meshManager.teardown();
@@ -357,6 +370,7 @@ void zpBaseApplication::runGarbageCollection()
 
     m_sceneManager.garbageCollect();
     m_objectManager.garbageCollect();
+
     m_transformComponentManager.garbageCollect();
     m_particleEmitterComponentManager.garbageCollect();
     m_meshRendererComponentManager.garbageCollect();
@@ -367,6 +381,8 @@ void zpBaseApplication::runGarbageCollection()
     m_materialManager.garbageCollect();
     m_textureManager.garbageCollect();
     m_shaderManager.garbageCollect();
+
+    m_objectManager.garbageCollect();
 
     onGarbageCollection();
 }
@@ -393,6 +409,8 @@ void zpBaseApplication::runReloadChangedResources()
 
 void zpBaseApplication::createWindow()
 {
+    ZP_PROFILER_BLOCK();
+
 #ifdef ZP_WINDOWS
     WNDCLASSEX wc;
     wc.cbSize = sizeof( WNDCLASSEX );
@@ -579,10 +597,21 @@ void zpBaseApplication::handleInput()
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_O ) )
     {
+        zpObjectHandle ooo;
+
         m_objectManager.createObject( ooo );
+        sc->addObject( ooo );
+
         ooo->setName( "Test Object" );
 
         m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform );
+        ooo->getAllComponents()->transform->setParentObject( ooo );
+
+        m_meshRendererComponentManager.createMeshRendererComponent( ooo->getAllComponents()->meshRenderer );
+        ooo->getAllComponents()->meshRenderer->setParentObject( ooo );
+        ooo->getAllComponents()->meshRenderer->setMesh( mh );
+        ooo->getAllComponents()->meshRenderer->setMaterial( tm );
+
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_C ) )
     {

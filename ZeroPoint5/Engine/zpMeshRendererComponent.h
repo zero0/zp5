@@ -60,6 +60,12 @@ public:
 
     zp_hash64 getInstanceId() const;
 
+    void setMesh( const zpMeshHandle& mesh );
+    const zpMeshHandle& getMesh() const;
+
+    void setMaterial( const zpMaterialHandle& material );
+    const zpMaterialHandle& getMaterial() const;
+
 private:
     void setInstanceId( zp_hash64 instanceId );
 

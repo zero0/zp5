@@ -16,8 +16,17 @@ public:
     zpObjectHandle& operator=( const zpObjectHandle& other );
     zpObjectHandle& operator=( zpObjectHandle&& other );
 
-    const zpObject* operator->() const;
-    zpObject* operator->();
+    ZP_FORCE_INLINE const zpObject* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpObject* operator->()
+    {
+        return get();
+    }
+
+    const zpObject* get() const;
+    zpObject* get();
 
     zp_bool isValid() const;
     void release();
@@ -42,7 +51,11 @@ public:
     zpObjectManager();
     ~zpObjectManager();
 
+    void setup();
+    void teardown();
+
     void createObject( zpObjectHandle& handle );
+    void destroyObject( zpObjectHandle& handle );
 
     zp_bool findObjectByID( zp_hash64 instanceId, zpObjectHandle& handle ) const;
 
