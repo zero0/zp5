@@ -164,7 +164,7 @@ void zpRenderingContext::beginDrawMesh( zp_byte layer, const zpMatrix4fData& tra
     }
 }
 
-void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, const zpColor32i& topColor, const zpColor32i& bottomColor )
+zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -174,12 +174,16 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
 
     zpFont* font = cmd->font.get();
 
-    zpScalar scale = zpMath::Scalar( static_cast<zp_float>( size ) / static_cast<zp_float>( 12 ) );
+    const zp_float scale = static_cast<zp_float>( size ) / static_cast<zp_float>( font->baseFontSize );
+    const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f ) + lineSpacing;
+
+    zpScalar sScale = zpMath::Scalar( scale );
 
     ZP_ALIGN16 zpVector4fData p = pos;
     zpVector4f cursor = zpMath::Vector4Load4( p.m );
     zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4Scale( zpMath::Vector4( 0, 12, 0, 0 ), scale );
+    zpVector4f newLine = zpMath::Vector4( 0, lineHeight, 0, 0 );
+    zp_float finalLineHeight = lineHeight;
 
     ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
 
@@ -190,6 +194,7 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
         switch( curr )
         {
             case '\n':
+                finalLineHeight += lineHeight;
                 cursor = zpMath::Vector4Add( cursor, newLine );
                 cursor = zpMath::Vector4SetX( cursor, zpMath::Vector4GetX( origin ) );
                 continue;
@@ -207,17 +212,17 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
         zp_float minY = static_cast<zp_float>( -( g->size.y - g->bearing.y ) );
         zp_float maxY = static_cast<zp_float>( g->bearing.y );
         
-        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), scale );
-        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), scale );
-        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), scale );
-        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), scale );
+        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
+        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
+        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
+        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
 
         bl = zpMath::Vector4Add( cursor, bl );
         tl = zpMath::Vector4Add( cursor, tl );
         tr = zpMath::Vector4Add( cursor, tr );
         br = zpMath::Vector4Add( cursor, br );
         
-        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( static_cast<zp_float>( g->advance ), 0, 0, 0 ), scale ) );
+        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( static_cast<zp_float>( g->advance ), 0, 0, 0 ), sScale ) );
 
         zpMath::Vector4Store4( bl, p0.m );
         zpMath::Vector4Store4( tl, p1.m );
@@ -245,6 +250,128 @@ void zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text
 
         prev = curr;
     }
+
+    return finalLineHeight;
+}
+
+zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor )
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    zp_char prev = '\0';
+    zp_char curr = '\0';
+
+    zpFont* font = cmd->font.get();
+
+    const zp_float scale = static_cast<zp_float>( size ) / static_cast<zp_float>( font->baseFontSize );
+    const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f ) + lineSpacing;
+
+    zpScalar sScale = zpMath::Scalar( scale );
+
+    ZP_ALIGN16 zpVector4fData p = pos;
+    zpVector4f cursor = zpMath::Vector4Load4( p.m );
+    zpVector4f origin = cursor;
+    zpVector4f newLine = zpMath::Vector4( 0, lineHeight, 0, 0 );
+    zp_float finalLineHeight = lineHeight;
+
+    p = shadowOffset;
+    zpVector4f shadow = zpMath::Vector4Load4( p.m );
+
+    ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
+
+    zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
+
+    for( ; ( curr = *text ); ++text )
+    {
+        switch( curr )
+        {
+            case '\n':
+                finalLineHeight += lineHeight;
+                cursor = zpMath::Vector4Add( cursor, newLine );
+                cursor = zpMath::Vector4SetX( cursor, zpMath::Vector4GetX( origin ) );
+                continue;
+
+            case '\r':
+                continue;
+        }
+
+        zpGlyph* g = font->fontGlyphs + curr;
+
+        zpVector4f tl, tr, br, bl;
+        zpVector4f stl, str, sbr, sbl;
+
+        zp_float minX = static_cast<zp_float>( g->bearing.x );
+        zp_float maxX = static_cast<zp_float>( g->bearing.x + g->size.x );
+        zp_float minY = static_cast<zp_float>( -( g->size.y - g->bearing.y ) );
+        zp_float maxY = static_cast<zp_float>( g->bearing.y );
+
+        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
+        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
+        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
+        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
+
+        bl = zpMath::Vector4Add( cursor, bl );
+        tl = zpMath::Vector4Add( cursor, tl );
+        tr = zpMath::Vector4Add( cursor, tr );
+        br = zpMath::Vector4Add( cursor, br );
+
+        cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( static_cast<zp_float>( g->advance ), 0, 0, 0 ), sScale ) );
+
+        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y };
+        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
+        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
+        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+
+        // add shadow geo
+        sbl = zpMath::Vector4Add( bl, shadow );
+        stl = zpMath::Vector4Add( tl, shadow );
+        str = zpMath::Vector4Add( tr, shadow );
+        sbr = zpMath::Vector4Add( br, shadow );
+
+        zpMath::Vector4Store4( sbl, p0.m );
+        zpMath::Vector4Store4( stl, p1.m );
+        zpMath::Vector4Store4( str, p2.m );
+        zpMath::Vector4Store4( sbr, p3.m );
+
+        // bl -> tl -> tr -> br
+        addVertexData( p0, shadowColor, u0 );
+        addVertexData( p1, shadowColor, u1 );
+        addVertexData( p2, shadowColor, u2 );
+        addVertexData( p3, shadowColor, u3 );
+
+        addQuadIndex(
+            baseIndexOffset + 0,
+            baseIndexOffset + 1,
+            baseIndexOffset + 2,
+            baseIndexOffset + 3 );
+
+        baseIndexOffset += 4;
+
+        // add normal geo
+        zpMath::Vector4Store4( bl, p0.m );
+        zpMath::Vector4Store4( tl, p1.m );
+        zpMath::Vector4Store4( tr, p2.m );
+        zpMath::Vector4Store4( br, p3.m );
+
+        // bl -> tl -> tr -> br
+        addVertexData( p0, bottomColor, u0 );
+        addVertexData( p1, topColor, u1 );
+        addVertexData( p2, topColor, u2 );
+        addVertexData( p3, bottomColor, u3 );
+
+        addQuadIndex(
+            baseIndexOffset + 0,
+            baseIndexOffset + 1,
+            baseIndexOffset + 2,
+            baseIndexOffset + 3 );
+
+        baseIndexOffset += 4;
+
+        prev = curr;
+    }
+
+    return finalLineHeight;
 }
 
 void zpRenderingContext::endDraw()

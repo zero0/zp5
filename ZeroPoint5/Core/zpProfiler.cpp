@@ -96,12 +96,22 @@ void zpProfiler::clear()
 
 void zpProfiler::finalize()
 {
+    zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
+    t->frameEndTime = GetTime();
+
     m_previousFrame = m_currentFrame;
     m_currentFrame = ( m_currentFrame + 1 ) % ZP_PROFILER_MAX_FRAMES;
     
-    zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
+    t = m_timelines + m_currentFrame;
     t->size = 0;
     t->stackSize = 0;
+    t->frameStartTime = GetTime();
+}
+
+const zpProfilerFrameTimeline* zpProfiler::getPreviousFrameTimeline() const
+{
+    const zpProfilerFrameTimeline* t = m_timelines + m_previousFrame;
+    return t;
 }
 
 const zpProfilerFrame* zpProfiler::getPreviousFrameBegin() const

@@ -13,6 +13,7 @@ struct zpGlyph
 
 struct zpFont
 {
+    zp_uint baseFontSize;
     zpMaterialHandle fontMaterial;
     zpGlyph fontGlyphs[ 256 ];
 };

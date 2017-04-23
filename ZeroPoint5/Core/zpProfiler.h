@@ -49,6 +49,8 @@ struct zpProfilerFrameTimeline
     zp_size_t frameStack[ ZP_PROFILER_MAX_SAMPLES_PER_FRAME ];
     zp_size_t size;
     zp_size_t stackSize;
+    zp_time_t frameStartTime;
+    zp_time_t frameEndTime;
 };
 
 class zpProfiler
@@ -65,6 +67,7 @@ public:
     void clear();
     void finalize();
 
+    const zpProfilerFrameTimeline* getPreviousFrameTimeline() const;
     const zpProfilerFrame* getPreviousFrameBegin() const;
     const zpProfilerFrame* getPreviousFrameEnd() const;
 

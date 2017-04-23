@@ -231,6 +231,7 @@ void zpBaseApplication::setup()
     zpVector2i s = { fixedWidth, fixedHeight };
 
     zp_size_t c = 0;
+    ff->baseFontSize = 12;
     zp_memset( ff->fontGlyphs, 0, sizeof( ff->fontGlyphs ) );
     for( zp_uint h = 0; h < th; h += fixedHeight )
     {
@@ -739,8 +740,8 @@ void zpBaseApplication::debugDrawGUI()
 
     const zp_uint fontHeight = 12;
     const zp_uint fontSpacing = 4;
-    zp_float y = 5;
-    zpVector4fData tp = { 5, y, 0, 1 };
+    zpVector4fData tp = { 5, 5, 0, 1 };
+    zpVector4fData shadowOffset = { 1, 1, 0, 0 };
 
     zp_char buff[ 512 ];
 
@@ -751,20 +752,20 @@ void zpBaseApplication::debugDrawGUI()
     {
         const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+        const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
         
-        tp.y = y;
-
+        zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Frame Time: %6.3f", pft );
+        tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
+        
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-        y += fontHeight + fontSpacing;
+        tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );
 
         for( ; bf != ef; ++bf )
         {
             zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
             zp_size_t fm = ( bf->endMemory - bf->startMemory );
-
-            tp.y = y;
-
+            
             if( bf->eventName )
             {
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
@@ -773,19 +774,13 @@ void zpBaseApplication::debugDrawGUI()
             {
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s", ft, fm, bf->functionName );
             }
-            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-            y += fontHeight + fontSpacing;
+            tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
         }
 
-        y += fontHeight + fontSpacing;
-
-        tp.y = y;
+        tp.y += fontHeight + fontSpacing;
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s", "Mem", "Allocs" );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-        y += fontHeight + fontSpacing;
-
-        tp.y = y;
+        tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
         zp_size_t memUsed = g_globalAllocator.getMemoryUsed();
         zp_float mem = 0.f;
@@ -803,8 +798,7 @@ void zpBaseApplication::debugDrawGUI()
         }
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f%c %7Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-        y += fontHeight + fontSpacing;
+        tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
     }
     
     if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS ) )
@@ -812,22 +806,16 @@ void zpBaseApplication::debugDrawGUI()
         const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
         const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();
         
-        tp.y = y;
-
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Objects (%Iu)", ( eo - bo ) );
-        ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-        y += fontHeight + fontSpacing;
+        tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
         for( ; bo != eo; ++bo )
         {
             const zpObjectInstance* inst = (*bo);
             const zpObject* obj = &inst->object;
 
-            tp.y = y;
-
             zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "- '%s'@%lu (%Iu)", obj->getName().str(), obj->getInstanceId(), inst->refCount );
-            ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-            y += fontHeight + fontSpacing;
+            tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
             const zpTransformComponent* txn = obj->getAllComponents()->transform.get();
             if( txn )
@@ -836,29 +824,17 @@ void zpBaseApplication::debugDrawGUI()
                 const zpQuaternion4fData& localRot = txn->getLocalRotation();
                 const zpVector4fData& localScale = txn->getLocalScale();
 
-                tp.y = y;
-
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Transform@%lu", txn->getInstanceId() );
-                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-                y += fontHeight + fontSpacing;
-
-                tp.y = y;
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Position [%3.3f %3.3f %3.3f %3.3f]", localPos.x, localPos.y, localPos.z, localPos.w );
-                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-                y += fontHeight + fontSpacing;
-
-                tp.y = y;
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Rotation [%3.3f %3.3f %3.3f %3.3f]", localRot.x, localRot.y, localRot.z, localRot.w );
-                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-                y += fontHeight + fontSpacing;
-
-                tp.y = y;
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
 
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "    -Local Scale    [%3.3f %3.3f %3.3f %3.3f]", localScale.x, localScale.y, localScale.z, localScale.w );
-                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-                y += fontHeight + fontSpacing;
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
             }
 
             const zpParticleEmitterComponent* part = obj->getAllComponents()->particleEmitter.get();
@@ -866,15 +842,19 @@ void zpBaseApplication::debugDrawGUI()
             {
                 //zp_bool a = part->isAnyPlaying();
 
-                tp.y = y;
-
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Particle Emitter@%lu\n", part->getInstanceId() );
-                ctx->addText( tp, buff, fontHeight, zpColor32::White, zpColor32::Grey75 );
-                y += fontHeight + fontSpacing;
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
+            }
+
+            const zpMeshRendererComponent* mesh = obj->getAllComponents()->meshRenderer.get();
+            if( mesh )
+            {
+                //zp_bool a = part->isAnyPlaying();
+
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Mesh Renderer@%lu\n", mesh->getInstanceId() );
+                tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
             }
         }
-
-        y += fontHeight + fontSpacing;
     }
 
     ctx->endDraw();
