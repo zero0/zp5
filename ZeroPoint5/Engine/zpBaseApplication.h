@@ -107,6 +107,8 @@ private:
     zp_size_t m_frameCount;
     zp_ulong m_flags;
 
+    zpVector2i m_screenSize;
+
     zp_int m_targetFps;
     zp_int m_targetFixedFps;
 

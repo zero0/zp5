@@ -3,10 +3,10 @@
 #define ZP_PROFILER_H
 
 #ifndef ZP_USE_PROFILER
-#define ZP_PROFILER_BLOCK()      (void)0
-#define ZP_PROFILER_START( e )   (void)0
-#define ZP_PROFILER_END( e )     (void)0
-#define ZP_PROFILER_FINALIZE()   (void)0
+#define ZP_PROFILER_BLOCK()        (void)0
+#define ZP_PROFILER_START( ... )   (void)0
+#define ZP_PROFILER_END( ... )     (void)0
+#define ZP_PROFILER_FINALIZE()     (void)0
 #else
 #define ZP_PROFILER_BLOCK()      zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__, ZP_NULL )
 #define ZP_PROFILER_START( e )   zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__, #e )

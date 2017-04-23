@@ -17,7 +17,7 @@ zpProfilerBlockS::~zpProfilerBlockS()
     g_profiler.end( index );
 }
 
-ZP_FORCE_INLINE zp_time_t GetTime()
+ZP_FORCE_INLINE static zp_time_t GetTime()
 {
     zp_time_t time;
 
@@ -28,6 +28,15 @@ ZP_FORCE_INLINE zp_time_t GetTime()
 #endif // !ZP_WINDOWS
 
     return time;
+}
+
+ZP_FORCE_INLINE static zp_ulong GetCycles()
+{
+    zp_ulong cycles;
+#ifdef ZP_WINDOWS
+    cycles = __rdtsc();
+#endif // !ZP_WINDOWS
+    return cycles;
 }
 
 zpProfiler::zpProfiler()

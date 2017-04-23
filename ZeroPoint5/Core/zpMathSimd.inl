@@ -376,39 +376,55 @@ namespace zpMath
     //
     ZP_FORCE_INLINE void ZP_VECTORCALL QuaternionStore4( zpQuaternion4fParamF s, zp_float* xyzw )
     {
-        _mm_storer_ps( xyzw, s );
+        _mm_store_ps( xyzw, s );
     }
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL QuaternionLoad4( const zp_float* xyzw )
     {
-        return _mm_loadr_ps( xyzw );
+        return _mm_load_ps( xyzw );
     }
 
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL QuaternionToMatrix( zpQuaternion4fParamF a )
     {
-        zpScalar x = QuaternionGetX( a );
-        zpScalar y = QuaternionGetY( a );
-        zpScalar z = QuaternionGetZ( a );
-        zpScalar w = QuaternionGetW( a );
+        //zpScalar x = QuaternionGetX( a );
+        //zpScalar y = QuaternionGetY( a );
+        //zpScalar z = QuaternionGetZ( a );
+        //zpScalar w = QuaternionGetW( a );
+        //
+        //zpScalar xx = ScalarMul( x, x );
+        //zpScalar xy = ScalarMul( x, y );
+        //zpScalar xz = ScalarMul( x, z );
+        //zpScalar xw = ScalarMul( x, w );
+        //zpScalar yy = ScalarMul( y, y );
+        //zpScalar yz = ScalarMul( y, z );
+        //zpScalar yw = ScalarMul( y, w );
+        //zpScalar zz = ScalarMul( z, z );
+        //zpScalar zw = ScalarMul( z, w );
+        //zpScalar zr = Scalar( 0 );
 
-        zpScalar xx = ScalarMul( x, x );
-        zpScalar xy = ScalarMul( x, y );
-        zpScalar xz = ScalarMul( x, z );
-        zpScalar xw = ScalarMul( x, w );
-        zpScalar yy = ScalarMul( y, y );
-        zpScalar yz = ScalarMul( y, z );
-        zpScalar yw = ScalarMul( y, w );
-        zpScalar zz = ScalarMul( z, z );
-        zpScalar zw = ScalarMul( z, w );
-        zpScalar zr = Scalar( 0 );
+        zp_float x = AsFloat( QuaternionGetX( a ) );
+        zp_float y = AsFloat( QuaternionGetY( a ) );
+        zp_float z = AsFloat( QuaternionGetZ( a ) );
+        zp_float w = AsFloat( QuaternionGetW( a ) );
 
-        zpVector4f m0 = Vector4Add( Vector4( yy, xy, xz, zr ), Vector4( zz, zw, ScalarNeg( yw ), zr ) );
-        zpVector4f m1 = Vector4Add( Vector4( xy, xx, yz, zr ), Vector4( ScalarNeg( zw ), zz, xw, zr ) );
-        zpVector4f m2 = Vector4Add( Vector4( xz, yz, xx, zr ), Vector4( yw, ScalarNeg( xw ), yy, zr ) );
+        zp_float xx = ( x * x );
+        zp_float xy = ( x * y );
+        zp_float xz = ( x * z );
+        zp_float xw = ( x * w );
+        zp_float yy = ( y * y );
+        zp_float yz = ( y * z );
+        zp_float yw = ( y * w );
+        zp_float zz = ( z * z );
+        zp_float zw = ( z * w );
+        zp_float zr = ( 0.f );
+
+        zpVector4f m0 = Vector4Add( Vector4( yy, xy, xz, zr ), Vector4( zz, zw, -( yw ), zr ) );
+        zpVector4f m1 = Vector4Add( Vector4( xy, xx, yz, zr ), Vector4( -( zw ), zz, xw, zr ) );
+        zpVector4f m2 = Vector4Add( Vector4( xz, yz, xx, zr ), Vector4( yw, -( xw ), yy, zr ) );
 
         zpMatrix4f m;
-        m.m_m1 = Vector4Add( Vector4Mul( m0, Vector4( -2, 2, 2, 0 ) ), Vector4( 1, 0, 0, 0 ) );
-        m.m_m2 = Vector4Add( Vector4Mul( m1, Vector4( 2, -2, 2, 0 ) ), Vector4( 0, 1, 0, 0 ) );
-        m.m_m3 = Vector4Add( Vector4Mul( m2, Vector4( 2, 2, -2, 0 ) ), Vector4( 0, 0, 1, 0 ) );
+        m.m_m1 = Vector4Add( Vector4( 1, 0, 0, 0 ), Vector4Mul( m0, Vector4( -2, 2, 2, 0 ) ) );
+        m.m_m2 = Vector4Add( Vector4( 0, 1, 0, 0 ), Vector4Mul( m1, Vector4( 2, -2, 2, 0 ) ) );
+        m.m_m3 = Vector4Add( Vector4( 0, 0, 1, 0 ), Vector4Mul( m2, Vector4( 2, 2, -2, 0 ) ) );
         m.m_m4 = Vector4( 0, 0, 0, 1 );
 
         return m;

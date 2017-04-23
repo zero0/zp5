@@ -22,9 +22,11 @@ public:
     void resetScissorRect();
 
     void beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat );
+    void beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material );
     void beginDrawText( zp_byte layer, const zpFontHandle& font );
-    void beginDrawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material );
     void endDraw();
+
+    void drawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material );
 
     void setTransform( zpMatrix4fParamF transform );
     void setTransform( const zpMatrix4fData& transform );

@@ -134,9 +134,12 @@ void zpRenderingEngine::present()
 {
     ZP_PROFILER_BLOCK();
     
+    m_immidiateContext.fillBuffers();
+
     renderingPassForward( m_immidiateContext );
 
-    //m_engine.present();
+    m_immidiateContext.flipBuffers();
+
     PresentOpenGL( m_hDC, m_hContext );
 }
 
@@ -199,10 +202,7 @@ void zpRenderingEngine::destroyShader( zpShader& shader )
 void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
 {
     ZP_PROFILER_BLOCK();
-
-    context.fillBuffers();
-
-
+    
     const zpVector< zpRenderingCommand >& cmds = context.getCommands();
 
     m_sortedCommands.reset();
@@ -213,6 +213,4 @@ void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
         const zpRenderingCommand* cmd = cmds.begin() + b->index;
         ProcessRenderingCommandOpenGL( cmd );
     }
-
-    context.flipBuffers();
 }

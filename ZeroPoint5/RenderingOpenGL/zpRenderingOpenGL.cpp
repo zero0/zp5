@@ -739,6 +739,8 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
 
 void PresentOpenGL( zp_handle hDC, zp_handle hContext )
 {
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Present" );
+
     HDC dc = static_cast<HDC>( hDC );
     HGLRC context = static_cast<HGLRC>( hContext );
 

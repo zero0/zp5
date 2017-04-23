@@ -136,6 +136,7 @@ zpBaseApplication::zpBaseApplication()
     , m_hInstance( ZP_NULL )
     , m_frameCount( 0 )
     , m_flags( 0 )
+    , m_screenSize( { 960, 640 } )
     , m_targetFps( 60 )
     , m_targetFixedFps( 30 )
     , m_exitCode( ZP_APPLICATION_EXIT_NORMAL )
@@ -437,7 +438,7 @@ void zpBaseApplication::createWindow()
 #endif
 
     const zp_char* title = "ZeroPoint " ZP_VERSION;
-    zpRecti windowRect = { CW_USEDEFAULT, CW_USEDEFAULT, 960, 640 };
+    zpRecti windowRect = { CW_USEDEFAULT, CW_USEDEFAULT, m_screenSize.x, m_screenSize.y };
 
     _AdjustWindowSize( windowRect, style );
 
@@ -556,7 +557,7 @@ void zpBaseApplication::processFrame()
         sleepTime += spf;
     }
 
-    zp_sleep( static_cast<zp_int>( sleepTime + 0.5f ) );
+    zp_sleep( static_cast<zp_int>( sleepTime ) );
 
     ZP_PROFILER_END( Sleep );
 
@@ -656,29 +657,21 @@ void zpBaseApplication::render()
 {
     ZP_PROFILER_BLOCK();
 
-    zpRecti orthoRect = { 0, 0, 960, 640 };
-    zp_float l = static_cast<zp_float>( orthoRect.x );
-    zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
-    zp_float t = static_cast<zp_float>( orthoRect.y );
-    zp_float b = static_cast<zp_float>( orthoRect.y + orthoRect.height );
-    zp_float n = static_cast<zp_float>( -10 );
-    zp_float f = static_cast<zp_float>( 10 );
-
     zp_float fovy =  ( 45.f );
-    zp_float ratio = ( static_cast<zp_float>( orthoRect.width ) / static_cast<zp_float>( orthoRect.height ) );
+    zp_float ratio = ( static_cast<zp_float>( m_screenSize.x ) / static_cast<zp_float>( m_screenSize.y ) );
     zp_float zn =    ( 1 );
     zp_float zf =    ( 100 );
 
     zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
-    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
+    zpVector4f eye = zpMath::Vector4( 20, 10, 30, 1 );
     zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
     zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
 
-    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
     zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
     zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
+    zpMatrix4f viewProj = zpMath::MatrixMul( view, proj );
 
-    zpViewport vp = { 0, 0, 960, 640, 1, 100 };
+    zpViewport vp = { 0, 0, m_screenSize.x, m_screenSize.y, zn, zf };
 
     zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
 
@@ -697,9 +690,8 @@ void zpBaseApplication::render()
     ctx->setViewport( vp );
     ctx->clear( clearColor, 1, 0 );
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
-    ctx->setMaterial( tm );
-    ctx->setTransform( zpMath::MatrixMul( view, proj ) );
+    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, tm );
+    ctx->setTransform( viewProj );
     ctx->addVertexData( v0, zpColor32::Red, uv0 );
     ctx->addVertexData( v1, zpColor32::Green, uv1 );
     ctx->addVertexData( v2, zpColor32::Blue, uv2 );
@@ -728,7 +720,7 @@ void zpBaseApplication::debugDrawGUI()
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
 
-    zpRecti orthoRect = { 0, 0, 960, 640 };
+    zpRecti orthoRect = { 0, 0, m_screenSize.x, m_screenSize.y };
     zp_float l = static_cast<zp_float>( orthoRect.x );
     zp_float r = static_cast<zp_float>( orthoRect.x + orthoRect.width );
     zp_float t = static_cast<zp_float>( orthoRect.y );
@@ -756,7 +748,7 @@ void zpBaseApplication::debugDrawGUI()
         
         zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Frame Time: %6.3f", pft );
-        tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
+        tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );
         
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
         tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );

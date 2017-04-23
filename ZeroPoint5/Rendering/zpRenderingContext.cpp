@@ -109,6 +109,33 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.transform = transformData;
 }
 
+void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material )
+{
+    ZP_ASSERT( m_currentCommnad == npos, "" );
+    m_currentCommnad = m_commands.size();
+
+    zpRenderingCommand& cmd = m_commands.pushBackEmpty();
+    cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+    cmd.sortKey.key = 0;
+    cmd.sortKey.layer = layer;
+    cmd.topology = topology;
+    cmd.vertexFormat = vertexFormat;
+    cmd.vertexOffset = 0;
+    cmd.vertexCount = 0;
+    cmd.indexOffset = 0;
+    cmd.indexCount = 0;
+    cmd.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
+    cmd.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];
+    cmd.material = material;
+    cmd.font = zpFontHandle();
+    cmd.mesh = zpMeshHandle();
+
+    ZP_ALIGN16 zpMatrix4fData transformData;
+    zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
+    cmd.transform = transformData;
+}
+
+
 void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font )
 {
     ZP_ASSERT( m_currentCommnad == npos, "" );
@@ -135,35 +162,6 @@ void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font 
     cmd.transform = transformData;
 }
 
-void zpRenderingContext::beginDrawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material )
-{
-    ZP_ASSERT( m_currentCommnad == npos, "" );
-    m_currentCommnad = m_commands.size();
-
-    const zpMesh* m = mesh.get();
-    for( zp_size_t i = 0, imax = m->numMeshParts; i < imax; ++i )
-    {
-        const zpMeshPart* p = m->parts + i;
-
-        zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-        cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
-        cmd.sortKey.key = 0;
-        cmd.sortKey.layer = layer;
-        cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
-        cmd.vertexFormat = m->vertexFormat;
-        cmd.vertexOffset = p->vertexOffset;
-        cmd.vertexCount = p->vertexCount;
-        cmd.indexOffset = p->indexOffset;
-        cmd.indexCount = p->indexCount;
-        cmd.vertexBuffer = m->vertexData;
-        cmd.indexBuffer = m->vertexData;
-        cmd.material = material;
-        cmd.font = zpFontHandle();
-        cmd.mesh = mesh;
-        cmd.transform = transformData;
-    }
-}
-
 zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
@@ -182,8 +180,8 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
     ZP_ALIGN16 zpVector4fData p = pos;
     zpVector4f cursor = zpMath::Vector4Load4( p.m );
     zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4( 0, lineHeight, 0, 0 );
-    zp_float finalLineHeight = lineHeight;
+    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight ), 0, 0 );
+    zp_uint finalLineHeight = lineHeight;
 
     ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
 
@@ -272,8 +270,8 @@ zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_c
     ZP_ALIGN16 zpVector4fData p = pos;
     zpVector4f cursor = zpMath::Vector4Load4( p.m );
     zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4( 0, lineHeight, 0, 0 );
-    zp_float finalLineHeight = lineHeight;
+    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight ), 0, 0 );
+    zp_uint finalLineHeight = lineHeight;
 
     p = shadowOffset;
     zpVector4f shadow = zpMath::Vector4Load4( p.m );
@@ -388,6 +386,34 @@ void zpRenderingContext::endDraw()
     m_currentCommnad = npos;
 }
 
+void zpRenderingContext::drawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material )
+{
+    ZP_ASSERT( m_currentCommnad == npos, "" );
+
+    const zpMesh* m = mesh.get();
+    for( zp_size_t i = 0, imax = m->numMeshParts; i < imax; ++i )
+    {
+        const zpMeshPart* p = m->parts + i;
+
+        zpRenderingCommand& cmd = m_commands.pushBackEmpty();
+        cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+        cmd.sortKey.key = 0;
+        cmd.sortKey.layer = layer;
+        cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+        cmd.vertexFormat = m->vertexFormat;
+        cmd.vertexOffset = p->vertexOffset;
+        cmd.vertexCount = p->vertexCount;
+        cmd.indexOffset = p->indexOffset;
+        cmd.indexCount = p->indexCount;
+        cmd.vertexBuffer = m->vertexData;
+        cmd.indexBuffer = m->indexData;
+        cmd.material = material;
+        cmd.font = zpFontHandle();
+        cmd.mesh = mesh;
+        cmd.transform = transformData;
+    }
+}
+
 void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
@@ -479,7 +505,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
         pos,
         color,
     };
-    
+
     m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }
@@ -500,7 +526,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
         color,
         uv,
     };
-    
+
     m_scratchVertexBuffer.write( &buff, 0, sizeof( buff ) );
     cmd->vertexCount += 1;
 }

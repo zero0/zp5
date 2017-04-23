@@ -44,8 +44,7 @@ void zpMeshRendererComponent::render( zpRenderingContext* ctx )
     {
         const zpMatrix4fData& transform = m_parentObject->getAllComponents()->transform->getWorldMatrix();
 
-        ctx->beginDrawMesh( m_renderLayer, transform, m_mesh, m_material );
-        ctx->endDraw();
+        ctx->drawMesh( m_renderLayer, transform, m_mesh, m_material );
     }
 }
 
