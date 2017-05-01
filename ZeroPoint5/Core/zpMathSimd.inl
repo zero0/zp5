@@ -31,9 +31,7 @@ namespace zpMath
 
     ZP_FORCE_INLINE zp_float ZP_VECTORCALL AsFloat( zpScalarParamF s )
     {
-        ZP_ALIGN16 zp_float v;
-        _mm_store_ss( &v, s );
-        return v;
+        return _mm_cvtss_f32( s );
     }
 
     //
@@ -473,13 +471,13 @@ namespace zpMath
 
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarAbs( zpScalarParamF a )
     {
-        __m128 abs = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x7fffffff ) );
+        __m128 abs = _mm_castsi128_ps( _mm_set1_epi32( 0x7fffffff ) );
         return _mm_and_ps( a, abs );
     }
 
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarNeg( zpScalarParamF a )
     {
-        __m128 neg = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x80000000 ) );
+        __m128 neg = _mm_castsi128_ps( _mm_set1_epi32( 0x80000000 ) );
         return _mm_xor_ps( a, neg );
     }
 
@@ -495,13 +493,13 @@ namespace zpMath
 
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Abs( zpVector4fParamF a )
     {
-        __m128 abs = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x7fffffff ) );
+        __m128 abs = _mm_castsi128_ps( _mm_set1_epi32( 0x7fffffff ) );
         return _mm_and_ps( a, abs );
     }
 
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Neg( zpVector4fParamF a )
     {
-        __m128 neg = *reinterpret_cast<__m128*>( &_mm_set1_epi32( 0x80000000 ) );
+        __m128 neg = _mm_castsi128_ps( _mm_set1_epi32( 0x80000000 ) );
         return _mm_xor_ps( a, neg );
     }
 
@@ -537,10 +535,10 @@ namespace zpMath
 
     ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarCmp( zpScalarParamF a, zpScalarParamF b )
     {
-        __m128 lt = _mm_cmplt_ss( a, b );
-        __m128 gt = _mm_cmpgt_ss( a, b );
+        zp_int lt = _mm_comilt_ss( a, b );
+        zp_int gt = _mm_comigt_ss( a, b );
 
-        return lt.m128_i32[ 0 ] ? -1 : gt.m128_i32[ 0 ] ? 1 : 0;
+        return lt ? -1 : gt ? 1 : 0;
     }
 
     ZP_FORCE_INLINE zpVector4fCmp ZP_VECTORCALL Vector4Cmp( zpVector4fParamF a, zpVector4fParamF b )

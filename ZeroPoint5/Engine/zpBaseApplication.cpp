@@ -11,14 +11,14 @@ enum zpBaseApplicationFlags
     ZP_BASE_APPLICATION_FLAG_SHOULD_RELOAD_ALL_RESOURCES,
     ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND,
 
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS,
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS,
-
     zpBaseApplicationFlags_Count,
     zpBaseApplicationFlags_Force32 = ZP_FORECE_32BIT,
+};
 
-    ZP_BASE_APPLICATION_FLAG_IS_DEBUG_ACTIVE = ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS ) |
-                                               ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS )
+enum
+{
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS = 1 << 0,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS =   1 << 1,
 };
 
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
@@ -136,6 +136,7 @@ zpBaseApplication::zpBaseApplication()
     , m_hInstance( ZP_NULL )
     , m_frameCount( 0 )
     , m_flags( 0 )
+    , m_debugFlags( 0 )
     , m_screenSize( { 960, 640 } )
     , m_targetFps( 60 )
     , m_targetFixedFps( 30 )
@@ -503,6 +504,8 @@ zp_bool zpBaseApplication::processMessages()
 
 void zpBaseApplication::processFrame()
 {
+    ZP_PROFILER_INITIALIZE();
+
     ZP_PROFILER_START( ProcessFrame );
 
     zp_bool paused = m_isPaused || ( m_shouldPauseInBackground && !m_isFocused );
@@ -561,7 +564,6 @@ void zpBaseApplication::processFrame()
 
     ZP_PROFILER_END( Sleep );
 
-    //zp_printfln( "MS: %f", d );
     ZP_PROFILER_FINALIZE();
 }
 
@@ -591,11 +593,11 @@ void zpBaseApplication::handleInput()
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F1 ) )
     {
-        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS;
+        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F2 ) )
     {
-        m_flags ^= 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS;
+        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_O ) )
     {
@@ -628,29 +630,21 @@ void zpBaseApplication::update( zp_float dt, zp_float rt )
 {
     ZP_PROFILER_BLOCK();
 
-    ZP_PROFILER_START( Update );
+    ZP_PROFILER_START( OnUpdate );
     onUpdate( dt, rt );
-    ZP_PROFILER_END( Update );
+    ZP_PROFILER_END( OnUpdate );
 
-    ZP_PROFILER_START( TransformUpdate );
     m_transformComponentManager.update( dt, rt );
-    ZP_PROFILER_END( TransformUpdate );
 
-    ZP_PROFILER_START( ParticleEmitterUpdate );
     m_particleEmitterComponentManager.update( dt, rt );
-    ZP_PROFILER_END( ParticleEmitterUpdate );
 
-    ZP_PROFILER_START( MeshRendererUpdate );
     m_meshRendererComponentManager.update( dt, rt );
-    ZP_PROFILER_END( MeshRendererUpdate );
 
-    ZP_PROFILER_START( CameraUpdate );
     m_cameraManager.update( dt, rt );
-    ZP_PROFILER_END( CameraUpdate );
 
-    ZP_PROFILER_START( LateUpdate );
+    ZP_PROFILER_START( OnLateUpdate );
     onLateUpdate( dt, rt );
-    ZP_PROFILER_END( LateUpdate );
+    ZP_PROFILER_END( OnLateUpdate );
 }
 
 void zpBaseApplication::render()
@@ -699,19 +693,15 @@ void zpBaseApplication::render()
     ctx->addQuadIndex( 0, 1, 2, 3 );
     ctx->endDraw();
 
-    ZP_PROFILER_START( MeshRendererRender );
     m_meshRendererComponentManager.render( ctx );
-    ZP_PROFILER_END( MeshRendererRender );
 
     // draw debug when toggled on
-    if( m_flags & ZP_BASE_APPLICATION_FLAG_IS_DEBUG_ACTIVE )
+    if( m_debugFlags )
     {
         debugDrawGUI();
     }
 
-    ZP_PROFILER_START( Present );
     m_renderingEngine.present();
-    ZP_PROFILER_END( Present );
 }
 
 void zpBaseApplication::debugDrawGUI()
@@ -740,7 +730,8 @@ void zpBaseApplication::debugDrawGUI()
     ctx->beginDrawText( 0, ff );
     ctx->setTransform( ortho );
 
-    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS ) )
+#ifdef ZP_USE_PROFILER
+    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS )
     {
         const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
@@ -749,7 +740,10 @@ void zpBaseApplication::debugDrawGUI()
         zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Frame Time: %6.3f", pft );
         tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );
-        
+
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "  GPU Time: %6.3f  Prim Count: %Iu", tl->gpuFrameTime / 1000000.f, tl->gpuPrimitiveCount );
+        tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );
+
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
         tp.y += ctx->addTextShadow( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75, shadowOffset, zpColor32::Black );
 
@@ -792,8 +786,9 @@ void zpBaseApplication::debugDrawGUI()
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f%c %7Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
         tp.y += ctx->addText( tp, buff, fontHeight, fontSpacing, zpColor32::White, zpColor32::Grey75 );
     }
-    
-    if( m_flags & ( 1 << ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS ) )
+#endif
+
+    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS )
     {
         const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
         const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();

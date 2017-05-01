@@ -1,6 +1,8 @@
 #include "Core\zpCore.h"
 #include "zpRenderingOpenGL.h"
 
+#pragma comment( lib, "opengl32.lib" )
+
 #ifdef ZP_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -317,7 +319,19 @@ static ZP_FORCE_INLINE zp_bool _IsCompressedDisplayFormat( zpDisplayFormat displ
     return false;
 }
 
+union glQuery
+{
+    struct
+    {
+        GLuint timeElapsed;
+        GLuint primitivesGenerated;
+    };
+    GLuint q[ 2 ];
+};
+
+static zp_size_t g_frameIndex;
 static GLuint g_vaos[ zpVertexFormat_Count ];
+static glQuery g_queries[ 2 ];
 static zpShader g_shaderVC;
 static zpShader g_shaderVCU;
 
@@ -585,6 +599,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         HGLRC arbContext = wglCreateContextAttribsARB( dc, 0, attribs );
         wglMakeCurrent( dc, arbContext );
 
+        wglSwapIntervalEXT( 0 );
+
         hContext = arbContext;
     }
     else
@@ -608,6 +624,9 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 #endif
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
+    glGenQueries( ZP_ARRAY_SIZE( g_queries[ 0 ].q ), g_queries[ 0 ].q );
+    glGenQueries( ZP_ARRAY_SIZE( g_queries[ 1 ].q ), g_queries[ 1 ].q );
+    g_frameIndex = 0;
 
     glEnable( GL_BLEND );
     glEnable( GL_DEPTH_TEST );
@@ -663,6 +682,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
+    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[0].q), g_queries[0].q );
+    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[1].q), g_queries[1].q );
 
     HGLRC context = static_cast<HGLRC>( hContext );
 
@@ -1021,4 +1042,31 @@ void DestroyShaderOpenGL( zpShader& shader )
         glDeleteProgram( shader.programShader.index );
         shader.programShader.index = 0;
     }
+}
+
+void BeginFrameOpenGL()
+{
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
+
+    glBeginQuery( GL_TIME_ELAPSED, g_queries[ g_frameIndex ].timeElapsed );
+    glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ g_frameIndex ].primitivesGenerated );
+}
+
+void EndFrameOpenGL( zpRenderingStat& stat )
+{
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "End Frame" );
+
+    glEndQuery( GL_TIME_ELAPSED );
+    glEndQuery( GL_PRIMITIVES_GENERATED );
+
+    g_frameIndex = ( g_frameIndex + 1 ) % 2;
+
+    GLuint64 timeElapsed;
+    GLuint64 primitviesGenerated;
+    glGetQueryObjectui64v( g_queries[ g_frameIndex ].timeElapsed, GL_QUERY_RESULT_NO_WAIT, &timeElapsed );
+    glGetQueryObjectui64v( g_queries[ g_frameIndex ].primitivesGenerated, GL_QUERY_RESULT_NO_WAIT, &primitviesGenerated );
+
+    stat.frameIndex = g_frameIndex;
+    stat.frameTime = timeElapsed;
+    stat.primitiveCount = primitviesGenerated;
 }

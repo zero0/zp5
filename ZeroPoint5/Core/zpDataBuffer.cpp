@@ -109,6 +109,8 @@ void zpDataBuffer::reserve( zp_size_t capacity )
 
 zp_size_t zpDataBuffer::write( const void* data, zp_size_t offset, zp_size_t length )
 {
+    //ZP_PROFILER_BLOCK();
+
     if( m_isFixed )
     {
         ZP_ASSERT( ( m_position + length ) < m_capacity, "" );
@@ -118,9 +120,48 @@ zp_size_t zpDataBuffer::write( const void* data, zp_size_t offset, zp_size_t len
         ensureCapacity( m_length + length );
     }
 
-    const zp_byte* d = static_cast<const zp_byte*>( data );
+    const zp_byte* d = static_cast<const zp_byte*>( data ) + offset;
+    //const zp_byte* e = d + length;
+    //zp_byte* b = m_buffer + m_position;
 
-    zp_memcpy( m_buffer + m_position, m_capacity - m_position, d + offset, length );
+    //for( ; d != e; ++b, ++d )
+    //{
+    //    *b = *d;
+    //}
+    zp_char* buff = reinterpret_cast<zp_char*>( m_buffer + m_position );
+    zp_size_t len = length;
+    //if( len >= 128 )
+    //{
+    //    __m128i mask = _mm_set1_epi32( 0xffffffff );
+    //    while( len >= 128 )
+    //    {
+    //        __m128i data = _mm_loadu_si128( reinterpret_cast<const __m128i*>( d ) );
+    //        _mm_maskmoveu_si128( data, mask, buff );
+    //
+    //        len -= 128;
+    //        buff += 128;
+    //        d += 128;
+    //    }
+    //}
+
+    if( len >= 4 )
+    {
+        zp_int* ibuff = (zp_int*)( buff );
+        const zp_int* id = reinterpret_cast<const zp_int*>( d );
+        do
+        {
+            _mm_stream_si32( ibuff, *id );
+
+            ++ibuff;
+            ++id;
+            len -= 4;
+        } while( len >= 4 );
+    }
+
+    if( len > 0 )
+    {
+        zp_memcpy( buff, m_capacity - m_position, d, len );
+    }
 
     m_position += length;
     m_length += length;

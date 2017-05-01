@@ -73,10 +73,14 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
     frame->lineNumber = lineNumber;
     frame->eventName = eventName;
 
+    frame->threadID = 0;
     frame->parentFrame = parentFrame;
 
     frame->startTime = GetTime();
     frame->endTime = 0;
+    
+    frame->startCycles = GetCycles();
+    frame->endCycles = 0;
 
     frame->startMemory = g_globalAllocator.getMemoryUsed();
     frame->endMemory = 0;
@@ -90,6 +94,7 @@ void zpProfiler::end( zp_size_t index )
     zpProfilerFrame* frame = t->frames + index;
 
     frame->endTime = GetTime();
+    frame->endCycles = GetCycles();
     frame->endMemory = g_globalAllocator.getMemoryUsed();
 
     if( t->stackSize > 0 )
@@ -103,6 +108,14 @@ void zpProfiler::clear()
     zp_memset( m_timelines, 0, sizeof( m_timelines ) );
 }
 
+void zpProfiler::initialize()
+{
+    zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
+    t->size = 0;
+    t->stackSize = 0;
+    t->frameStartTime = GetTime();
+}
+
 void zpProfiler::finalize()
 {
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
@@ -110,11 +123,34 @@ void zpProfiler::finalize()
 
     m_previousFrame = m_currentFrame;
     m_currentFrame = ( m_currentFrame + 1 ) % ZP_PROFILER_MAX_FRAMES;
-    
-    t = m_timelines + m_currentFrame;
-    t->size = 0;
-    t->stackSize = 0;
-    t->frameStartTime = GetTime();
+}
+
+zp_size_t zpProfiler::getCurrentFrame() const
+{
+    return m_currentFrame;
+}
+
+zp_size_t zpProfiler::getPreviousFrame() const
+{
+    return m_previousFrame;
+}
+
+void zpProfiler::setRenderingStat( zp_size_t gpuFrameTime, zp_size_t gpuPrimitiveCount )
+{
+    zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
+    t->gpuFrameTime = gpuFrameTime;
+    t->gpuPrimitiveCount = gpuPrimitiveCount;
+}
+
+
+const zpProfilerFrameTimeline* zpProfiler::getFrameTimelineBegin() const
+{
+    return m_timelines;
+}
+
+const zpProfilerFrameTimeline* zpProfiler::getFrameTimelineEnd() const
+{
+    return m_timelines + ZP_PROFILER_MAX_FRAMES;
 }
 
 const zpProfilerFrameTimeline* zpProfiler::getPreviousFrameTimeline() const

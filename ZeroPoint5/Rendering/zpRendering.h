@@ -246,6 +246,13 @@ struct zpSortRenderCommandData
     zp_size_t index;
 };
 
+struct zpRenderingStat
+{
+    zp_size_t frameIndex;
+    zp_size_t frameTime;
+    zp_size_t primitiveCount;
+};
+
 class zpRenderingEngine;
 
 #include "zpTexture.h"

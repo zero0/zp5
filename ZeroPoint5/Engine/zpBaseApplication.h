@@ -105,7 +105,8 @@ private:
     zp_handle m_hInstance;
 
     zp_size_t m_frameCount;
-    zp_ulong m_flags;
+    zp_uint m_flags;
+    zp_uint m_debugFlags;
 
     zpVector2i m_screenSize;
 

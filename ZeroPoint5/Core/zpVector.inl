@@ -115,12 +115,12 @@ void zpVector< T, Allocator >::pushFront( const T& val )
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
-        m_array[ i ] = zp_move( zp_forward( m_array[ i - 1 ] ) );
+        m_data[ i ] = zp_move( zp_forward( m_data[ i - 1 ] ) );
     }
 
     ++m_size;
 
-    m_array[ 0 ] = val;
+    m_data[ 0 ] = val;
 }
 
 template< typename T, typename Allocator >
@@ -130,13 +130,13 @@ T& zpVector< T, Allocator >::pushFrontEmpty()
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
-        m_array[ i ] = zp_move( zp_forward( m_array[ i - 1 ] ) );
+        m_data[ i ] = zp_move( zp_forward( m_data[ i - 1 ] ) );
     }
 
     ++m_size;
 
-    new ( m_array ) T();
-    return m_array[ 0 ];
+    new ( m_data ) T();
+    return m_data[ 0 ];
 }
 
 template< typename T, typename Allocator >
@@ -144,7 +144,7 @@ void zpVector< T, Allocator >::popBack()
 {
     if( m_size )
     {
-        ( m_array + --m_size )->~T();
+        ( m_data + --m_size )->~T();
     }
 }
 
@@ -281,7 +281,7 @@ T& zpVector< T, Allocator >::front()
 template< typename T, typename Allocator >
 T& zpVector< T, Allocator >::back()
 {
-    return m_date[ m_size - 1 ];
+    return m_data[ m_size - 1 ];
 }
 
 template< typename T, typename Allocator >

@@ -121,6 +121,8 @@ void zpCameraManager::teardown()
 
 void zpCameraManager::update( zp_float dt, zp_float rt )
 {
+    ZP_PROFILER_BLOCK();
+   
     zpCameraInstance** b = m_cameraInstances.begin();
     zpCameraInstance** e = m_cameraInstances.end();
     for( ; b != e; ++b )

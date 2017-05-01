@@ -170,6 +170,8 @@ zpParticleEmitterComponentManager::~zpParticleEmitterComponentManager()
 
 void zpParticleEmitterComponentManager::update( zp_float dt, zp_float rt )
 {
+    ZP_PROFILER_BLOCK();
+
     zpParticleEmitterComponentInstance** b = m_activeComponents.begin();
     zpParticleEmitterComponentInstance** e = m_activeComponents.end();
 

@@ -199,6 +199,8 @@ zpMeshRendererComponentManager::~zpMeshRendererComponentManager()
 
 void zpMeshRendererComponentManager::update( zp_float dt, zp_float rt )
 {
+    ZP_PROFILER_BLOCK();
+
     zpMeshRendererComponentInstance** b = m_activeComponents.begin();
     zpMeshRendererComponentInstance** e = m_activeComponents.end();
 
@@ -211,6 +213,8 @@ void zpMeshRendererComponentManager::update( zp_float dt, zp_float rt )
 
 void zpMeshRendererComponentManager::render( zpRenderingContext* ctx )
 {
+    ZP_PROFILER_BLOCK();
+    
     zpMeshRendererComponentInstance** b = m_activeComponents.begin();
     zpMeshRendererComponentInstance** e = m_activeComponents.end();
 

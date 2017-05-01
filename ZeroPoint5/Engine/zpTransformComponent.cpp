@@ -300,6 +300,8 @@ zpTransformComponentManager::~zpTransformComponentManager()
 
 void zpTransformComponentManager::update( zp_float dt, zp_float rt )
 {
+    ZP_PROFILER_BLOCK();
+   
     zpTransformComponentInstance** b = m_activeComponents.begin();
     zpTransformComponentInstance** e = m_activeComponents.end();
 

@@ -134,13 +134,21 @@ void zpRenderingEngine::present()
 {
     ZP_PROFILER_BLOCK();
     
+    zpRenderingStat stat;
+
+    BeginFrameOpenGL();
+
     m_immidiateContext.fillBuffers();
 
     renderingPassForward( m_immidiateContext );
 
     m_immidiateContext.flipBuffers();
 
+    EndFrameOpenGL( stat );
+
     PresentOpenGL( m_hDC, m_hContext );
+
+    ZP_PROFILER_GPU( stat.frameTime, stat.primitiveCount );
 }
 
 zp_bool zpRenderingEngine::isVSync() const
