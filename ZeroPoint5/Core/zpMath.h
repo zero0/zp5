@@ -178,14 +178,32 @@ struct zpVector2i
     zp_int x, y;
 };
 
-struct zpRectf
+union zpRectf
 {
-    zp_float x, y, width, height;
+    struct
+    {
+        zpVector2f position;
+        zpVector2f size;
+    };
+    
+    struct
+    {
+        zp_float x, y, width, height;
+    };
 };
 
-struct zpRecti
+union zpRecti
 {
-    zp_int x, y, width, height;
+    struct
+    {
+        zpVector2i position;
+        zpVector2i size;
+    };
+
+    struct
+    {
+        zp_int x, y, width, height;
+    };
 };
 
 struct zpColorf

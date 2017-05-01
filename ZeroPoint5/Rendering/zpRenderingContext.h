@@ -36,6 +36,9 @@ public:
     void setMaterial( const zpMaterialHandle& material );
     void setMaterial( zp_size_t cmdOffset, const zpMaterialHandle& material );
 
+    zp_size_t getVertexCount() const;
+    zp_size_t getVertexCount( zp_size_t cmdOffset ) const;
+
     zp_uint addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor );
     zp_uint addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor );
     

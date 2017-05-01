@@ -173,14 +173,14 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
     zpFont* font = cmd->font.get();
 
     const zp_float scale = static_cast<zp_float>( size ) / static_cast<zp_float>( font->baseFontSize );
-    const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f ) + lineSpacing;
+    const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f );
 
     zpScalar sScale = zpMath::Scalar( scale );
 
     ZP_ALIGN16 zpVector4fData p = pos;
     zpVector4f cursor = zpMath::Vector4Load4( p.m );
     zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight ), 0, 0 );
+    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight + lineSpacing ), 0, 0 );
     zp_uint finalLineHeight = lineHeight;
 
     ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
@@ -192,7 +192,7 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
         switch( curr )
         {
             case '\n':
-                finalLineHeight += lineHeight;
+                finalLineHeight += lineHeight + lineSpacing;
                 cursor = zpMath::Vector4Add( cursor, newLine );
                 cursor = zpMath::Vector4SetX( cursor, zpMath::Vector4GetX( origin ) );
                 continue;
@@ -467,6 +467,23 @@ void zpRenderingContext::setMaterial( zp_size_t cmdOffset, const zpMaterialHandl
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
 
     cmd->material = material;
+}
+
+zp_size_t zpRenderingContext::getVertexCount() const
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    const zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
+
+    return cmd->vertexCount;
+}
+
+zp_size_t zpRenderingContext::getVertexCount( zp_size_t cmdOffset ) const
+{
+    ZP_ASSERT( m_currentCommnad != npos, "" );
+    ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
+    const zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
+
+    return cmd->vertexCount;
 }
 
 void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& color )

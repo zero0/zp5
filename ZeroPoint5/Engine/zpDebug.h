@@ -34,6 +34,8 @@ struct zpDebugGUIWidgetLayout
     zpVector2i offset;
     zpVector2i padding;
     zpVector2i margin;
+    zpVector2i cursor;
+    zpVector2i direction;
     zp_bool expandWidth;
     zp_bool expandHeight;
 };
@@ -41,14 +43,16 @@ struct zpDebugGUIWidgetLayout
 struct zpDebugGUIWidget
 {
     zp_size_t frameUpdated;
+    zp_size_t frameRendered;
     zp_size_t parentWidget;
+    
     zpDebugGUIWidgetLayout layout;
 
     zpDebugGUIWidgetType type;
     zpDebugGUIWidgetStyle style;
 
-    zpString text;
-    zpVector< zp_size_t> children;
+    zp_char text[ 256 ];
+    zpVector< zp_size_t > children;
 };
 
 class zpDebugGUI
@@ -57,7 +61,7 @@ public:
     zpDebugGUI();
     ~zpDebugGUI();
 
-    void setup( zpInput* input);
+    void setup( zpInput* input, const zpFontHandle& debugFont );
     void teardown();
 
     void startGUI();
@@ -77,27 +81,30 @@ public:
     void beginScrollArea( zpVector2i& scroll );
     void endScrollArea();
 
-    void label( const zp_char* label );
+    void label( const zp_char* text );
     zp_bool button( const zp_char* label );
-    void box();
+    void box( zp_int width, zp_int height );
 
 private:
     const zp_size_t npos = static_cast<zp_size_t>( -1 );
 
     void updateWidget( zp_size_t widgetIndex );
+    void renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, zp_bool& isRenderingText );
 
     zpInput* m_input;
 
-    zp_ulong m_flags;
+    zp_uint m_flags;
     zp_size_t m_frame;
     zpVector2i m_screenSize;
 
     zpDebugGUIWidgetStyle m_style;
+    zpDebugGUIWidgetLayout m_layout;
 
     zpFontHandle m_debugFont;
     zpMaterialHandle m_debugMaterial;
 
     zpVector< zpDebugGUIWidget > m_widgets;
+    zpVector< zpDebugGUIWidgetLayout > m_layoutStack;
     zpVector< zp_size_t > m_widgetStack;
 };
 

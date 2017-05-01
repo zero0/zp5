@@ -82,6 +82,7 @@ private:
     void debugDrawGUI();
 
     zpInput m_input;
+    zpDebugGUI m_debugGUI;
 
     zpRenderingEngine m_renderingEngine;
 

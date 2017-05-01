@@ -21,6 +21,7 @@ enum : zp_hash64
 };
 
 #include "zpInput.h"
+#include "zpDebug.h"
 
 #include "zpObjectManager.h"
 
@@ -37,6 +38,5 @@ enum : zp_hash64
 #include "zpBaseApplication.h"
 #include "zpMain.h"
 
-#include "zpDebug.h"
 
 #endif // !ZP_ENGINE_H
