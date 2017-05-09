@@ -349,7 +349,7 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 }
 
                 zpVector4fData pos = { static_cast<zp_float>(widget.layout.rect.x), static_cast<zp_float>(widget.layout.rect.y), 0.f, 1.f };
-                ctx->addText( pos, widget.text, m_style.fontSize, 2, m_style.contentColor, m_style.contentColor );
+                ctx->addTextShadow( pos, widget.text, m_style.fontSize, 2, m_style.contentColor, m_style.contentColor, { 1, 1, 0, 0 }, zpColor32::Black );
             } break;
 
             case ZP_WIDGET_TYPE_BUTTON:

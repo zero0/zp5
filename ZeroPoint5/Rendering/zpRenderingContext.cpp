@@ -210,10 +210,10 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
         zp_float minY = static_cast<zp_float>( -( g->size.y - g->bearing.y ) );
         zp_float maxY = static_cast<zp_float>( g->bearing.y );
         
-        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
-        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
-        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
-        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
+        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
+        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
+        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
+        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
 
         bl = zpMath::Vector4Add( cursor, bl );
         tl = zpMath::Vector4Add( cursor, tl );
@@ -227,10 +227,10 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
         zpMath::Vector4Store4( tr, p2.m );
         zpMath::Vector4Store4( br, p3.m );
 
-        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y };
-        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
-        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
-        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
+        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y };
+        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
 
         // bl -> tl -> tr -> br
         addVertexData( p0, bottomColor, u0 );
@@ -304,10 +304,10 @@ zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_c
         zp_float minY = static_cast<zp_float>( -( g->size.y - g->bearing.y ) );
         zp_float maxY = static_cast<zp_float>( g->bearing.y );
 
-        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
-        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
-        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
-        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
+        bl = zpMath::Vector4Scale( zpMath::Vector4( minX, minY, 0, 0 ), sScale );
+        tl = zpMath::Vector4Scale( zpMath::Vector4( minX, maxY, 0, 0 ), sScale );
+        tr = zpMath::Vector4Scale( zpMath::Vector4( maxX, maxY, 0, 0 ), sScale );
+        br = zpMath::Vector4Scale( zpMath::Vector4( maxX, minY, 0, 0 ), sScale );
 
         bl = zpMath::Vector4Add( cursor, bl );
         tl = zpMath::Vector4Add( cursor, tl );
@@ -316,10 +316,10 @@ zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_c
 
         cursor = zpMath::Vector4Add( cursor, zpMath::Vector4Scale( zpMath::Vector4( static_cast<zp_float>( g->advance ), 0, 0, 0 ), sScale ) );
 
-        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y };
-        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
-        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
-        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+        zpVector2f u0 = { g->uvRect.x,                   g->uvRect.y + g->uvRect.height };
+        zpVector2f u1 = { g->uvRect.x,                   g->uvRect.y };
+        zpVector2f u2 = { g->uvRect.x + g->uvRect.width, g->uvRect.y };
+        zpVector2f u3 = { g->uvRect.x + g->uvRect.width, g->uvRect.y + g->uvRect.height };
 
         // add shadow geo
         sbl = zpMath::Vector4Add( bl, shadow );

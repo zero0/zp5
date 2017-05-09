@@ -133,8 +133,6 @@ void zpRenderingEngine::setWindowSize( const zpVector2i& size )
 void zpRenderingEngine::present()
 {
     ZP_PROFILER_BLOCK();
-    
-    zpRenderingStat stat;
 
     BeginFrameOpenGL();
 
@@ -144,6 +142,7 @@ void zpRenderingEngine::present()
 
     m_immidiateContext.flipBuffers();
 
+    zpRenderingStat stat;
     EndFrameOpenGL( stat );
 
     PresentOpenGL( m_hDC, m_hContext );
@@ -213,7 +212,6 @@ void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
     
     const zpVector< zpRenderingCommand >& cmds = context.getCommands();
 
-    m_sortedCommands.reset();
     SortRenderCommands( cmds, 0, m_sortedCommands );
 
     for( zpSortRenderCommandData* b = m_sortedCommands.begin(), *e = m_sortedCommands.end(); b != e; ++b )

@@ -100,11 +100,15 @@ zp_float zpMath::PlaneDistanceToPoint( const zpPlane& plane, const zpVector4fDat
 
 void zpMath::FrustrumSetLookTo( zpFrustum& frustrum, const zpVector4fData& eye, const zpVector4fData& direction, const zpVector4fData& up, zp_float ratio, zp_float fovy, zp_float zNear, zp_float zFar )
 {
+    ZP_ALIGN16 zpVector4fData eyeData = eye;
+    ZP_ALIGN16 zpVector4fData dirData = direction;
+    ZP_ALIGN16 zpVector4fData upData = up;
+
     zpVector4f fc;
     zpVector4f nc;
-    zpVector4f dir = zpMath::Vector4Load4( direction.m );
-    zpVector4f e = zpMath::Vector4Load4( eye.m );
-    zpVector4f u = zpMath::Vector4Load4( up.m );
+    zpVector4f dir = zpMath::Vector4Load4( eyeData.m );
+    zpVector4f e = zpMath::Vector4Load4( dirData.m );
+    zpVector4f u = zpMath::Vector4Load4( upData.m );
 
     zpScalar zNearS = zpMath::Scalar( zNear );
     zpScalar zFarS = zpMath::Scalar( zFar );

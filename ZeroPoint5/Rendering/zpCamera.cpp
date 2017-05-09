@@ -1,6 +1,16 @@
 #include "zpRendering.h"
 #include <new>
 
+enum zpCameraFlag
+{
+    ZP_CAMERA_FLAG_ENABLED =            1 << 0,
+    ZP_CAMERA_FLAG_VIEW_DIRTY =         1 << 1,
+    ZP_CAMERA_FLAG_PROJECTION_DIRTY =   1 << 2,
+
+    zpCameraFlag_Count,
+    zpCameraFlag_Force32 = ZP_FORECE_32BIT
+};
+
 const zp_hash64 ZP_CAMERA_ID_INVALID = (zp_hash64)-1;
 const zp_hash64 ZP_CAMERA_ID_EMPTY = 0;
 
@@ -132,11 +142,11 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
         {
             zpCamera* cam = &c->camera;
 
-            if( cam->flags & ( 1 << ZP_CAMERA_FLAG_ENABLED ) )
+            if( cam->flags & ZP_CAMERA_FLAG_ENABLED )
             {
                 zp_bool isViewProjectionDirty = false;
 
-                if( cam->flags & ( 1 << ZP_CAMERA_FLAG_VIEW_DIRTY ) )
+                if( cam->flags & ZP_CAMERA_FLAG_VIEW_DIRTY )
                 {
                     ZP_ALIGN16 zpVector4fData p = cam->position;
                     ZP_ALIGN16 zpVector4fData f = cam->forward;
@@ -152,11 +162,13 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
                     zpMath::MatrixStore4( view, mat.m );
                     cam->viewMatrix = mat;
 
+                    zpMath::FrustrumSetLookTo( cam->frustum, cam->position, cam->forward, cam->up, cam->aspectRatio, cam->fovy, cam->zNear, cam->zFar );
+
                     isViewProjectionDirty = true;
-                    cam->flags &= ~( 1 << ZP_CAMERA_FLAG_VIEW_DIRTY );
+                    cam->flags &= ~ZP_CAMERA_FLAG_VIEW_DIRTY;
                 }
 
-                if( cam->flags & ( 1 << ZP_CAMERA_FLAG_PROJECTION_DIRTY ) )
+                if( cam->flags & ZP_CAMERA_FLAG_PROJECTION_DIRTY )
                 {
                     zpMatrix4f projection;
 
@@ -206,7 +218,7 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
                     cam->projectionMatrix = mat;
 
                     isViewProjectionDirty = true;
-                    cam->flags &= ~( 1 << ZP_CAMERA_FLAG_PROJECTION_DIRTY );
+                    cam->flags &= ~ZP_CAMERA_FLAG_PROJECTION_DIRTY;
                 }
 
                 if( isViewProjectionDirty )

@@ -2,16 +2,6 @@
 #ifndef ZP_CAMERA_H
 #define ZP_CAMERA_H
 
-enum zpCameraFlag
-{
-    ZP_CAMERA_FLAG_ENABLED,
-    ZP_CAMERA_FLAG_VIEW_DIRTY,
-    ZP_CAMERA_FLAG_PROJECTION_DIRTY,
-
-    zpCameraFlag_Count,
-    zpCameraFlag_Force32 = ZP_FORECE_32BIT
-};
-
 enum zpCameraProjection
 {
     ZP_CAMERA_PROJECTION_ORTHO,

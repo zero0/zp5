@@ -37,15 +37,15 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
         zpVector2f u;
     };
 
-    zpVector4fData p0 = { rect.x,               rect.y, 0, 1 };
-    zpVector4fData p1 = { rect.x,               rect.y + rect.height, 0, 1 };
-    zpVector4fData p2 = { rect.x + rect.height, rect.y + rect.height, 0, 1 };
-    zpVector4fData p3 = { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4fData p0 = { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4fData p1 = { rect.x,               rect.y, 0, 1 };
+    zpVector4fData p2 = { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4fData p3 = { rect.x + rect.height, rect.y + rect.height, 0, 1 };
 
-    zpVector2f uv0 = { 0, 0 };
-    zpVector2f uv1 = { 0, 1 };
-    zpVector2f uv2 = { 1, 1 };
-    zpVector2f uv3 = { 1, 0 };
+    zpVector2f uv0 = { 0, 1 };
+    zpVector2f uv1 = { 0, 0 };
+    zpVector2f uv2 = { 1, 0 };
+    zpVector2f uv3 = { 1, 1 };
 
     Vertex vert[] = {
         { p0, zpColor32::Red, uv0 },

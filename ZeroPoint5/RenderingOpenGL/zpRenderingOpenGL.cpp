@@ -630,7 +630,10 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 
     glEnable( GL_BLEND );
     glEnable( GL_DEPTH_TEST );
+    glEnable( GL_CULL_FACE );
     glDepthFunc( GL_LEQUAL );
+    glCullFace( GL_BACK );
+    glFrontFace( GL_CCW );
 
     const zp_char* vertVC =                             ""
         "\n" "layout(location = 0) in highp vec4 vertex;                      "

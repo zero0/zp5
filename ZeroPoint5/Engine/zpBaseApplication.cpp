@@ -17,8 +17,9 @@ enum zpBaseApplicationFlags
 
 enum
 {
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS = 1 << 0,
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS =   1 << 1,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS =    1 << 0,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS = 1 << 1,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS =   1 << 2,
 };
 
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
@@ -597,9 +598,13 @@ void zpBaseApplication::handleInput()
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F1 ) )
     {
-        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS;
+        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F2 ) )
+    {
+        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS;
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_F3 ) )
     {
         m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS;
     }
@@ -661,7 +666,7 @@ void zpBaseApplication::render()
     zp_float zf =    ( 100 );
 
     zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
-    zpVector4f eye = zpMath::Vector4( 20, 10, 30, 1 );
+    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
     zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
     zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
 
@@ -674,15 +679,15 @@ void zpBaseApplication::render()
     zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
 
     zpRectf rect = { -10, -10, 30, 30 };
-    zpVector4fData v0 =  { rect.x,               rect.y, 0, 1 };
-    zpVector4fData v1 =  { rect.x,               rect.y + rect.height, 0, 1 };
-    zpVector4fData v2 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
-    zpVector4fData v3 =  { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4fData v0 =  { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4fData v1 =  { rect.x,               rect.y, 0, 1 };
+    zpVector4fData v2 =  { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4fData v3 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
 
-    zpVector2f uv0 = { 0, 0 };
-    zpVector2f uv1 = { 0, 1 };
-    zpVector2f uv2 = { 1, 1 };
-    zpVector2f uv3 = { 1, 0 };
+    zpVector2f uv0 = { 0, 1 };
+    zpVector2f uv1 = { 0, 0 };
+    zpVector2f uv2 = { 1, 0 };
+    zpVector2f uv3 = { 1, 1 };
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( vp );
@@ -718,7 +723,7 @@ void zpBaseApplication::debugDrawGUI()
     m_debugGUI.startGUI();
 
 #ifdef ZP_USE_PROFILER
-    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS )
+    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS )
     {
         const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
@@ -730,6 +735,13 @@ void zpBaseApplication::debugDrawGUI()
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "  GPU Time: %6.3f  Prim Count: %Iu", tl->gpuFrameTime / 1000000.f, tl->gpuPrimitiveCount );
         m_debugGUI.label( buff );
+    }
+
+    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS )
+    {
+        const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
+        const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+        const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
         m_debugGUI.label( buff );
