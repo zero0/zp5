@@ -9,7 +9,7 @@ enum : zp_size_t
 
 zpMeshRendererComponent::zpMeshRendererComponent()
     : m_instanceID( 0 )
-    , m_flags( ZP_MESH_RENDERER_FLAG_DIRTY )
+    , m_flags( 1 << ZP_MESH_RENDERER_FLAG_DIRTY )
     , m_parentObject()
 {
 }
@@ -22,7 +22,7 @@ void zpMeshRendererComponent::setParentObject( const zpObjectHandle& parent )
 {
     m_parentObject = parent;
 
-    m_flags |= ZP_MESH_RENDERER_FLAG_DIRTY;
+    m_flags |= 1 << ZP_MESH_RENDERER_FLAG_DIRTY;
 }
 
 const zpObjectHandle& zpMeshRendererComponent::getParentObject() const

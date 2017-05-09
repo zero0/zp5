@@ -203,17 +203,15 @@ void zpBaseApplication::setup()
     m_meshManager.setup();
     m_cameraManager.setup();
 
-    zpVector4fData st = { 1, 1, 0, 0 };
-
     m_materialManager.getMaterial( "tempMaterial", tm );
     tm->color = zpColor::White;
-    tm->mainTexST = st;
+    tm->mainTexST = { 1, 1, 0, 0 };
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tm->mainTex );
 
     m_fontManager.getFont( "debug.font", ff );
     m_materialManager.getMaterial( "font.material", ff->fontMaterial );
     ff->fontMaterial->color = zpColor::White;
-    ff->fontMaterial->mainTexST = st;
+    ff->fontMaterial->mainTexST = { 1, 1, 0, 0 };
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", ff->fontMaterial->mainTex );
 
     m_meshManager.getMesh( "default.mesh", mh );
@@ -689,6 +687,7 @@ void zpBaseApplication::render()
     zpVector2f uv2 = { 1, 0 };
     zpVector2f uv3 = { 1, 1 };
 
+
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     ctx->setViewport( vp );
     ctx->clear( clearColor, 1, 0 );
@@ -703,6 +702,7 @@ void zpBaseApplication::render()
     ctx->endDraw();
 
     m_meshRendererComponentManager.render( ctx );
+
 
     // draw debug when toggled on
     if( m_debugFlags )
