@@ -300,20 +300,20 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 }
 
                 zpRecti& rect = widget.layout.rect;
-                zpVector4fData v0 = { static_cast<zp_float>(rect.x              ), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
-                zpVector4fData v1 = { static_cast<zp_float>(rect.x              ), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
+                zpVector4fData v0 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
+                zpVector4fData v1 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
                 zpVector4fData v2 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
                 zpVector4fData v3 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
-
-                zp_size_t vertexCount = ctx->getVertexCount();
+                
+                zp_ushort vertexCount = static_cast<zp_ushort>( ctx->getVertexCount() );
 
                 ctx->addVertexData( v0, m_style.backgroundColor );
                 ctx->addVertexData( v1, m_style.backgroundColor );
                 ctx->addVertexData( v2, m_style.backgroundColor );
                 ctx->addVertexData( v3, m_style.backgroundColor );
 
-                v0 = { static_cast<zp_float>( rect.x               + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
-                v1 = { static_cast<zp_float>( rect.x               + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
+                v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
+                v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
                 v2 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
                 v3 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
                 

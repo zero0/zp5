@@ -14,10 +14,10 @@ void CreateRenderBufferOpenGL( zpBufferType type, zpBufferBindType bindType, zp_
 void DestroyRenderBufferOpenGL( zpRenderBuffer& buffer );
 void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, zp_size_t offset, zp_size_t length );
 
-void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture );
+void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture );
 void DestroyTextureOpenGL( zpTexture& texture );
 
-void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
+void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
 void DestroyShaderOpenGL( zpShader& shader );
 
 void BeginFrameOpenGL();

@@ -10,16 +10,13 @@ file( GLOB BLACKJACK_SOURCE "src/*.cpp" )
 file( GLOB BLACKJACK_HEADER "src/*.h" )
 file( GLOB BLACKJACK_INLINE "src/*.inl" )
 
-set( PLATFORM_NAME Win )
-set( PLATFORM_ARCH x86 )
-
 set( BLACKJACK_BIN ${PROJECT_NAME}_${PLATFORM_NAME}_${PLATFORM_ARCH} )
 set( BLACKJACK_ASSETS "Assets/" )
 
 source_group( Blackjack\\Headers FILES
     ${BLACKJACK_HEADER}
 )
-source_group( Blackjack\\Sourece FILES
+source_group( Blackjack\\Source FILES
     ${BLACKJACK_SOURCE}
     ${BLACKJACK_INLINE}
 )

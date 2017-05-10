@@ -417,7 +417,8 @@ zp_bool zpTextureManager::loadTexture( const zp_char* textureFile, zpTextureHand
         m_textureInstances.pushBack( foundTextureInstance );
     }
 
-    m_engine->createTexture( textureData.width,
+    m_engine->createTexture( textureFile,
+                             textureData.width,
                              textureData.height,
                              0, 
                              textureData.format, 
@@ -493,7 +494,8 @@ void zpTextureManager::reloadChangedTextures()
                 t->lastModifiedTime = lastModTime;
 
                 zpTexture tex = t->texture;
-                m_engine->createTexture( textureData.width,
+                m_engine->createTexture( textureName,
+                                         textureData.width,
                                          textureData.height,
                                          0,
                                          textureData.format,

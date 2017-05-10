@@ -9,6 +9,7 @@ project( ZeroPoint5 VERSION ${ZP_VERSION} LANGUAGES C CXX )
 option( ZP_INSTALL "Install ZeroPoint5" OFF )
 option( ZP_BUILD_SHARED "Build ZeroPoint5 as shared library" OFF )
 option( ZP_BUILD_STATIC "Build ZeroPoint5 as static library" ON )
+option( ZP_BUILD_SINGLE "Build ZeroPoint5 as single library" ON )
 
 option( ZP_USE_HOT_RELOAD "Build ZeroPoint5 with hot reload" ON )
 option( ZP_USE_ASSERTIONS "Build ZeroPoint5 with assersions" ON )
@@ -143,14 +144,29 @@ set( ZP_ALL_SOURCE
 
 # Static Lib build
 if( ZP_BUILD_STATIC )
-    add_library( ZeroPoint5_lib STATIC
-        ${ZP_ALL_HEADER}
-        ${ZP_ALL_SOURCE}
+    if( ZP_BUILD_SINGLE )
+        add_library( ZeroPoint5_lib STATIC
+            ${ZP_ALL_HEADER}
+            ${ZP_ALL_SOURCE}
+        )
+
+        set_property( TARGET ZeroPoint5_lib PROPERTY FOLDER "Libraries" )
+        set_target_properties( ZeroPoint5_lib PROPERTIES
+            OUTPUT_NAME ${PROJECT_NAME}
+            CLEAN_DIRECT_OUTPUT 1
+            VERSION ${ZP_VERSION}
+        )
+    endif( ZP_BUILD_SINGLE )
+
+    # Core
+    add_library( ZeroPoint5_Core_lib STATIC
+        ${ZP_CORE_HEADER}
+        ${ZP_CORE_SOURCE}
     )
 
-    set_property( TARGET ZeroPoint5_lib PROPERTY FOLDER "Libraries" )
-    set_target_properties( ZeroPoint5_lib PROPERTIES
-        OUTPUT_NAME ${PROJECT_NAME}
+    set_property( TARGET ZeroPoint5_Core_lib PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Core_lib PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Core
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )
@@ -158,14 +174,29 @@ endif( ZP_BUILD_STATIC )
 
 # Shared DLL build
 if( ZP_BUILD_SHARED )
-    add_library( ZeroPoint5_dll SHARED
-        ${ZP_ALL_HEADER}
-        ${ZP_ALL_SOURCE}
+    if( ZP_BUILD_SINGLE )
+        add_library( ZeroPoint5_dll SHARED
+            ${ZP_ALL_HEADER}
+            ${ZP_ALL_SOURCE}
+        )
+
+        set_property( TARGET ZeroPoint5_dll PROPERTY FOLDER "Libraries" )
+        set_target_properties( ZeroPoint5_dll PROPERTIES
+            OUTPUT_NAME ${PROJECT_NAME}
+            CLEAN_DIRECT_OUTPUT 1
+            VERSION ${ZP_VERSION}
+        )
+    endif( ZP_BUILD_SINGLE )
+
+    # Core
+    add_library( ZeroPoint5_Core_dll SHARED
+        ${ZP_CORE_HEADER}
+        ${ZP_CORE_SOURCE}
     )
 
-    set_property( TARGET ZeroPoint5_dll PROPERTY FOLDER "Libraries" )
-    set_target_properties( ZeroPoint5_dll PROPERTIES
-        OUTPUT_NAME ${PROJECT_NAME}
+    set_property( TARGET ZeroPoint5_Core_dll PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Core_dll PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Core
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )

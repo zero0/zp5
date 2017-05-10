@@ -23,10 +23,10 @@ public:
     void createRenderBuffer( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer );
     void destoryRenderBuffer( zpRenderBuffer& buffer );
 
-    void createTexture( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture );
+    void createTexture( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture );
     void destroyTexture( zpTexture& texture );
 
-    void createShader( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
+    void createShader( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
     void destroyShader( zpShader& shader );
 
 private:

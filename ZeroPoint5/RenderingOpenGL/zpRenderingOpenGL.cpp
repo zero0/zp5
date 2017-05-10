@@ -442,6 +442,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
     // TODO: update material to set these
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glDepthFunc( GL_LEQUAL );
+    glDepthMask( GL_TRUE );
 }
 
 static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
@@ -472,6 +473,7 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
     {
         if( cmd->material->mainTex.isValid() )
         {
+            glActiveTexture( GL_TEXTURE0 );
             glBindTexture( GL_TEXTURE_2D, 0 );
         }
     }
@@ -688,8 +690,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         "\n" "}                                                      "
         "\n";
 
-    CreateShaderOpenGL( vertVC, fragVC, g_shaderVC );
-    CreateShaderOpenGL( vertVCU, fragVCU, g_shaderVCU );
+    CreateShaderOpenGL( "fragVC", vertVC, fragVC, g_shaderVC );
+    CreateShaderOpenGL( "fragVCU", vertVCU, fragVCU, g_shaderVCU );
 }
 
 void TeardownRenderingOpenGL( zp_handle hContext )
@@ -826,7 +828,7 @@ void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, 
     glBindBuffer( target, 0 );
 }
 
-void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Texture" );
 
@@ -845,6 +847,11 @@ void CreateTextureOpenGL( zp_uint width, zp_uint height, zp_int mipMapCount, zpD
     glBindTexture( target, texture.texture.index );
     glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+#if ZP_DEBUG
+    GLsizei len = static_cast<GLsizei>( zp_strlen( textureName ) );
+    glObjectLabel( GL_TEXTURE, texture.texture.index, len, textureName );
+#endif
 
     zp_bool isCompressedFormat = _IsCompressedDisplayFormat( displayFormat );
     if( isCompressedFormat )
@@ -914,7 +921,7 @@ void DestroyTextureOpenGL( zpTexture& texture )
     texture.texture.index = 0;
 }
 
-void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Shader" );
 
@@ -957,7 +964,7 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
         //"\n" "#endif                      "
         "\n";
 
-    const zp_char* commonHeader =                  ""
+    const zp_char* commonHeader = ""
         "\n" "BeginCBuffer( PerFrame )              "
         "\n" "    uniform float4 _Time;               "
         "\n" "EndCBuffer()                          "
@@ -974,6 +981,12 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
         "\n" "    uniform float4 _CameraPosition;     "
         "\n" "    uniform float4 _CameraData;         "
         "\n" "EndCBuffer()                          "
+
+        "\n" "float4 ObjectToClipSpace( in float4 vertex )   "
+        "\n" "{"
+        "\n" "  return mul( _ViewPorjection, mul( _ObjectToWorld, vertex ) );"
+        "\n" "}"
+
         "\n";
 
     const zp_char* vsHeader = ""
@@ -1049,6 +1062,11 @@ void CreateShaderOpenGL( const zp_char* vertexShaderSource, const zp_char* fragm
 
     glDeleteShader( shader.vertexShader.index );
     glDeleteShader( shader.fragmentShader.index );
+
+#if ZP_DEBUG
+    GLsizei len = static_cast<GLsizei>( zp_strlen( shaderName ) );
+    glObjectLabel( GL_PROGRAM, shader.programShader.index, len, shaderName );
+#endif
 
     shader.vertexShader.index = 0;
     shader.fragmentShader.index = 0;

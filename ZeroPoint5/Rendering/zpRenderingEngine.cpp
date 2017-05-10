@@ -178,11 +178,11 @@ void zpRenderingEngine::destoryRenderBuffer( zpRenderBuffer& buffer )
     DestroyRenderBufferOpenGL( buffer );
 }
 
-void zpRenderingEngine::createTexture( zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+void zpRenderingEngine::createTexture( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
 {
     ZP_PROFILER_BLOCK();
 
-    CreateTextureOpenGL( width, height, mipMapCount, displayFormat, textureDimension, textureType, pixels, texture );
+    CreateTextureOpenGL( textureName, width, height, mipMapCount, displayFormat, textureDimension, textureType, pixels, texture );
 }
 
 void zpRenderingEngine::destroyTexture( zpTexture& texture )
@@ -192,11 +192,11 @@ void zpRenderingEngine::destroyTexture( zpTexture& texture )
     DestroyTextureOpenGL( texture );
 }
 
-void zpRenderingEngine::createShader( const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+void zpRenderingEngine::createShader( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
 {
     ZP_PROFILER_BLOCK();
 
-    CreateShaderOpenGL( vertexShaderSource, fragmentShaderSource, shader );
+    CreateShaderOpenGL( shaderName, vertexShaderSource, fragmentShaderSource, shader );
 }
 
 void zpRenderingEngine::destroyShader( zpShader& shader )
