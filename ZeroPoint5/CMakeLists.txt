@@ -9,7 +9,7 @@ project( ZeroPoint5 VERSION ${ZP_VERSION} LANGUAGES C CXX )
 option( ZP_INSTALL "Install ZeroPoint5" OFF )
 option( ZP_BUILD_SHARED "Build ZeroPoint5 as shared library" OFF )
 option( ZP_BUILD_STATIC "Build ZeroPoint5 as static library" ON )
-option( ZP_BUILD_SINGLE "Build ZeroPoint5 as single library" ON )
+option( ZP_BUILD_SINGLE "Build ZeroPoint5 as single library" OFF )
 
 option( ZP_USE_HOT_RELOAD "Build ZeroPoint5 with hot reload" ON )
 option( ZP_USE_ASSERTIONS "Build ZeroPoint5 with assersions" ON )
@@ -34,8 +34,6 @@ file( GLOB ZP_CORE_INLINE "Core/*.inl" )
 
 source_group( Core\\Headers FILES
     ${ZP_CORE_HEADER}
-)
-source_group( Core\\Inline FILES
     ${ZP_CORE_INLINE}
 )
 source_group( Core\\Source FILES
@@ -49,8 +47,6 @@ file( GLOB ZP_ENGINE_INLINE "Engine/*.inl" )
 
 source_group( Engine\\Headers FILES
     ${ZP_ENGINE_HEADER}
-)
-source_group( Engine\\Inline FILES
     ${ZP_ENGINE_INLINE}
 )
 source_group( Engine\\Source FILES
@@ -64,9 +60,9 @@ file( GLOB ZP_RENDERING_INLINE "Rendering/*.inl" )
 
 source_group( Rendering\\Headers FILES
     ${ZP_RENDERING_HEADER}
+    ${ZP_RENDERING_INLINE}
 )
 source_group( Rendering\\Source FILES
-    ${ZP_RENDERING_INLINE}
     ${ZP_RENDERING_SOURCE}
 )
 
@@ -77,9 +73,9 @@ file( GLOB ZP_RENDERING_OPENGL_INLINE "RenderingOpenGL/*.inl" )
 
 source_group( RenderingOpenGL\\Headers FILES
     ${ZP_RENDERING_OPENGL_HEADER}
+    ${ZP_RENDERING_OPENGL_INLINE}
 )
 source_group( RenderingOpenGL\\Source FILES
-    ${ZP_RENDERING_OPENGL_INLINE}
     ${ZP_RENDERING_OPENGL_SOURCE}
 )
 
@@ -144,19 +140,19 @@ set( ZP_ALL_SOURCE
 
 # Static Lib build
 if( ZP_BUILD_STATIC )
-    if( ZP_BUILD_SINGLE )
-        add_library( ZeroPoint5_lib STATIC
-            ${ZP_ALL_HEADER}
-            ${ZP_ALL_SOURCE}
-        )
-
-        set_property( TARGET ZeroPoint5_lib PROPERTY FOLDER "Libraries" )
-        set_target_properties( ZeroPoint5_lib PROPERTIES
-            OUTPUT_NAME ${PROJECT_NAME}
-            CLEAN_DIRECT_OUTPUT 1
-            VERSION ${ZP_VERSION}
-        )
-    endif( ZP_BUILD_SINGLE )
+    #if( ZP_BUILD_SINGLE )
+    #    add_library( ZeroPoint5_lib STATIC
+    #        ${ZP_ALL_HEADER}
+    #        ${ZP_ALL_SOURCE}
+    #    )
+    #    
+    #    set_property( TARGET ZeroPoint5_lib PROPERTY FOLDER "Libraries" )
+    #    set_target_properties( ZeroPoint5_lib PROPERTIES
+    #        OUTPUT_NAME ${PROJECT_NAME}
+    #        CLEAN_DIRECT_OUTPUT 1
+    #        VERSION ${ZP_VERSION}
+    #    )
+    #endif( ZP_BUILD_SINGLE )
 
     # Core
     add_library( ZeroPoint5_Core_lib STATIC
@@ -170,23 +166,52 @@ if( ZP_BUILD_STATIC )
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )
+
+    # Engine
+    add_library( ZeroPoint5_Engine_lib STATIC
+        ${ZP_ENGINE_HEADER}
+        ${ZP_ENGINE_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Engine_lib PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Engine_lib PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Engine
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Rendering
+    add_library( ZeroPoint5_Rendering_lib STATIC
+        ${ZP_RENDERING_HEADER}
+        ${ZP_RENDERING_SOURCE}
+        ${ZP_RENDERING_IMPL_HEADER}
+        ${ZP_RENDERING_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Rendering_lib PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Rendering_lib PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Rendering
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+        COMPILE_DEFINITIONS GLEW_STATIC
+    )
 endif( ZP_BUILD_STATIC )
 
 # Shared DLL build
 if( ZP_BUILD_SHARED )
-    if( ZP_BUILD_SINGLE )
-        add_library( ZeroPoint5_dll SHARED
-            ${ZP_ALL_HEADER}
-            ${ZP_ALL_SOURCE}
-        )
-
-        set_property( TARGET ZeroPoint5_dll PROPERTY FOLDER "Libraries" )
-        set_target_properties( ZeroPoint5_dll PROPERTIES
-            OUTPUT_NAME ${PROJECT_NAME}
-            CLEAN_DIRECT_OUTPUT 1
-            VERSION ${ZP_VERSION}
-        )
-    endif( ZP_BUILD_SINGLE )
+    #if( ZP_BUILD_SINGLE )
+    #    add_library( ZeroPoint5_dll SHARED
+    #        ${ZP_ALL_HEADER}
+    #        ${ZP_ALL_SOURCE}
+    #    )
+    #    
+    #    set_property( TARGET ZeroPoint5_dll PROPERTY FOLDER "Libraries" )
+    #    set_target_properties( ZeroPoint5_dll PROPERTIES
+    #        OUTPUT_NAME ${PROJECT_NAME}
+    #        CLEAN_DIRECT_OUTPUT 1
+    #        VERSION ${ZP_VERSION}
+    #    )
+    #endif( ZP_BUILD_SINGLE )
 
     # Core
     add_library( ZeroPoint5_Core_dll SHARED
@@ -200,6 +225,35 @@ if( ZP_BUILD_SHARED )
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )
+
+    # Engine
+    add_library( ZeroPoint5_Engine_dll SHARED
+        ${ZP_ENGINE_HEADER}
+        ${ZP_ENGINE_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Engine_dll PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Engine_dll PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Engine
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Rendering
+    add_library( ZeroPoint5_Rendering_dll SHARED
+        ${ZP_RENDERING_HEADER}
+        ${ZP_RENDERING_SOURCE}
+        ${ZP_RENDERING_IMPL_HEADER}
+        ${ZP_RENDERING_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Rendering_dll PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Rendering_dll PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Rendering
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+        COMPILE_DEFINITIONS GLEW_BUILD
+    )
 endif( ZP_BUILD_SHARED )
 
 # Install
@@ -207,14 +261,21 @@ if( ZP_INSTALL )
     install( FILES ${ZP_CORE_HEADER} ${ZP_CORE_INLINE} DESTINATION include/Core )
     install( FILES ${ZP_ENGINE_HEADER} ${ZP_ENGINE_INLINE} DESTINATION include/Engine )
 
-    install( TARGETS ZeroPoint5_lib
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-    )
-    install( TARGETS ZeroPoint5_dll
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-    )
+    if( ZP_BUILD_SINGLE )
+        if( ZP_BUILD_STATIC )
+            install( TARGETS ZeroPoint5_lib
+                RUNTIME DESTINATION bin
+                LIBRARY DESTINATION lib
+                ARCHIVE DESTINATION lib
+            )
+        endif( ZP_BUILD_STATIC )
+
+        if( ZP_BUILD_SHARED )
+            install( TARGETS ZeroPoint5_dll
+                RUNTIME DESTINATION bin
+                LIBRARY DESTINATION lib
+                ARCHIVE DESTINATION lib
+            )
+        endif( ZP_BUILD_SHARED )
+    endif( ZP_BUILD_SINGLE )
 endif( ZP_INSTALL )

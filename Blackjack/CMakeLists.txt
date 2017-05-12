@@ -29,13 +29,17 @@ add_executable( Blackjack
 
 if( ZP_BUILD_STATIC )
 target_link_Libraries( Blackjack
-    ZeroPoint5_lib
+    ZeroPoint5_Core_lib
+    ZeroPoint5_Engine_lib
+    ZeroPoint5_Rendering_lib
 )
 endif()
 
 if( ZP_BUILD_SHARED )
 target_link_Libraries( Blackjack
-    ZeroPoint5_dll
+    ZeroPoint5_Core_dll
+    ZeroPoint5_Engine_dll
+    ZeroPoint5_Rendering_dll
 )
 endif()
 

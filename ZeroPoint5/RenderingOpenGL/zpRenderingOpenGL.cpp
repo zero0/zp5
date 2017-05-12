@@ -1,16 +1,15 @@
 #include "Core\zpCore.h"
 #include "zpRenderingOpenGL.h"
 
-#pragma comment( lib, "opengl32.lib" )
-
 #ifdef ZP_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif // ZP_WINDOWS
 
-#define GLEW_STATIC
-#include <GL\glew.h>
-#include <GL\wglew.h>
+#include "GL\glew.h"
+#include "GL\wglew.h"
+
+#pragma comment( lib, "opengl32.lib" )
 
 static ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
 {

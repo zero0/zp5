@@ -13,11 +13,11 @@ file( GLOB ZP_ASSET_COMPILER_SOURCE "src/*.cpp" )
 file( GLOB ZP_ASSET_COMPILER_HEADER "include/*.h" )
 file( GLOB ZP_ASSET_COMPILER_INLINE "include/*.inl" )
 
-source_group( AssetCompiler\\Headers FILES
+source_group( Headers FILES
     ${ZP_ASSET_COMPILER_HEADER}
-)
-source_group( AssetCompiler\\Source FILES
     ${ZP_ASSET_COMPILER_INLINE}
+)
+source_group( Source FILES
     ${ZP_ASSET_COMPILER_SOURCE}
 )
 include_directories( ${ZeroPoint5_SOURCE_DIR} )
