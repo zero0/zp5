@@ -329,6 +329,8 @@ void zpTextureManager::setup( zpRenderingEngine* engine )
 
 void zpTextureManager::teardown()
 {
+    ZP_ASSERT( m_textureInstances.isEmpty(), "Texture(s) still loaded: %d", m_textureInstances.size() );
+
     m_engine = ZP_NULL;
 }
 

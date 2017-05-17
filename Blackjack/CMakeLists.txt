@@ -6,19 +6,26 @@ set( BLACKJACK_VERSION ${BLACKJACK_VERSION_MAJOR}.${BLACKJACK_VERSION_MINOR}.${B
 
 project( Blackjack VERSION ${BLACKJACK_VERSION} LANGUAGES C CXX )
 
-file( GLOB BLACKJACK_SOURCE "src/*.cpp" )
-file( GLOB BLACKJACK_HEADER "src/*.h" )
-file( GLOB BLACKJACK_INLINE "src/*.inl" )
+# file( GLOB BLACKJACK_SOURCE "src/*.cpp" )
+# file( GLOB BLACKJACK_HEADER "src/*.h" )
+# file( GLOB BLACKJACK_INLINE "src/*.inl" )
+set( BLACKJACK_SOURCE
+    "src/bMain.cpp"
+)
+set( BLACKJACK_HEADER )
+set( BLACKJACK_INLINE )
 
 set( BLACKJACK_BIN ${PROJECT_NAME}_${PLATFORM_NAME}_${PLATFORM_ARCH} )
 set( BLACKJACK_ASSETS "Assets/" )
 
-source_group( Blackjack\\Headers FILES
+source_group( Headers FILES
     ${BLACKJACK_HEADER}
 )
-source_group( Blackjack\\Source FILES
-    ${BLACKJACK_SOURCE}
+source_group( Inline FILES 
     ${BLACKJACK_INLINE}
+)
+source_group( Source FILES
+    ${BLACKJACK_SOURCE}
 )
 include_directories( ${ZeroPoint5_SOURCE_DIR} )
 

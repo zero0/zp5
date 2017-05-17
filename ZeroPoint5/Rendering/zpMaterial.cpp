@@ -5,20 +5,41 @@ const zp_hash64 ZP_MATERIAL_ID_INVALID = static_cast<zp_hash64>( -1 );
 const zp_hash64 ZP_MATERIAL_ID_EMPTY = 0;
 const zp_time_t ZP_MATERIAL_NOT_FILE = static_cast<zp_time_t>( -1 );
 
+struct zpMaterialDataPartColor
+{
+    zpString name;
+    zpColorf color;
+};
+
+struct zpMaterialDataPartVector
+{
+    zpString name;
+    zpVector4fData vector;
+};
+
+struct zpMaterialDataPartTexture
+{
+    zpString name;
+    zpString texture;
+};
+
+struct zpMaterialDataPartMatrix
+{
+    zpString name;
+    zpMatrix4fData matrix;
+};
+
+
 struct zpMaterialData
 {
     zp_time_t lastModifiedTime;
 
-    zpColorf color;
-
-    zpVector4fData mainTexST;
-    zpVector4fData specTexST;
-    zpVector4fData normTexST;
-
     zpString shaderName;
-    zpString mainTexName;
-    zpString specTexName;
-    zpString normTexName;
+
+    zpVector< zpMaterialDataPartColor > colors;
+    zpVector< zpMaterialDataPartVector > vectors;
+    zpVector< zpMaterialDataPartTexture > textures;
+    zpVector< zpMaterialDataPartMatrix > matrices;
 };
 
 static zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materialData )
@@ -29,18 +50,71 @@ static zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materia
     //    return -1;
     //}
 
-    zpColorf c = { 1, 1, 1, 1 };
-    materialData.color = c;
+    zpMaterialDataPartColor& color = materialData.colors.pushBackEmpty();
+    color.name = "_Color";
+    color.color = zpColor::White;
 
-    zpVector4fData st = { 1, 1, 0, 0, };
-    materialData.mainTexST = st;
-    materialData.specTexST = st;
-    materialData.normTexST = st;
+    zpMaterialDataPartVector& mainTexSt = materialData.vectors.pushBackEmpty();
+    mainTexSt.name = "_MainTex_ST";
+    mainTexSt.vector = { 1, 1, 0, 0 };
 
-    materialData.mainTexName = "Assets/uv_checker_large.bmp";
+    zpMaterialDataPartTexture& tex = materialData.textures.pushBackEmpty();
+    tex.name = "_MainTex";
+    tex.texture = "Assets/uv_checker_large.bmp";
 
     return 0;
 }
+
+static void FillMaterial( zpShaderManager* shaderManager, zpTextureManager* textureManager, const zpMaterialData& materialData, zpMaterial& material )
+{
+    if( !materialData.shaderName.isEmpty() ) shaderManager->getShader( materialData.shaderName.str(), material.shader );
+
+    const zpMaterialDataPartColor* cb = materialData.colors.begin();
+    const zpMaterialDataPartColor* ce = materialData.colors.end();
+    for( ; cb != ce; ++cb )
+    {
+        zpMaterialPartColor& c = material.colors.pushBackEmpty();
+        c.name = zp_move( cb->name );
+        c.color = cb->color;
+    }
+
+    const zpMaterialDataPartVector* vb = materialData.vectors.begin();
+    const zpMaterialDataPartVector* ve = materialData.vectors.end();
+    for( ; vb != ve; ++vb )
+    {
+        zpMaterialPartVector& v = material.vectors.pushBackEmpty();
+        v.name = zp_move( vb->name );
+        v.vector = vb->vector;
+    }
+
+    const zpMaterialDataPartTexture* tb = materialData.textures.begin();
+    const zpMaterialDataPartTexture* te = materialData.textures.end();
+    for( ; tb != te; ++tb )
+    {
+        zpMaterialPartTexture& t = material.textures.pushBackEmpty();
+        t.name = zp_move( tb->name );
+        textureManager->loadTexture( tb->texture.str(), t.texture );
+    }
+
+    const zpMaterialDataPartMatrix* mb = materialData.matrices.begin();
+    const zpMaterialDataPartMatrix* me = materialData.matrices.end();
+    for( ; mb != me; ++mb )
+    {
+        zpMaterialPartMatrix& m = material.matrices.pushBackEmpty();
+        m.name = zp_move( mb->name );
+        m.matrix = mb->matrix;
+    }
+}
+
+static void ClearMaterial( zpMaterial& material )
+{
+    material.shader.release();
+    material.colors.clear();
+    material.vectors.clear();
+    material.textures.clear();
+    material.matrices.clear();
+}
+
 
 //
 //
@@ -159,6 +233,8 @@ void zpMaterialManager::setup( zpShaderManager* shaderManager, zpTextureManager*
 
 void zpMaterialManager::teardown()
 {
+    ZP_ASSERT( m_materialInstances.isEmpty(), "Material(s) still loaded: %d", m_materialInstances.size() );
+
     m_shaderManager = ZP_NULL;
     m_textureManager = ZP_NULL;
 }
@@ -173,10 +249,7 @@ zp_bool zpMaterialManager::loadMaterial( const zp_char* materialFile, zpMaterial
         zpMaterialInstance* t = ( *b );
         if( t->refCount == 0 )
         {
-            t->material.shader.release();
-            t->material.mainTex.release();
-            t->material.normTex.release();
-            t->material.specTex.release();
+            ClearMaterial( t->material );
 
             foundMaterialInstance = t;
             break;
@@ -197,17 +270,9 @@ zp_bool zpMaterialManager::loadMaterial( const zp_char* materialFile, zpMaterial
     zpMaterialData materialData;
     LoadMaterialData( materialFile, materialData );
 
-    foundMaterialInstance->material.color = materialData.color;
+    ClearMaterial( foundMaterialInstance->material );
 
-    foundMaterialInstance->material.mainTexST = materialData.mainTexST;
-    foundMaterialInstance->material.specTexST = materialData.specTexST;
-    foundMaterialInstance->material.normTexST = materialData.normTexST;
-
-    if( !materialData.shaderName.isEmpty() ) m_shaderManager->getShader( materialData.shaderName.str(), foundMaterialInstance->material.shader );
-
-    if( !materialData.mainTexName.isEmpty() ) m_textureManager->loadTexture( materialData.mainTexName.str(), foundMaterialInstance->material.mainTex );
-    if( !materialData.specTexName.isEmpty() ) m_textureManager->loadTexture( materialData.specTexName.str(), foundMaterialInstance->material.specTex );
-    if( !materialData.normTexName.isEmpty() ) m_textureManager->loadTexture( materialData.normTexName.str(), foundMaterialInstance->material.normTex );
+    FillMaterial( m_shaderManager, m_textureManager, materialData, foundMaterialInstance->material );
 
     foundMaterialInstance->lastModifiedTime = materialData.lastModifiedTime;
     foundMaterialInstance->refCount = 0;
@@ -229,10 +294,7 @@ zp_bool zpMaterialManager::getMaterial( const zp_char* materialName, zpMaterialH
         zpMaterialInstance* t = ( *b );
         if( t->refCount == 0 )
         {
-            t->material.shader.release();
-            t->material.mainTex.release();
-            t->material.normTex.release();
-            t->material.specTex.release();
+            ClearMaterial( t->material );
 
             foundMaterialInstance = t;
             break;
@@ -267,6 +329,8 @@ void zpMaterialManager::garbageCollect()
         zpMaterialInstance* b = m_materialInstances[ i ];
         if( b->refCount == 0 )
         {
+            ClearMaterial( b->material );
+
             b->~zpMaterialInstance();
 
             g_globalAllocator.free( b );
@@ -301,22 +365,9 @@ void zpMaterialManager::reloadChangedMaterials()
                     continue;
                 }
 
-                m->material.color = materialData.color;
+                ClearMaterial( m->material );
 
-                m->material.mainTexST = materialData.mainTexST;
-                m->material.specTexST = materialData.specTexST;
-                m->material.normTexST = materialData.normTexST;
-
-                m->material.shader.release();
-                m->material.mainTex.release();
-                m->material.normTex.release();
-                m->material.specTex.release();
-
-                if( !materialData.shaderName.isEmpty() ) m_shaderManager->getShader( materialData.shaderName.str(), m->material.shader );
-
-                if( !materialData.mainTexName.isEmpty() ) m_textureManager->loadTexture( materialData.mainTexName.str(), m->material.mainTex );
-                if( !materialData.specTexName.isEmpty() ) m_textureManager->loadTexture( materialData.specTexName.str(), m->material.specTex );
-                if( !materialData.normTexName.isEmpty() ) m_textureManager->loadTexture( materialData.normTexName.str(), m->material.normTex );
+                FillMaterial( m_shaderManager, m_textureManager, materialData, m->material );
             }
         }
     }

@@ -22,7 +22,7 @@ static void SortRenderCommands( const zpVector<zpRenderingCommand>& commands, zp
 {
     ZP_PROFILER_BLOCK();
 
-    sort.reset();
+    sort.clear();
     sort.reserve( commands.size() );
 
     for( zp_size_t i = 0, imax = commands.size(); i < imax; ++i )

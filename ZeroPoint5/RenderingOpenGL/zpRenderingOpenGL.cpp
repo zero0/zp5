@@ -351,8 +351,8 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
         sizeof( zp_float ) * ( 4 ),
         sizeof( zp_float ) * ( 4 + 1 ),
         sizeof( zp_float ) * ( 4 + 1 + 2 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 )
     };
     ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
     ZP_STATIC_ASSERT( ( sizeof( offsets ) / sizeof( offsets[ 0 ] ) ) == zpVertexFormat_Count );
@@ -363,6 +363,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
         prog = cmd->material->shader->programShader.index;
     }
 
+    // TODO: remove when testing complete
     switch( cmd->vertexFormat )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
@@ -414,6 +415,54 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 
     if( cmd->material.isValid() )
     {
+        const zpMaterialPartColor* cb = cmd->material->colors.begin();
+        const zpMaterialPartColor* ce = cmd->material->colors.end();
+        for( ; cb != ce; ++cb )
+        {
+            GLint c = glGetUniformLocation( prog, cb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform4fv( c, 1, cb->color.rgba );
+            }
+        }
+
+        const zpMaterialPartVector* vb = cmd->material->vectors.begin();
+        const zpMaterialPartVector* ve = cmd->material->vectors.end();
+        for( ; vb != ve; ++vb )
+        {
+            GLint c = glGetUniformLocation( prog, vb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform4fv( c, 1, vb->vector.m );
+            }
+        }
+
+        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
+        const zpMaterialPartTexture* te = cmd->material->textures.end();
+        for( ; tb != te; ++tb )
+        {
+            GLint c = glGetUniformLocation( prog, tb->name.str() );
+            if( c >= 0 )
+            {
+                GLint i = static_cast<GLint>( te - tb );
+                glActiveTexture( GL_TEXTURE0 + i );
+                glBindTexture( GL_TEXTURE_2D, tb->texture->texture.index );
+                glUniform1i( c, i );
+            }
+        }
+
+        const zpMaterialPartMatrix* mb = cmd->material->matrices.begin();
+        const zpMaterialPartMatrix* me = cmd->material->matrices.end();
+        for( ; mb != me; ++mb )
+        {
+            GLint c = glGetUniformLocation( prog, mb->name.str() );
+            if( c >= 0 )
+            {
+                glUniformMatrix4fv( c, 1, GL_FALSE, mb->matrix.m );
+            }
+        }
+
+#if 0
         GLint c = glGetUniformLocation( prog, "_Color" );
         if( c >= 0 )
         {
@@ -427,7 +476,6 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
             {
                 glActiveTexture( GL_TEXTURE0 );
                 glBindTexture( GL_TEXTURE_2D, cmd->material->mainTex->texture.index );
-                glUniform1i( t, 0 );
             }
 
             GLint st = glGetUniformLocation( prog, "_MainTex_ST" );
@@ -436,6 +484,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
                 glUniform4fv( st, 1, cmd->material->mainTexST.m );
             }
         }
+#endif
     }
 
     // TODO: update material to set these
@@ -470,11 +519,13 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 
     if( cmd->material.isValid() )
     {
+#if 0
         if( cmd->material->mainTex.isValid() )
         {
             glActiveTexture( GL_TEXTURE0 );
             glBindTexture( GL_TEXTURE_2D, 0 );
         }
+#endif
     }
 
     glUseProgram( 0 );
@@ -571,7 +622,6 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     HGLRC glContext = wglCreateContext( dc );
     ok = wglMakeCurrent( dc, glContext );
     ZP_ASSERT( ok, "" );
-
 #endif
 
     glewExperimental = true;
@@ -588,7 +638,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     {
         zp_printfln( "From GL:    %s", glGetString( GL_VERSION ) );
 
-        GLint flags = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        int flags = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
 #ifdef ZP_DEBUG
         flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
 #endif
@@ -648,11 +698,12 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     const zp_char* vertVC =                             ""
         "\n" "layout(location = 0) in float4 vertex;                      "
         "\n" "layout(location = 1) in fixed4 color;                        "
+        "\n" "uniform fixed4 _Color;               "
         "\n" "out fixed4 fragmentColor;               "
         "\n" "void main()                                "
         "\n" "{                                          "
         "\n" "   gl_Position = mul( _ObjectToWorld, vertex );  "
-        "\n" "   fragmentColor = color;                  "
+        "\n" "   fragmentColor = color * _Color;                  "
         "\n" "}                                          "
         "\n";
     const zp_char* fragVC =                 ""
@@ -668,13 +719,14 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         "\n" "layout(location = 0) in float4 vertex;                          "
         "\n" "layout(location = 1) in fixed4 color;                            "
         "\n" "layout(location = 2) in float2 texcoord;                        "
+        "\n" "uniform fixed4 _Color;               "
         "\n" "Sampler2D( _MainTex );                            "
         "\n" "out fixed4 fragmentColor;                   "
         "\n" "out float2 uv;                             "
         "\n" "void main()                                    "
         "\n" "{                                              "
         "\n" "    gl_Position = mul( _ObjectToWorld, vertex );"
-        "\n" "    fragmentColor = color;                     "
+        "\n" "    fragmentColor = color * _Color;                     "
         "\n" "    uv = TransformTex( _MainTex, texcoord );                             "
         "\n" "}                                              "
         "\n";
@@ -726,7 +778,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
 
         case ZP_RENDERING_COMMNAD_SET_VIEWPORT:
         {
-            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
+            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Viewport" );
             glViewport( cmd->viewport.topX,
                         cmd->viewport.topY,
                         cmd->viewport.width,

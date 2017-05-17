@@ -21,12 +21,6 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     app.setHandle( hInstance );
     app.processCommandLine( lpCmdLine );
 
-    zpString bb( "world" );
-    zpString aa( "hello" );
-    aa.assign( "tes" );
-    aa.assign( "more string" );
-    aa = bb;
-
     app.initialize();
     app.run();
     r = app.shutdown();
