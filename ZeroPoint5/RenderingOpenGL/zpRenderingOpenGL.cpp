@@ -336,7 +336,7 @@ static zpShader g_shaderVCU;
 
 static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 {
-    const zp_int strides[] =
+    constexpr zp_int strides[] =
     {
         sizeof( zp_float ) * 0,
         sizeof( zp_float ) * ( 4 + 1 ),
@@ -345,7 +345,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
         sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
     };
-    const zp_size_t offsets[] =
+    constexpr zp_size_t offsets[] =
     {
         sizeof( zp_float ) * 0,
         sizeof( zp_float ) * ( 4 ),
@@ -461,30 +461,6 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
                 glUniformMatrix4fv( c, 1, GL_FALSE, mb->matrix.m );
             }
         }
-
-#if 0
-        GLint c = glGetUniformLocation( prog, "_Color" );
-        if( c >= 0 )
-        {
-            glUniform4fv( c, 1, cmd->material->color.rgba );
-        }
-
-        if( cmd->material->mainTex.isValid() )
-        {
-            GLint t = glGetUniformLocation( prog, "_MainTex" );
-            if( t >= 0 )
-            {
-                glActiveTexture( GL_TEXTURE0 );
-                glBindTexture( GL_TEXTURE_2D, cmd->material->mainTex->texture.index );
-            }
-
-            GLint st = glGetUniformLocation( prog, "_MainTex_ST" );
-            if( st >= 0 )
-            {
-                glUniform4fv( st, 1, cmd->material->mainTexST.m );
-            }
-        }
-#endif
     }
 
     // TODO: update material to set these
@@ -517,15 +493,38 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );
 
+    GLuint prog = 0;
+    if( cmd->material.isValid() && cmd->material->shader.isValid() )
+    {
+        prog = cmd->material->shader->programShader.index;
+    }
+
+    // TODO: remove when testing complete
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            prog = ( g_shaderVC.programShader.index );
+            break;
+
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            prog = ( g_shaderVCU.programShader.index );
+            break;
+    }
+
     if( cmd->material.isValid() )
     {
-#if 0
-        if( cmd->material->mainTex.isValid() )
+        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
+        const zpMaterialPartTexture* te = cmd->material->textures.end();
+        for( ; tb != te; ++tb )
         {
-            glActiveTexture( GL_TEXTURE0 );
-            glBindTexture( GL_TEXTURE_2D, 0 );
+            GLint c = glGetUniformLocation( prog, tb->name.str() );
+            if( c >= 0 )
+            {
+                GLint i = static_cast<GLint>( te - tb );
+                glActiveTexture( GL_TEXTURE0 + i );
+                glBindTexture( GL_TEXTURE_2D, 0 );
+            }
         }
-#endif
     }
 
     glUseProgram( 0 );
@@ -695,51 +694,51 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
-    const zp_char* vertVC =                             ""
-        "\n" "layout(location = 0) in float4 vertex;                      "
-        "\n" "layout(location = 1) in fixed4 color;                        "
-        "\n" "uniform fixed4 _Color;               "
-        "\n" "out fixed4 fragmentColor;               "
-        "\n" "void main()                                "
-        "\n" "{                                          "
-        "\n" "   gl_Position = mul( _ObjectToWorld, vertex );  "
-        "\n" "   fragmentColor = color * _Color;                  "
-        "\n" "}                                          "
-        "\n";
-    const zp_char* fragVC =                 ""
-        "\n" "in fixed4 fragmentColor;    "
-        //"\n" "out lowp vec4 outColor;        "
-        "\n" "void main()                    "
-        "\n" "{                              "
-        "\n" "   gl_FragColor = fragmentColor;   "
-        "\n" "}                              "
-        "\n";
+    const zp_char* vertVC = R"GLSL(
+        layout(location = 0) in float4 vertex;                      
+        layout(location = 1) in fixed4 color;                        
+        uniform fixed4 _Color;               
+        out fixed4 fragmentColor;               
+        void main()                                
+        {                                          
+           gl_Position = mul( _ObjectToWorld, vertex );  
+           fragmentColor = color * _Color;                  
+        }                                          
+        )GLSL";
+    const zp_char* fragVC = R"GLSL(
+        in fixed4 fragmentColor;    
+        out lowp vec4 outColor;        
+        void main()                    
+        {                              
+           gl_FragColor = fragmentColor;   
+        }                              
+        )GLSL";
 
-    const zp_char* vertVCU = ""
-        "\n" "layout(location = 0) in float4 vertex;                          "
-        "\n" "layout(location = 1) in fixed4 color;                            "
-        "\n" "layout(location = 2) in float2 texcoord;                        "
-        "\n" "uniform fixed4 _Color;               "
-        "\n" "Sampler2D( _MainTex );                            "
-        "\n" "out fixed4 fragmentColor;                   "
-        "\n" "out float2 uv;                             "
-        "\n" "void main()                                    "
-        "\n" "{                                              "
-        "\n" "    gl_Position = mul( _ObjectToWorld, vertex );"
-        "\n" "    fragmentColor = color * _Color;                     "
-        "\n" "    uv = TransformTex( _MainTex, texcoord );                             "
-        "\n" "}                                              "
-        "\n";
-    const zp_char* fragVCU =                                        ""
-        "\n" "Sampler2D( _MainTex );                            "
-        "\n" "in fixed4 fragmentColor;                            "
-        "\n" "in float2 uv;                                      "
-        //"\n" "out lowp vec4 outColor;                                "
-        "\n" "void main()                                            "
-        "\n" "{                                                      "
-        "\n" "    gl_FragColor = fragmentColor * tex2D( _MainTex, uv );"
-        "\n" "}                                                      "
-        "\n";
+    const zp_char* vertVCU = R"GLSL(
+        layout(location = 0) in float4 vertex;                          
+        layout(location = 1) in fixed4 color;                            
+        layout(location = 2) in float2 texcoord;                        
+        uniform fixed4 _Color;               
+        Sampler2D( _MainTex );                            
+        out fixed4 fragmentColor;                  
+        out float2 uv;                             
+        void main()                                    
+        {                                             
+            gl_Position = mul( _ObjectToWorld, vertex );
+            fragmentColor = color * _Color;                     
+            uv = TransformTex( _MainTex, texcoord );                             
+        }                                              
+        )GLSL";
+    const zp_char* fragVCU = R"GLSL(
+        Sampler2D( _MainTex );                
+        in fixed4 fragmentColor;              
+        in float2 uv;                         
+        out lowp vec4 outColor;             
+        void main()                           
+        {                                     
+            gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
+        }                                                      
+        )GLSL";
 
     CreateShaderOpenGL( "fragVC", vertVC, fragVC, g_shaderVC );
     CreateShaderOpenGL( "fragVCU", vertVCU, fragVCU, g_shaderVCU );
@@ -985,72 +984,60 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
     // vertex shader
     shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
 
-    const zp_char* versionHeader = ""
-        //"\n" "#if ( __VERSION__ > 120 )   "
-        "\n" "#version 330 core          "
-        "\n" "#define tex2D( sampler, uv )      texture( sampler, uv )"
-        "\n" "#define BeginCBuffer( name )"
-        "\n" "#define EndCBuffer()"
-        "\n" "#define mul( a, b )               ( (a) * (b) )"
-        "\n" "#define float2                    highp vec2"
-        "\n" "#define float3                    highp vec3"
-        "\n" "#define float4                    highp vec4"
-        "\n" "#define float4x4                  highp mat4"
-        "\n" "#define half                      mediump float"
-        "\n" "#define half2                     mediump vec2"
-        "\n" "#define half3                     mediump vec3"
-        "\n" "#define half4                     mediump vec4"
-        "\n" "#define fixed                     lowp float"
-        "\n" "#define fixed2                    lowp vec2"
-        "\n" "#define fixed3                    lowp vec3"
-        "\n" "#define fixed4                    lowp vec4"
-        "\n" "#define TransformTex( name, uv )  ( (uv) * name##_ST.xy + name##_ST.zw )"
-        "\n" "#define Sampler2D( name )         uniform sampler2D name; uniform float4 name##_ST"
-        //"\n" "#else                       "
-        //"\n" "# version 120               "
-        //"\n" "# define tex2D( sampler, uv )     texture2D( sampler, uv )"
-        //"\n" "# define highp"
-        //"\n" "# define mediump"
-        //"\n" "# define lowp"
-        //"\n" "#endif                      "
-        "\n";
+    const zp_char* versionHeader = R"GLSL(
+        #version 330 core
+        #define tex2D( sampler, uv )      texture( sampler, uv )
+        #define BeginCBuffer( name )
+        #define EndCBuffer()
+        #define mul( a, b )               ( (a) * (b) )
+        #define float2                    highp vec2
+        #define float3                    highp vec3
+        #define float4                    highp vec4
+        #define float4x4                  highp mat4
+        #define half                      mediump float
+        #define half2                     mediump vec2
+        #define half3                     mediump vec3
+        #define half4                     mediump vec4
+        #define fixed                     lowp float
+        #define fixed2                    lowp vec2
+        #define fixed3                    lowp vec3
+        #define fixed4                    lowp vec4
+        #define TransformTex( name, uv )  ( (uv) * name##_ST.xy + name##_ST.zw )
+        #define Sampler2D( name )         uniform sampler2D name; uniform float4 name##_ST
+        )GLSL";
 
-    const zp_char* commonHeader = ""
-        "\n" "BeginCBuffer( PerFrame )              "
-        "\n" "    uniform float4 _Time;               "
-        "\n" "EndCBuffer()                          "
+    const zp_char* commonHeader = R"GLSL(
+        BeginCBuffer( PerFrame )             
+            uniform float4 _Time;            
+        EndCBuffer()                         
 
-        "\n" "BeginCBuffer( PerDrawCall )           "
-        "\n" "    uniform float4x4 _ObjectToWorld;      "
-        "\n" "EndCBuffer()                          "
+        BeginCBuffer( PerDrawCall )          
+            uniform float4x4 _ObjectToWorld; 
+        EndCBuffer()                         
 
-        "\n" "BeginCBuffer( Camera )                "
-        "\n" "    uniform float4x4 _ViewPorjection;     "
-        "\n" "    uniform float4x4 _InvViewPorjection;  "
-        "\n" "    uniform float4 _CameraUp;           "
-        "\n" "    uniform float4 _CameraLookTo;       "
-        "\n" "    uniform float4 _CameraPosition;     "
-        "\n" "    uniform float4 _CameraData;         "
-        "\n" "EndCBuffer()                          "
+        BeginCBuffer( Camera )               
+            uniform float4x4 _ViewPorjection;     
+            uniform float4x4 _InvViewPorjection;  
+            uniform float4 _CameraUp;          
+            uniform float4 _CameraLookTo;      
+            uniform float4 _CameraPosition;    
+            uniform float4 _CameraData;        
+        EndCBuffer()                          
 
-        "\n" "float4 ObjectToClipSpace( in float4 vertex )   "
-        "\n" "{"
-        "\n" "  return mul( _ViewPorjection, mul( _ObjectToWorld, vertex ) );"
-        "\n" "}"
+        float4 ObjectToClipSpace( in float4 vertex )   
+        {
+          return mul( _ViewPorjection, mul( _ObjectToWorld, vertex ) );
+        }
 
-        "\n";
+        )GLSL";
 
-    const zp_char* vsHeader = ""
-        "\n" "#define VERTEX   "
-        //"\n" "# define in attribute"
-        //"\n" "# define out varying"
-        "\n";
+    const zp_char* vsHeader = R"GLSL(
+        #define VERTEX   
+        )GLSL";
 
-    const zp_char* psHeader = ""
-        "\n" "#define FRAGMENT "
-        //"\n" "# define in varying"
-        //"\n" "# define out"
-        "\n";
+    const zp_char* psHeader = R"GLSL(
+        #define FRAGMENT 
+        )GLSL";
 
     const zp_char* vs[] =
     {
