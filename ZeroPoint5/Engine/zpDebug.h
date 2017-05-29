@@ -75,7 +75,7 @@ public:
     void beginVertical();
     void endVertical();
 
-    void beginHorizontal();
+    void beginHorizontal( zp_int width );
     void endHorizontal();
 
     void beginScrollArea( zpVector2i& scroll );
@@ -83,7 +83,7 @@ public:
 
     void label( const zp_char* text );
     zp_bool button( const zp_char* label );
-    void box( zp_int width, zp_int height );
+    void box( zp_int x, zp_int y, zp_int width, zp_int height );
 
 private:
     const zp_size_t npos = static_cast<zp_size_t>( -1 );

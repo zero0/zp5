@@ -130,11 +130,11 @@ void zpRenderingEngine::setWindowSize( const zpVector2i& size )
     //m_engine.setWindowSize( size );
 }
 
-void zpRenderingEngine::present()
+void zpRenderingEngine::present( zp_size_t frameIndex )
 {
     ZP_PROFILER_BLOCK();
 
-    BeginFrameOpenGL();
+    BeginFrameOpenGL( frameIndex );
 
     m_immidiateContext.fillBuffers();
 
@@ -143,7 +143,7 @@ void zpRenderingEngine::present()
     m_immidiateContext.flipBuffers();
 
     zpRenderingStat stat;
-    EndFrameOpenGL( stat );
+    EndFrameOpenGL( frameIndex, stat );
 
     PresentOpenGL( m_hDC, m_hContext );
 

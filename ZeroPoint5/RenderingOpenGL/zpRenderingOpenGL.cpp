@@ -324,8 +324,9 @@ union glQuery
     {
         GLuint timeElapsed;
         GLuint primitivesGenerated;
+        GLuint samplesPassed;
     };
-    GLuint q[ 2 ];
+    GLuint q[ 3 ];
 };
 
 static zp_size_t g_frameIndex;
@@ -702,7 +703,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         void main()                                
         {                                          
            gl_Position = mul( _ObjectToWorld, vertex );  
-           fragmentColor = color * _Color;                  
+           fragmentColor = color;                  
         }                                          
         )GLSL";
     const zp_char* fragVC = R"GLSL(
@@ -747,8 +748,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
-    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[0].q), g_queries[0].q );
-    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[1].q), g_queries[1].q );
+    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[0].q ), g_queries[0].q );
+    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[1].q ), g_queries[1].q );
 
     HGLRC context = static_cast<HGLRC>( hContext );
 
@@ -978,11 +979,8 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
     zpShader empty = {};
     shader = empty;
 
-    GLint result;
-    GLint infoLength;
-
-    // vertex shader
-    shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
+    // TODO: add to method
+    const zp_char* geometroyShaderSource = ZP_NULL;
 
     const zp_char* versionHeader = R"GLSL(
         #version 330 core
@@ -1007,99 +1005,154 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
         )GLSL";
 
     const zp_char* commonHeader = R"GLSL(
-        BeginCBuffer( PerFrame )             
-            uniform float4 _Time;            
-        EndCBuffer()                         
+        BeginCBuffer( PerFrame )
+            uniform float4 _Time;
+        EndCBuffer()
 
-        BeginCBuffer( PerDrawCall )          
-            uniform float4x4 _ObjectToWorld; 
-        EndCBuffer()                         
+        BeginCBuffer( PerDrawCall )
+            uniform float4x4 _ObjectToWorld;
+        EndCBuffer()
 
-        BeginCBuffer( Camera )               
-            uniform float4x4 _ViewPorjection;     
-            uniform float4x4 _InvViewPorjection;  
-            uniform float4 _CameraUp;          
-            uniform float4 _CameraLookTo;      
-            uniform float4 _CameraPosition;    
-            uniform float4 _CameraData;        
-        EndCBuffer()                          
+        BeginCBuffer( Camera )
+            uniform float4x4 _ViewPorjection;
+            uniform float4x4 _InvViewPorjection;
+            uniform float4 _CameraUp;
+            uniform float4 _CameraLookTo;
+            uniform float4 _CameraPosition;
+            uniform float4 _CameraData;
+        EndCBuffer()
 
-        float4 ObjectToClipSpace( in float4 vertex )   
+        float4 ObjectToClipSpace( in float4 vertex )
         {
           return mul( _ViewPorjection, mul( _ObjectToWorld, vertex ) );
         }
-
         )GLSL";
 
     const zp_char* vsHeader = R"GLSL(
-        #define VERTEX   
+        #define VERTEX
         )GLSL";
 
     const zp_char* psHeader = R"GLSL(
         #define FRAGMENT 
         )GLSL";
 
-    const zp_char* vs[] =
-    {
-        versionHeader,
-        commonHeader,
-        vsHeader,
-        vertexShaderSource
-    };
-    glShaderSource( shader.vertexShader.index, ZP_ARRAY_SIZE( vs ), vs, ZP_NULL );
-    glCompileShader( shader.vertexShader.index );
+    const zp_char* gsHeader = R"GLSL(
+        #define GEOMETRY
+        )GLSL";
 
-    glGetShaderiv( shader.vertexShader.index, GL_COMPILE_STATUS, &result );
-    glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    if( infoLength )
+    GLint result;
+    GLint infoLength;
+    zp_char buffer[ 512 ];
+
+    // vertex shader
+    if( vertexShaderSource )
     {
-        zp_char buffer[ 512 ];
-        glGetShaderInfoLog( shader.vertexShader.index, 512, ZP_NULL, buffer );
-        zp_printfln( "Vertex Shader Error: %s", buffer );
+        const zp_char* vs[] =
+        {
+            versionHeader,
+            commonHeader,
+            vsHeader,
+            vertexShaderSource
+        };
+
+        shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
+
+        glShaderSource( shader.vertexShader.index, ZP_ARRAY_SIZE( vs ), vs, ZP_NULL );
+        glCompileShader( shader.vertexShader.index );
+
+        glGetShaderiv( shader.vertexShader.index, GL_COMPILE_STATUS, &result );
+        glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+        if( infoLength )
+        {
+            glGetShaderInfoLog( shader.vertexShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+            zp_printfln( "Vertex Shader Error: %s", buffer );
+        }
     }
 
     // fragment shader
-    shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
-
-    const zp_char* ps[] =
+    if( fragmentShaderSource )
     {
-        versionHeader,
-        commonHeader,
-        psHeader,
-        fragmentShaderSource
-    };
-    glShaderSource( shader.fragmentShader.index, ZP_ARRAY_SIZE( ps ), ps, ZP_NULL );
-    glCompileShader( shader.fragmentShader.index );
+        const zp_char* ps[] =
+        {
+            versionHeader,
+            commonHeader,
+            psHeader,
+            fragmentShaderSource
+        };
 
-    glGetShaderiv( shader.fragmentShader.index, GL_COMPILE_STATUS, &result );
-    glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    if( infoLength )
-    {
-        zp_char buffer[ 512 ];
-        glGetShaderInfoLog( shader.fragmentShader.index, 512, ZP_NULL, buffer );
-        zp_printfln( "Fragment Shader Error: %s", buffer );
+        shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
+
+        glShaderSource( shader.fragmentShader.index, ZP_ARRAY_SIZE( ps ), ps, ZP_NULL );
+        glCompileShader( shader.fragmentShader.index );
+
+        glGetShaderiv( shader.fragmentShader.index, GL_COMPILE_STATUS, &result );
+        glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+        if( infoLength )
+        {
+            glGetShaderInfoLog( shader.fragmentShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+            zp_printfln( "Fragment Shader Error: %s", buffer );
+        }
     }
 
-    // program
+    // geometry shader
+    if( geometroyShaderSource )
+    {
+        const zp_char* gs[] =
+        {
+            versionHeader,
+            commonHeader,
+            gsHeader,
+            geometroyShaderSource
+        };
+
+        shader.geometryShader.index = glCreateShader( GL_GEOMETRY_SHADER );
+
+        glShaderSource( shader.geometryShader.index, ZP_ARRAY_SIZE( gs ), gs, ZP_NULL );
+        glCompileShader( shader.geometryShader.index );
+
+        glGetShaderiv( shader.geometryShader.index, GL_COMPILE_STATUS, &result );
+        glGetShaderiv( shader.geometryShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+        if( infoLength )
+        {
+            glGetShaderInfoLog( shader.geometryShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+            zp_printfln( "Geometry Shader Error: %s", buffer );
+        }
+    }
+
+    // link program
     shader.programShader.index = glCreateProgram();
-    glAttachShader( shader.programShader.index, shader.vertexShader.index );
-    glAttachShader( shader.programShader.index, shader.fragmentShader.index );
+    if( shader.vertexShader.index )   glAttachShader( shader.programShader.index, shader.vertexShader.index );
+    if( shader.fragmentShader.index ) glAttachShader( shader.programShader.index, shader.fragmentShader.index );
+    if( shader.geometryShader.index ) glAttachShader( shader.programShader.index, shader.geometryShader.index );
+
     glLinkProgram( shader.programShader.index );
 
     glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
     glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
     if( infoLength )
     {
-        zp_char buffer[ 512 ];
-        glGetProgramInfoLog( shader.programShader.index, 512, ZP_NULL, buffer );
+        glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
         zp_printfln( "Program Link Error: %s", buffer );
     }
 
-    glDetachShader( shader.programShader.index, shader.vertexShader.index );
-    glDetachShader( shader.programShader.index, shader.fragmentShader.index );
+    // clean-up shaders
+    if( shader.vertexShader.index )
+    {
+        glDetachShader( shader.programShader.index, shader.vertexShader.index );
+        glDeleteShader( shader.vertexShader.index );
+    }
 
-    glDeleteShader( shader.vertexShader.index );
-    glDeleteShader( shader.fragmentShader.index );
+    if( shader.fragmentShader.index )
+    {
+        glDetachShader( shader.programShader.index, shader.fragmentShader.index );
+        glDeleteShader( shader.fragmentShader.index );
+    }
+    
+    if( shader.geometryShader.index )
+    {
+        glDetachShader( shader.programShader.index, shader.geometryShader.index );
+        glDeleteShader( shader.geometryShader.index );
+    }
 
 #if ZP_DEBUG
     GLsizei len = static_cast<GLsizei>( zp_strlen( shaderName ) );
@@ -1108,6 +1161,7 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
 
     shader.vertexShader.index = 0;
     shader.fragmentShader.index = 0;
+    shader.geometryShader.index = 0;
 }
 
 void DestroyShaderOpenGL( zpShader& shader )
@@ -1126,6 +1180,12 @@ void DestroyShaderOpenGL( zpShader& shader )
         shader.fragmentShader.index = 0;
     }
 
+    if( shader.geometryShader.index )
+    {
+        glDeleteShader( shader.geometryShader.index );
+        shader.geometryShader.index = 0;
+    }
+
     if( shader.programShader.index )
     {
         glDeleteProgram( shader.programShader.index );
@@ -1133,29 +1193,35 @@ void DestroyShaderOpenGL( zpShader& shader )
     }
 }
 
-void BeginFrameOpenGL()
+void BeginFrameOpenGL( zp_size_t frameIndex )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
 
-    glBeginQuery( GL_TIME_ELAPSED, g_queries[ g_frameIndex ].timeElapsed );
-    glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ g_frameIndex ].primitivesGenerated );
+    zp_size_t sampleIndex = frameIndex % 2;
+    glBeginQuery( GL_TIME_ELAPSED, g_queries[ sampleIndex ].timeElapsed );
+    glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ sampleIndex ].primitivesGenerated );
+    glBeginQuery( GL_SAMPLES_PASSED, g_queries[ sampleIndex ].samplesPassed );
 }
 
-void EndFrameOpenGL( zpRenderingStat& stat )
+void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "End Frame" );
 
     glEndQuery( GL_TIME_ELAPSED );
     glEndQuery( GL_PRIMITIVES_GENERATED );
+    glEndQuery( GL_SAMPLES_PASSED );
 
-    g_frameIndex = ( g_frameIndex + 1 ) % 2;
+    zp_size_t sampleIndex = ( frameIndex + 1 ) % 2;
 
     GLuint64 timeElapsed;
     GLuint64 primitviesGenerated;
-    glGetQueryObjectui64v( g_queries[ g_frameIndex ].timeElapsed, GL_QUERY_RESULT_NO_WAIT, &timeElapsed );
-    glGetQueryObjectui64v( g_queries[ g_frameIndex ].primitivesGenerated, GL_QUERY_RESULT_NO_WAIT, &primitviesGenerated );
+    GLuint64 samplesPassed;
+    glGetQueryObjectui64v( g_queries[ sampleIndex ].timeElapsed, GL_QUERY_RESULT_NO_WAIT, &timeElapsed );
+    glGetQueryObjectui64v( g_queries[ sampleIndex ].primitivesGenerated, GL_QUERY_RESULT_NO_WAIT, &primitviesGenerated );
+    glGetQueryObjectui64v( g_queries[ sampleIndex ].samplesPassed, GL_QUERY_RESULT_NO_WAIT, &samplesPassed );
 
-    stat.frameIndex = g_frameIndex;
+    stat.frameIndex = frameIndex;
     stat.frameTime = timeElapsed;
     stat.primitiveCount = primitviesGenerated;
+    stat.samplesPassed = samplesPassed;
 }

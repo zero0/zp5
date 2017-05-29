@@ -248,9 +248,10 @@ struct zpSortRenderCommandData
 
 struct zpRenderingStat
 {
-    zp_size_t frameIndex;
-    zp_size_t frameTime;
-    zp_size_t primitiveCount;
+    zp_ulong frameIndex;
+    zp_ulong frameTime;
+    zp_ulong primitiveCount;
+    zp_ulong samplesPassed;
 };
 
 class zpRenderingEngine;

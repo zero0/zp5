@@ -13,7 +13,7 @@ public:
 
     void setWindowSize( const zpVector2i& size );
 
-    void present();
+    void present( zp_size_t frameIndex );
 
     zp_bool isVSync() const;
     void setVSync( zp_bool vsync );

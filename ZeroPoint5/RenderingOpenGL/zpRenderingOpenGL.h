@@ -20,7 +20,7 @@ void DestroyTextureOpenGL( zpTexture& texture );
 void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
 void DestroyShaderOpenGL( zpShader& shader );
 
-void BeginFrameOpenGL();
-void EndFrameOpenGL( zpRenderingStat& stat );
+void BeginFrameOpenGL( zp_size_t frameIndex );
+void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat );
 
 #endif // !ZP_RENDERING_OPENGL_H

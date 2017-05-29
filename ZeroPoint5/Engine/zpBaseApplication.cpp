@@ -19,7 +19,8 @@ enum
 {
     ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS =    1 << 0,
     ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS = 1 << 1,
-    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS =   1 << 2,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_TIMELINE_STATS = 1 << 2,
+    ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS =   1 << 3,
 };
 
 #define ZP_WINDOW_CLASS_NAME "zpWindowClass"
@@ -189,6 +190,8 @@ zpSceneHandle sc;
 void zpBaseApplication::setup()
 {
     ZP_PROFILER_BLOCK();
+    
+    m_frameCount = 0;
 
     onPreSetup();
 
@@ -612,6 +615,10 @@ void zpBaseApplication::handleInput()
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_F3 ) )
     {
+        m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_TIMELINE_STATS;
+    }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_F4 ) )
+    {
         m_debugFlags ^= ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_O ) )
@@ -700,14 +707,14 @@ void zpBaseApplication::render()
     ctx->setViewport( vp );
     ctx->clear( clearColor, 1, 0 );
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, tm );
-    ctx->setTransform( viewProj );
-    ctx->addVertexData( v0, zpColor32::Red, uv0 );
-    ctx->addVertexData( v1, zpColor32::Green, uv1 );
-    ctx->addVertexData( v2, zpColor32::Blue, uv2 );
-    ctx->addVertexData( v3, zpColor32::White, uv3 );
-    ctx->addQuadIndex( 0, 1, 2, 3 );
-    ctx->endDraw();
+    //ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, tm );
+    //ctx->setTransform( viewProj );
+    //ctx->addVertexData( v0, zpColor32::Red, uv0 );
+    //ctx->addVertexData( v1, zpColor32::Green, uv1 );
+    //ctx->addVertexData( v2, zpColor32::Blue, uv2 );
+    //ctx->addVertexData( v3, zpColor32::White, uv3 );
+    //ctx->addQuadIndex( 0, 1, 2, 3 );
+    //ctx->endDraw();
 
     m_meshRendererComponentManager.render( ctx );
 
@@ -718,7 +725,7 @@ void zpBaseApplication::render()
         debugDrawGUI();
     }
 
-    m_renderingEngine.present();
+    m_renderingEngine.present( m_frameCount );
 }
 
 void zpBaseApplication::debugDrawGUI()
@@ -792,6 +799,46 @@ void zpBaseApplication::debugDrawGUI()
         m_debugGUI.label( buff );
 
     }
+
+    if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_TIMELINE_STATS )
+    {
+        const zpProfilerFrame* bf;
+        const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
+        const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
+
+        zp_float totalTime = static_cast<zp_float>( tl->frameEndTime - tl->frameStartTime );
+
+        const zp_int totalWidth = 320;
+        const zp_int timelineHeight = 12;
+
+        zp_float width = 0;
+        m_debugGUI.beginHorizontal( totalWidth );
+        m_debugGUI.beginVertical();
+
+        m_debugGUI.box( 0, 0, totalWidth, timelineHeight );
+
+        for( bf = g_profiler.getPreviousFrameBegin(); bf != ef; ++bf )
+        {
+            zp_int x = static_cast<zp_int>( totalWidth * static_cast<zp_float>( bf->startTime - tl->frameStartTime ) / totalTime );
+            zp_int w = static_cast<zp_int>( totalWidth * static_cast<zp_float>( bf->endTime - bf->startTime ) / totalTime );
+
+            m_debugGUI.box( x, 0, w, timelineHeight );
+        }
+
+        m_debugGUI.endVertical();
+        m_debugGUI.beginVertical();
+
+        m_debugGUI.label( "Frame Time" );
+
+        for( bf = g_profiler.getPreviousFrameBegin(); bf != ef; ++bf )
+        {
+            m_debugGUI.label( bf->functionName );
+        }
+
+        m_debugGUI.endVertical();
+        m_debugGUI.endHorizontal();
+    }
+
 #endif
 
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS )

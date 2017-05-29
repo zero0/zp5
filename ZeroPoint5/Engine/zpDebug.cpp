@@ -136,6 +136,31 @@ void zpDebugGUI::beginVertical()
 {
     ZP_ASSERT( !m_widgetStack.isEmpty(), "" );
 
+    zp_size_t parent = m_widgetStack.back();
+    zp_size_t index = m_widgets.size();
+
+    m_widgetStack.pushBack( index );
+    zpDebugGUIWidget& box = m_widgets.pushBackEmpty();
+    zpDebugGUIWidget& parentWidget = m_widgets[ parent ];
+
+    box.frameUpdated = npos;
+    box.frameRendered = npos;
+    box.parentWidget = parent;
+    box.type = ZP_WIDGET_TYPE_CONTAINER;
+
+    box.style = m_style;
+    box.layout = parentWidget.layout;
+    box.layout.rect.position = parentWidget.layout.cursor;
+    box.layout.rect.width = box.layout.rect.width;
+    box.layout.rect.height = box.layout.rect.height;
+    box.layout.direction.x = 0;
+    box.layout.direction.y = 1;
+
+    parentWidget.layout.cursor.x += parentWidget.layout.direction.x * ( box.layout.rect.width + parentWidget.layout.margin.x );
+    parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
+
+    box.text[ 0 ] = '\0';
+    parentWidget.children.pushBack( index );
 }
 
 void zpDebugGUI::endVertical()
@@ -143,14 +168,40 @@ void zpDebugGUI::endVertical()
     m_widgetStack.popBack();
 }
 
-void zpDebugGUI::beginHorizontal()
+void zpDebugGUI::beginHorizontal( zp_int width )
 {
+    ZP_ASSERT( !m_widgetStack.isEmpty(), "" );
 
+    zp_size_t parent = m_widgetStack.back();
+    zp_size_t index = m_widgets.size();
+
+    m_widgetStack.pushBack( index );
+    zpDebugGUIWidget& box = m_widgets.pushBackEmpty();
+    zpDebugGUIWidget& parentWidget = m_widgets[ parent ];
+
+    box.frameUpdated = npos;
+    box.frameRendered = npos;
+    box.parentWidget = parent;
+    box.type = ZP_WIDGET_TYPE_CONTAINER;
+
+    box.style = m_style;
+    box.layout = parentWidget.layout;
+    box.layout.rect.position = parentWidget.layout.cursor;
+    box.layout.rect.width = width < 0 ? box.layout.rect.width : width;
+    box.layout.rect.height = box.layout.rect.height + box.layout.margin.y * 2;
+    box.layout.direction.x = 1;
+    box.layout.direction.y = 0;
+
+    parentWidget.layout.cursor.x += parentWidget.layout.direction.x * ( box.layout.rect.width + parentWidget.layout.margin.x );
+    parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
+
+    box.text[ 0 ] = '\0';
+    parentWidget.children.pushBack( index );
 }
 
 void zpDebugGUI::endHorizontal()
 {
-
+    m_widgetStack.popBack();
 }
 
 void zpDebugGUI::beginScrollArea( zpVector2i& scroll )
@@ -176,6 +227,7 @@ void zpDebugGUI::label( const zp_char* text )
     label.frameUpdated = npos;
     label.frameRendered = npos;
     label.parentWidget = parent;
+    label.type = ZP_WIDGET_TYPE_LABEL;
 
     label.style = m_style;
     label.layout = parentWidget.layout;
@@ -186,7 +238,6 @@ void zpDebugGUI::label( const zp_char* text )
     parentWidget.layout.cursor.x += parentWidget.layout.direction.x * ( label.layout.rect.width + parentWidget.layout.margin.x );
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( label.layout.rect.height + parentWidget.layout.margin.y );
 
-    label.type = ZP_WIDGET_TYPE_LABEL;
     zp_size_t len = zp_strlen( text );
     zp_memcpy( label.text, len, text, len );
     label.text[ len ] = '\0';
@@ -219,7 +270,7 @@ zp_bool zpDebugGUI::button( const zp_char* label )
     return false;
 }
 
-void zpDebugGUI::box( zp_int width, zp_int height )
+void zpDebugGUI::box( zp_int x, zp_int y, zp_int width, zp_int height )
 {
     ZP_ASSERT( !m_widgetStack.isEmpty(), "" );
 
@@ -237,6 +288,8 @@ void zpDebugGUI::box( zp_int width, zp_int height )
     box.style = m_style;
     box.layout = parentWidget.layout;
     box.layout.rect.position = parentWidget.layout.cursor;
+    box.layout.rect.x += x;
+    box.layout.rect.y += y;
     box.layout.rect.width = width < 0 ? box.layout.rect.width : width;
     box.layout.rect.height = height < 0 ? box.layout.rect.height : height;
 
@@ -312,18 +365,18 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 ctx->addVertexData( v2, m_style.backgroundColor );
                 ctx->addVertexData( v3, m_style.backgroundColor );
 
-                v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
-                v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
-                v2 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
-                v3 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
-                
-                ctx->addVertexData( v0, m_style.foregroundColor );
-                ctx->addVertexData( v1, m_style.foregroundColor );
-                ctx->addVertexData( v2, m_style.foregroundColor );
-                ctx->addVertexData( v3, m_style.foregroundColor );
+                //v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
+                //v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
+                //v2 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
+                //v3 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
+                //
+                //ctx->addVertexData( v0, m_style.foregroundColor );
+                //ctx->addVertexData( v1, m_style.foregroundColor );
+                //ctx->addVertexData( v2, m_style.foregroundColor );
+                //ctx->addVertexData( v3, m_style.foregroundColor );
 
                 ctx->addQuadIndex( vertexCount + 0, vertexCount + 1, vertexCount + 2, vertexCount + 3 );
-                ctx->addQuadIndex( vertexCount + 4, vertexCount + 5, vertexCount + 6, vertexCount + 7 );
+                //ctx->addQuadIndex( vertexCount + 4, vertexCount + 5, vertexCount + 6, vertexCount + 7 );
 
             } break;
 
