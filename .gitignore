@@ -254,3 +254,6 @@ ModelManifest.xml
 install_manifest.txt
 **/RelWithDebInfo/
 *.cap
+
+# VSCode
+.vscode/
