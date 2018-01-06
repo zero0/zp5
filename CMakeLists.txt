@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.6 )
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
-project( ZeroPoint LANGUAGES C CXX )
+#project( ZeroPoint LANGUAGES C CXX )
 
 set( PLATFORM_NAME Win )
 set( PLATFORM_ARCH x64 )

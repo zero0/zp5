@@ -25,7 +25,7 @@ source_group( Headers FILES
 source_group( Source FILES
     ${ZP_ASSET_COMPILER_SOURCE}
 )
-include_directories( ${ZeroPoint5_SOURCE_DIR} )
+include_directories( "${ZeroPoint5_SOURCE_DIR}/include" )
 include_directories( "include" )
 
 add_executable( AssetCompiler

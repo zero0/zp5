@@ -20,53 +20,51 @@ option( ZP_USE_SIMD "Build ZeroPoint5 with SIMD" ON )
 option( ZP_USE_OPENGL_RENDERING "Build ZeroPoint5 with OpenGL Rendering" ON )
 option( ZP_USE_D3D_RENDERING "Build ZeroPoint5 with D3D Rendering" OFF )
 
-include_directories( ${PROJECT_SOURCE_DIR} )
+include_directories( "${PROJECT_SOURCE_DIR}/include" )
 
 # Core Config
 configure_file(
-    "${PROJECT_SOURCE_DIR}/Core/zpConfig.h.in"
-    "${PROJECT_BINARY_DIR}/Core/zpConfig.h"
+    "${PROJECT_SOURCE_DIR}/include/Core/zpConfig.h.in"
+    "${PROJECT_BINARY_DIR}/include/Core/zpConfig.h"
 )
 
 # file( GLOB ZP_CORE_SOURCE "Core/*.cpp" )
 # file( GLOB ZP_CORE_HEADER "Core/*.h" )
 # file( GLOB ZP_CORE_INLINE "Core/*.inl" )
 set( ZP_CORE_SOURCE
-    "Core/zpBlockAllocator.cpp"
-    "Core/zpCore.cpp"
-    "Core/zpDataBuffer.cpp"
-    "Core/zpFile.cpp"
-    "Core/zpMath.cpp"
-    "Core/zpProfiler.cpp"
-    "Core/zpString.cpp"
-    "Core/zpTime.cpp"
+    "src/Core/zpBlockAllocator.cpp"
+    "src/Core/zpCore.cpp"
+    "src/Core/zpDataBuffer.cpp"
+    "src/Core/zpFile.cpp"
+    "src/Core/zpMath.cpp"
+    "src/Core/zpProfiler.cpp"
+    "src/Core/zpString.cpp"
+    "src/Core/zpTime.cpp"
     )
 set( ZP_CORE_HEADER
-    "Core/zpAllocator.h"
-    "Core/zpBlockAllocator.h"
-    "Core/zpConfig.h"
-    "Core/zpCore.h"
-    "Core/zpDataBuffer.h"
-    "Core/zpFile.h"
-    "Core/zpMath.h"
-    "Core/zpProfiler.h"
-    "Core/zpStackAllocator.h"
-    "Core/zpString.h"
-    "Core/zpTime.h"
-    "Core/zpVector.h"
+    "include/Core/zpAllocator.h"
+    "include/Core/zpBlockAllocator.h"
+    "include/Core/zpConfig.h"
+    "include/Core/zpCore.h"
+    "include/Core/zpDataBuffer.h"
+    "include/Core/zpFile.h"
+    "include/Core/zpMath.h"
+    "include/Core/zpProfiler.h"
+    "include/Core/zpStackAllocator.h"
+    "include/Core/zpString.h"
+    "include/Core/zpTime.h"
+    "include/Core/zpVector.h"
     )
 set( ZP_CORE_INLINE
-    "Core/zpCore.inl"
-    "Core/zpMathSimd.inl"
-    "Core/zpStackAllocator.inl"
-    "Core/zpVector.inl"
+    "include/Core/zpCore.inl"
+    "include/Core/zpMathSimd.inl"
+    "include/Core/zpStackAllocator.inl"
+    "include/Core/zpVector.inl"
     )
 
 source_group( Headers FILES
-    ${ZP_CORE_HEADER}
-)
-source_group( Inline FILES
     ${ZP_CORE_INLINE}
+    ${ZP_CORE_HEADER}
 )
 source_group( Source FILES
     ${ZP_CORE_SOURCE}
@@ -78,30 +76,30 @@ source_group( Source FILES
 # file( GLOB ZP_ENGINE_INLINE "Engine/*.inl" )
 
 set( ZP_ENGINE_SOURCE
-    "Engine/zpBaseApplication.cpp"
-    "Engine/zpDebug.cpp"
-    "Engine/zpInput.cpp"
-    "Engine/zpMain.cpp"
-    "Engine/zpMeshRendererComponent.cpp"
-    "Engine/zpObject.cpp"
-    "Engine/zpObjectManager.cpp"
-    "Engine/zpParticleEmitterComponent.cpp"
-    "Engine/zpScene.cpp"
-    "Engine/zpTransformComponent.cpp" )
+    "src/Engine/zpBaseApplication.cpp"
+    "src/Engine/zpDebug.cpp"
+    "src/Engine/zpInput.cpp"
+    "src/Engine/zpMain.cpp"
+    "src/Engine/zpMeshRendererComponent.cpp"
+    "src/Engine/zpObject.cpp"
+    "src/Engine/zpObjectManager.cpp"
+    "src/Engine/zpParticleEmitterComponent.cpp"
+    "src/Engine/zpScene.cpp"
+    "src/Engine/zpTransformComponent.cpp" )
 set( ZP_ENGINE_HEADER
-    "Engine/zpAllComponents.h"
-    "Engine/zpBaseApplication.h"
-    "Engine/zpComponent.h"
-    "Engine/zpDebug.h"
-    "Engine/zpEngine.h"
-    "Engine/zpInput.h"
-    "Engine/zpMain.h"
-    "Engine/zpMeshRendererComponent.h"
-    "Engine/zpObject.h"
-    "Engine/zpObjectManager.h"
-    "Engine/zpParticleEmitterComponent.h"
-    "Engine/zpScene.h"
-    "Engine/zpTransformComponent.h" )
+    "include/Engine/zpAllComponents.h"
+    "include/Engine/zpBaseApplication.h"
+    "include/Engine/zpComponent.h"
+    "include/Engine/zpDebug.h"
+    "include/Engine/zpEngine.h"
+    "include/Engine/zpInput.h"
+    "include/Engine/zpMain.h"
+    "include/Engine/zpMeshRendererComponent.h"
+    "include/Engine/zpObject.h"
+    "include/Engine/zpObjectManager.h"
+    "include/Engine/zpParticleEmitterComponent.h"
+    "include/Engine/zpScene.h"
+    "include/Engine/zpTransformComponent.h" )
 
 source_group( Headers FILES
     ${ZP_ENGINE_HEADER}
@@ -116,24 +114,24 @@ source_group( Source FILES
 # file( GLOB ZP_RENDERING_INLINE "Rendering/*.inl" )
 
 set( ZP_RENDERING_SOURCE
-    "Rendering/zpCamera.cpp"
-    "Rendering/zpFont.cpp"
-    "Rendering/zpMaterial.cpp"
-    "Rendering/zpMesh.cpp"
-    "Rendering/zpRenderingContext.cpp"
-    "Rendering/zpRenderingEngine.cpp"
-    "Rendering/zpShader.cpp"
-    "Rendering/zpTexture.cpp" )
+    "src/Rendering/zpCamera.cpp"
+    "src/Rendering/zpFont.cpp"
+    "src/Rendering/zpMaterial.cpp"
+    "src/Rendering/zpMesh.cpp"
+    "src/Rendering/zpRenderingContext.cpp"
+    "src/Rendering/zpRenderingEngine.cpp"
+    "src/Rendering/zpShader.cpp"
+    "src/Rendering/zpTexture.cpp" )
 set( ZP_RENDERING_HEADER
-    "Rendering/zpCamera.h"
-    "Rendering/zpFont.h"
-    "Rendering/zpMaterial.h"
-    "Rendering/zpMesh.h"
-    "Rendering/zpRendering.h"
-    "Rendering/zpRenderingContext.h"
-    "Rendering/zpRenderingEngine.h"
-    "Rendering/zpShader.h"
-    "Rendering/zpTexture.h" )
+    "include/Rendering/zpCamera.h"
+    "include/Rendering/zpFont.h"
+    "include/Rendering/zpMaterial.h"
+    "include/Rendering/zpMesh.h"
+    "include/Rendering/zpRendering.h"
+    "include/Rendering/zpRenderingContext.h"
+    "include/Rendering/zpRenderingEngine.h"
+    "include/Rendering/zpShader.h"
+    "include/Rendering/zpTexture.h" )
 
 source_group( Headers FILES
     ${ZP_RENDERING_HEADER}
@@ -148,9 +146,9 @@ source_group( Source FILES
 # file( GLOB ZP_RENDERING_OPENGL_INLINE "RenderingOpenGL/*.inl" )
 
 set( ZP_RENDERING_OPENGL_SOURCE
-    "RenderingOpenGL/zpRenderingOpenGL.cpp" )
+    "src/RenderingOpenGL/zpRenderingOpenGL.cpp" )
 set( ZP_RENDERING_OPENGL_HEADER
-    "RenderingOpenGL/zpRenderingOpenGL.h" )
+    "include/RenderingOpenGL/zpRenderingOpenGL.h" )
 
 source_group( Headers FILES
     ${ZP_RENDERING_OPENGL_HEADER}
@@ -163,7 +161,7 @@ source_group( Source FILES
 # file( GLOB ZP_RENDERING_GLEW_SOURCE "src/*.c" )
 # file( GLOB ZP_RENDERING_GLEW_HEADER "include/GL/*.h" )
 set( ZP_RENDERING_GLEW_SOURCE 
-    "src/glew.c" )
+    "src/GL/glew.c" )
 set( ZP_RENDERING_GLEW_HEADER 
     "include/GL/glew.h" )
 include_directories( "include" )
@@ -176,8 +174,8 @@ source_group( Source FILES
 )
 
 # RenderingD3D Config
-file( GLOB ZP_RENDERING_D3D_SOURCE "RenderingD3D/*.cpp" )
-file( GLOB ZP_RENDERING_D3D_HEADER "RenderingD3D/*.h" )
+file( GLOB ZP_RENDERING_D3D_SOURCE "src/RenderingD3D/*.cpp" )
+file( GLOB ZP_RENDERING_D3D_HEADER "include/RenderingD3D/*.h" )
 
 source_group( Headers FILES
     ${ZP_RENDERING_D3D_HEADER}

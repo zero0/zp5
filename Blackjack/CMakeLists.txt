@@ -20,14 +20,12 @@ set( BLACKJACK_ASSETS "Assets/" )
 
 source_group( Headers FILES
     ${BLACKJACK_HEADER}
-)
-source_group( Inline FILES 
     ${BLACKJACK_INLINE}
 )
 source_group( Source FILES
     ${BLACKJACK_SOURCE}
 )
-include_directories( ${ZeroPoint5_SOURCE_DIR} )
+include_directories( "${ZeroPoint5_SOURCE_DIR}/include" )
 
 add_executable( Blackjack
     ${BLACKJACK_HEADER}
@@ -51,7 +49,10 @@ target_link_Libraries( Blackjack
 endif()
 
 if( WIN32 )
-set_target_properties( Blackjack PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS" )
+set_target_properties( Blackjack PROPERTIES 
+    LINK_FLAGS "/SUBSYSTEM:WINDOWS" 
+    VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+)
 endif()
 
 set_target_properties( Blackjack PROPERTIES
