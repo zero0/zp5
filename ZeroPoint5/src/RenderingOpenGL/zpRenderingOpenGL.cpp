@@ -329,11 +329,12 @@ union glQuery
     GLuint q[ 3 ];
 };
 
-static zp_size_t g_frameIndex;
 static GLuint g_vaos[ zpVertexFormat_Count ];
-static glQuery g_queries[ 2 ];
 static zpShader g_shaderVC;
 static zpShader g_shaderVCU;
+#ifdef ZP_USE_PROFILER
+static glQuery g_queries[ 2 ];
+#endif
 
 static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 {
@@ -684,6 +685,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 #endif
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
+
+#ifdef ZP_USE_PROFILER
     glGenQueries( ZP_ARRAY_SIZE( g_queries[ 0 ].q ), g_queries[ 0 ].q );
     glGenQueries( ZP_ARRAY_SIZE( g_queries[ 1 ].q ), g_queries[ 1 ].q );
 
@@ -695,8 +698,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glEndQuery( GL_TIME_ELAPSED );
     glEndQuery( GL_PRIMITIVES_GENERATED );
     glEndQuery( GL_SAMPLES_PASSED );
-
-    g_frameIndex = 0;
+#endif
 
     glEnable( GL_BLEND );
     glEnable( GL_DEPTH_TEST );
@@ -758,9 +760,11 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
+
+#ifdef ZP_USE_PROFILER
     glDeleteQueries( ZP_ARRAY_SIZE( g_queries[0].q ), g_queries[0].q );
     glDeleteQueries( ZP_ARRAY_SIZE( g_queries[1].q ), g_queries[1].q );
-
+#endif
     HGLRC context = static_cast<HGLRC>( hContext );
 
     wglMakeCurrent( ZP_NULL, ZP_NULL );
@@ -1203,6 +1207,7 @@ void DestroyShaderOpenGL( zpShader& shader )
     }
 }
 
+#ifdef ZP_USE_PROFILER
 void BeginFrameOpenGL( zp_size_t frameIndex )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
@@ -1235,3 +1240,7 @@ void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat )
     stat.primitiveCount = primitviesGenerated;
     stat.samplesPassed = samplesPassed;
 }
+#else
+#define BeginFrameOpenGL( ... )     (void)0
+#define EndFrameOpenGL( ... )       (void)0
+#endif
