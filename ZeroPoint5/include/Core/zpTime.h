@@ -20,20 +20,20 @@ public:
     void setTimeScale( zp_float timeScale );
     zp_float getTimeScale() const;
 
-    zp_long getTime() const;
-    zp_long getDeltaTime() const;
-    zp_long getTimeSinceStart() const;
-    zp_long getWallClockDeltaTime() const;
-    zp_long getCountsPerSecond() const;
+    zp_time_t getTime() const;
+    zp_time_t getDeltaTime() const;
+    zp_time_t getTimeSinceStart() const;
+    zp_time_t getWallClockDeltaTime() const;
+    zp_time_t getCountsPerSecond() const;
 
 private:
-    zp_long m_baseTime;
-    zp_long m_currentTime;
-    zp_long m_previousTime;
-    zp_long m_deltaTime;
-    zp_long m_timeSinceStart;
-    zp_long m_wallClockDeltaTime;
-    zp_long m_countsPerSecond;
+    zp_time_t m_baseTime;
+    zp_time_t m_currentTime;
+    zp_time_t m_previousTime;
+    zp_time_t m_deltaTime;
+    zp_time_t m_timeSinceStart;
+    zp_time_t m_wallClockDeltaTime;
+    zp_time_t m_countsPerSecond;
 
     zp_float m_secondsPerTick;
     zp_float m_timeScale;

@@ -33,7 +33,12 @@ add_executable( Blackjack
 )
 
 if( ZP_BUILD_STATIC )
-target_link_Libraries( Blackjack
+target_link_Libraries( Blackjack debug
+    ZeroPoint5_Core_lib
+    ZeroPoint5_Engine_lib
+    ZeroPoint5_Rendering_lib
+)
+target_link_Libraries( Blackjack optimized
     ZeroPoint5_Core_lib
     ZeroPoint5_Engine_lib
     ZeroPoint5_Rendering_lib
@@ -41,7 +46,12 @@ target_link_Libraries( Blackjack
 endif()
 
 if( ZP_BUILD_SHARED )
-target_link_Libraries( Blackjack
+target_link_Libraries( Blackjack debug
+    ZeroPoint5_Core_dll
+    ZeroPoint5_Engine_dll
+    ZeroPoint5_Rendering_dll
+)
+target_link_Libraries( Blackjack optimized
     ZeroPoint5_Core_dll
     ZeroPoint5_Engine_dll
     ZeroPoint5_Rendering_dll

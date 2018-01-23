@@ -686,6 +686,16 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
     glGenQueries( ZP_ARRAY_SIZE( g_queries[ 0 ].q ), g_queries[ 0 ].q );
     glGenQueries( ZP_ARRAY_SIZE( g_queries[ 1 ].q ), g_queries[ 1 ].q );
+
+    // perform dummy sample for next frame to remove GL errors
+    glBeginQuery( GL_TIME_ELAPSED, g_queries[ 1 ].timeElapsed );
+    glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ 1 ].primitivesGenerated );
+    glBeginQuery( GL_SAMPLES_PASSED, g_queries[ 1 ].samplesPassed );
+
+    glEndQuery( GL_TIME_ELAPSED );
+    glEndQuery( GL_PRIMITIVES_GENERATED );
+    glEndQuery( GL_SAMPLES_PASSED );
+
     g_frameIndex = 0;
 
     glEnable( GL_BLEND );

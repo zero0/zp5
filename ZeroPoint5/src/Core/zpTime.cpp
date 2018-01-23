@@ -98,31 +98,33 @@ zp_float zpTime::getTimeScale() const
     return m_timeScale;
 }
 
-zp_long zpTime::getTime() const
+zp_time_t zpTime::getTime() const
 {
+    zp_time_t time;
 #ifdef ZP_WINDOWS
     LARGE_INTEGER t;
     QueryPerformanceCounter( &t );
-    return t.QuadPart;
+    time = t.QuadPart;
 #endif // !ZP_WINDOWS
+    return time;
 }
 
-zp_long zpTime::getDeltaTime() const
+zp_time_t zpTime::getDeltaTime() const
 {
     return m_deltaTime;
 }
 
-zp_long zpTime::getTimeSinceStart() const
+zp_time_t zpTime::getTimeSinceStart() const
 {
     return m_timeSinceStart;
 }
 
-zp_long zpTime::getWallClockDeltaTime() const
+zp_time_t zpTime::getWallClockDeltaTime() const
 {
     return m_wallClockDeltaTime;
 }
 
-zp_long zpTime::getCountsPerSecond() const
+zp_time_t zpTime::getCountsPerSecond() const
 {
     return m_countsPerSecond;
 }

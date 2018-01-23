@@ -20,12 +20,12 @@ option( ZP_USE_SIMD "Build ZeroPoint5 with SIMD" ON )
 option( ZP_USE_OPENGL_RENDERING "Build ZeroPoint5 with OpenGL Rendering" ON )
 option( ZP_USE_D3D_RENDERING "Build ZeroPoint5 with D3D Rendering" OFF )
 
-include_directories( "${PROJECT_SOURCE_DIR}/include" )
+include_directories( "include" )
 
 # Core Config
 configure_file(
-    "${PROJECT_SOURCE_DIR}/include/Core/zpConfig.h.in"
-    "${PROJECT_BINARY_DIR}/include/Core/zpConfig.h"
+    "include/Core/zpConfig.h.in"
+    "include/Core/zpConfig.h"
 )
 
 # file( GLOB ZP_CORE_SOURCE "Core/*.cpp" )
