@@ -26,6 +26,12 @@ source_group( Source FILES
     ${BLACKJACK_SOURCE}
 )
 include_directories( "${ZeroPoint5_SOURCE_DIR}/include" )
+if( WIN32 )
+include_directories( BEFORE SYSTEM
+    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
+)
+endif()
 
 add_executable( Blackjack
     ${BLACKJACK_HEADER}

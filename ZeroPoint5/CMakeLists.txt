@@ -21,6 +21,12 @@ option( ZP_USE_OPENGL_RENDERING "Build ZeroPoint5 with OpenGL Rendering" ON )
 option( ZP_USE_D3D_RENDERING "Build ZeroPoint5 with D3D Rendering" OFF )
 
 include_directories( "include" )
+if( WIN32 )
+include_directories( BEFORE SYSTEM
+    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
+)
+endif()
 
 # Core Config
 configure_file(
