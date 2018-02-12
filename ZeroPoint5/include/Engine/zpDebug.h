@@ -45,6 +45,7 @@ struct zpDebugGUIWidget
     zp_size_t frameUpdated;
     zp_size_t frameRendered;
     zp_size_t parentWidget;
+    zp_size_t childCount;
     
     zpDebugGUIWidgetLayout layout;
 
@@ -52,7 +53,7 @@ struct zpDebugGUIWidget
     zpDebugGUIWidgetStyle style;
 
     zp_char text[ 256 ];
-    zpVector< zp_size_t > children;
+    zp_size_t children[ 128 ];
 };
 
 class zpDebugGUI

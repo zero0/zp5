@@ -12,6 +12,7 @@
 
 #if defined(_WIN64) || defined(_M_X64) || defined(_M_AMD64) || defined(_M_IA64)
 #define ZP_WIN_64                   1
+#define ZP_64BIT                    1
 #elif defined(_WIN32)
 #define ZP_WIN_32                   1
 #endif
@@ -46,8 +47,8 @@
 
 #define ZP_UNUSED( v )              (void)v
 
-#define ZP_MEMORY_KB( b )           ( (b) * 1024 )
-#define ZP_MEMORY_MB( b )           ( ZP_MEMORY_KB( b ) * 1024 )
+#define ZP_MEMORY_KB( b )           (zp_size_t)( (b) * 1024 )
+#define ZP_MEMORY_MB( b )           (zp_size_t)( ZP_MEMORY_KB( b ) * 1024 )
 
 #define ZP_CONCAT_( a, b )          a##b
 #define ZP_CONCAT( a, b )           ZP_CONCAT_( a, b )
@@ -75,8 +76,15 @@
 // Types
 //
 
-typedef size_t zp_size_t;
 typedef unsigned __int64 zp_time_t;
+
+#if ZP_64BIT
+typedef unsigned __int64 zp_size_t;
+typedef signed __int64 zp_ptrdiff_t;
+#else
+typedef unsigned __int32 zp_size_t;
+typedef signed __int32 zp_ptrdiff_t;
+#endif
 
 typedef unsigned __int8  zp_byte;
 typedef unsigned __int16 zp_ushort;
@@ -147,9 +155,13 @@ ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_move( T&& a );
 template<typename T, typename Cmp>
 void zp_qsort( T* begin, T* end, Cmp cmp );
 
+
 //
 // Macros
 //
+
+#define ZP_MIN( a, b ) ( (a) < (b) ? (a) : (b) )
+#define ZP_MAX( a, b ) ( (a) > (b) ? (a) : (b) )
 
 #ifdef ZP_USE_ASSERTIONS
 #define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); }         static_cast<void>( 0 )
@@ -181,9 +193,11 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 //
 
 #include "zpMath.h"
+#include "zpTLSF.h"
 #include "zpAllocator.h"
 #include "zpBlockAllocator.h"
 #include "zpStackAllocator.h"
+#include "zpPoolAllocator.h"
 #include "zpTime.h"
 #include "zpString.h"
 #include "zpVector.h"

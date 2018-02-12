@@ -43,9 +43,11 @@ set( ZP_CORE_SOURCE
     "src/Core/zpDataBuffer.cpp"
     "src/Core/zpFile.cpp"
     "src/Core/zpMath.cpp"
+    "src/Core/zpPoolAllocator.cpp"
     "src/Core/zpProfiler.cpp"
     "src/Core/zpString.cpp"
     "src/Core/zpTime.cpp"
+    "src/Core/zpTLSF.cpp"
     )
 set( ZP_CORE_HEADER
     "include/Core/zpAllocator.h"
@@ -55,10 +57,12 @@ set( ZP_CORE_HEADER
     "include/Core/zpDataBuffer.h"
     "include/Core/zpFile.h"
     "include/Core/zpMath.h"
+    "include/Core/zpPoolAllocator.h"
     "include/Core/zpProfiler.h"
     "include/Core/zpStackAllocator.h"
     "include/Core/zpString.h"
     "include/Core/zpTime.h"
+    "include/Core/zpTLSF.h"
     "include/Core/zpVector.h"
     )
 set( ZP_CORE_INLINE

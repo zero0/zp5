@@ -33,6 +33,9 @@ public:
     zp_size_t getNumAllocations() const;
 
 private:
+    zp_tlsf_t m_tlsf;
+    void* m_allMemory;
+
     zp_size_t m_minChunkSize;
 
     zp_size_t m_numAllocs;

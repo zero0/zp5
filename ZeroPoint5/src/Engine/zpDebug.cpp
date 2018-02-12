@@ -48,8 +48,8 @@ void zpDebugGUI::teardown()
 
 void zpDebugGUI::startGUI()
 {
-    m_widgets.clear();
-    m_widgetStack.clear();
+    m_widgets.reset();
+    m_widgetStack.reset();
 
     zp_size_t index = m_widgets.size();
 
@@ -124,7 +124,7 @@ void zpDebugGUI::beginWindow( zpRecti& area )
 
     window.type = ZP_WIDGET_TYPE_WINDOW;
 
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
 void zpDebugGUI::endWindow()
@@ -160,7 +160,7 @@ void zpDebugGUI::beginVertical()
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
 void zpDebugGUI::endVertical()
@@ -196,7 +196,7 @@ void zpDebugGUI::beginHorizontal( zp_int width )
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
 void zpDebugGUI::endHorizontal()
@@ -242,7 +242,7 @@ void zpDebugGUI::label( const zp_char* text )
     zp_memcpy( label.text, len, text, len );
     label.text[ len ] = '\0';
 
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
 zp_bool zpDebugGUI::button( const zp_char* label )
@@ -265,7 +265,7 @@ zp_bool zpDebugGUI::button( const zp_char* label )
     button.style = m_style;
 
     zp_strcpy( button.text, zp_strlen( label ), label );
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 
     return false;
 }
@@ -297,7 +297,7 @@ void zpDebugGUI::box( zp_int x, zp_int y, zp_int width, zp_int height )
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
-    parentWidget.children.pushBack( index );
+    parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
 void zpDebugGUI::updateWidget( zp_size_t widgetIndex )
@@ -314,8 +314,8 @@ void zpDebugGUI::updateWidget( zp_size_t widgetIndex )
         }
     }
 
-    const zp_size_t* childBegin = widget.children.begin();
-    const zp_size_t* childEnd = widget.children.end();
+    const zp_size_t* childBegin = widget.children;
+    const zp_size_t* childEnd = widget.children + widget.childCount;
     for( ; childBegin != childEnd; ++childBegin )
     {
         updateWidget( *childBegin );
@@ -412,8 +412,8 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
         }
     }
 
-    const zp_size_t* childBegin = widget.children.begin();
-    const zp_size_t* childEnd = widget.children.end();
+    const zp_size_t* childBegin = widget.children;
+    const zp_size_t* childEnd = widget.children + widget.childCount;
     for( ; childBegin != childEnd; ++childBegin )
     {
         renderWidget( ctx, *childBegin, isRenderingText );

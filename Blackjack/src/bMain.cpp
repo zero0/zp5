@@ -15,7 +15,7 @@ zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
-    int r;// = zpMain();
+    int r = 0;// = zpMain();
 
     zpBaseApplication app;
     app.setHandle( hInstance );

@@ -95,11 +95,16 @@ ZP_FORCE_INLINE void _freeChunk( zpMemoryChunk* chunk )
 }
 
 zpBlockAllocator::zpBlockAllocator( zp_size_t minChunckSize )
-    : m_minChunkSize( minChunckSize )
+    : m_tlsf( ZP_NULL )
+    , m_minChunkSize( minChunckSize )
     , m_numAllocs( 0 )
     , m_totalMemoryUsed( 0 )
     , m_totalMemory( 0 )
 {
+    m_allMemory = zp_malloc( m_minChunkSize );
+    m_tlsf = zp_tlsf_create_with_pool( m_allMemory, minChunckSize );
+
+    #if 0
     m_memoryChunkHead.size = 0;
     m_memoryChunkHead.alignedSize = 0;
     m_memoryChunkHead.next = &m_memoryChunkHead;
@@ -118,13 +123,21 @@ zpBlockAllocator::zpBlockAllocator( zp_size_t minChunckSize )
     //block->prev = block;
     //
     //m_memoryBlockHead = block;
+    #endif
 }
 
 zpBlockAllocator::~zpBlockAllocator()
 {
-    ZP_ASSERT_WARN( m_totalMemoryUsed == 0, "Possible memory leak of %d", m_totalMemoryUsed );
+    zp_tlsf_remove_pool( m_tlsf, zp_tlsf_get_pool( m_tlsf ) );
+    zp_tlsf_destroy( m_tlsf );
+
+    zp_free( m_allMemory );
+    m_allMemory = ZP_NULL;
+
+    //ZP_ASSERT_WARN( m_totalMemoryUsed == 0, "Possible memory leak of %d", m_totalMemoryUsed );
     ZP_ASSERT_WARN( m_numAllocs == 0, "Missing %d allocs->frees", m_numAllocs );
 
+#if 0
     zpMemoryChunk* head = &m_memoryChunkHead;
     zpMemoryChunk* chunk = head->next;
     while( chunk != head )
@@ -143,7 +156,7 @@ zpBlockAllocator::~zpBlockAllocator()
     //zp_free( m_allMemory );
     //m_allMemory = ZP_NULL;
     //m_alignedMemory = ZP_NULL;
-
+#endif
     m_totalMemoryUsed = 0;
     m_totalMemory = 0;
 }
@@ -152,11 +165,13 @@ void* zpBlockAllocator::allocate( zp_size_t size )
 {
     ++m_numAllocs;
     m_totalMemoryUsed += size;
+    
+    void* ptr = ZP_NULL;
 
+    ptr = zp_tlsf_malloc( m_tlsf, size );
+#if 0
     zp_size_t alignedSize = ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( size + sizeof( zpMemoryBlock ) );
     ZP_ASSERT( ( alignedSize - sizeof( zpMemoryBlock ) ) > size, "" );
-
-    void* ptr = ZP_NULL;
 
     zpMemoryChunk* head = &m_memoryChunkHead;
     zpMemoryChunk* chunk = m_memoryChunkHead.next;
@@ -230,7 +245,7 @@ void* zpBlockAllocator::allocate( zp_size_t size )
 
         block = block->prev;
     }
-
+#endif
     ZP_ASSERT( ptr, "Failed to allocate memory!" );
     return ptr;
 }
@@ -239,6 +254,10 @@ void zpBlockAllocator::free( void* ptr )
 {
     --m_numAllocs;
 
+    m_totalMemoryUsed -= zp_tlsf_block_size( ptr );
+    zp_tlsf_free( m_tlsf, ptr );
+    
+#if 0
     zpMemoryBlock* block = static_cast< zpMemoryBlock* >( ptr ) - 1;
 
     m_totalMemoryUsed -= block->size;
@@ -266,6 +285,7 @@ void zpBlockAllocator::free( void* ptr )
         block->prev->alignedSize += block->alignedSize;
         _removeBlock( block );
     }
+#endif
 }
 
 zp_size_t zpBlockAllocator::getMemoryUsed() const
