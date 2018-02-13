@@ -194,6 +194,7 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 
 #include "zpMath.h"
 #include "zpTLSF.h"
+#include "zpLZF.h"
 #include "zpAllocator.h"
 #include "zpBlockAllocator.h"
 #include "zpStackAllocator.h"
