@@ -134,7 +134,7 @@ zpBlockAllocator::~zpBlockAllocator()
     zp_free( m_allMemory );
     m_allMemory = ZP_NULL;
 
-    //ZP_ASSERT_WARN( m_totalMemoryUsed == 0, "Possible memory leak of %d", m_totalMemoryUsed );
+    ZP_ASSERT_WARN( m_totalMemoryUsed == 0, "Possible memory leak of %d", m_totalMemoryUsed );
     ZP_ASSERT_WARN( m_numAllocs == 0, "Missing %d allocs->frees", m_numAllocs );
 
 #if 0
@@ -164,11 +164,12 @@ zpBlockAllocator::~zpBlockAllocator()
 void* zpBlockAllocator::allocate( zp_size_t size )
 {
     ++m_numAllocs;
-    m_totalMemoryUsed += size;
     
     void* ptr = ZP_NULL;
 
     ptr = zp_tlsf_malloc( m_tlsf, size );
+    m_totalMemoryUsed += zp_tlsf_block_size( ptr );
+
 #if 0
     zp_size_t alignedSize = ZP_BLOCK_ALLOCATOR_ALIGN_SIZE( size + sizeof( zpMemoryBlock ) );
     ZP_ASSERT( ( alignedSize - sizeof( zpMemoryBlock ) ) > size, "" );
@@ -246,6 +247,7 @@ void* zpBlockAllocator::allocate( zp_size_t size )
         block = block->prev;
     }
 #endif
+
     ZP_ASSERT( ptr, "Failed to allocate memory!" );
     return ptr;
 }
