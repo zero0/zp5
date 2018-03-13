@@ -77,6 +77,7 @@ private:
 
     void handleInput();
     void update( zp_float dt, zp_float rt );
+    void lateUpdate( zp_float dt, zp_float rt );
     void render();
 
     void debugDrawGUI();
@@ -90,6 +91,7 @@ private:
     zpObjectManager m_objectManager;
 
     zpTransformComponentManager m_transformComponentManager;
+    zpRectTransformComponentManager m_rectTransformComponentManager;
     zpParticleEmitterComponentManager m_particleEmitterComponentManager;
     zpMeshRendererComponentManager m_meshRendererComponentManager;
 

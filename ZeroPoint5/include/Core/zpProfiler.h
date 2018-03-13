@@ -11,7 +11,7 @@
 #define ZP_PROFILER_GPU( ... )      (void)0
 #else
 #define ZP_PROFILER_BLOCK()         zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__, ZP_NULL )
-#define ZP_PROFILER_START( e )      zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__, #e )
+#define ZP_PROFILER_START( e )      const zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__, #e )
 #define ZP_PROFILER_END( e )        g_profiler.end( __profilerIndex##e )
 #define ZP_PROFILER_INITIALIZE()    g_profiler.initialize()
 #define ZP_PROFILER_FINALIZE()      g_profiler.finalize()
@@ -35,8 +35,9 @@ struct zpProfilerFrame
 {
     const zp_char* fileName;
     const zp_char* functionName;
-    zp_long lineNumber;
     const zp_char* eventName;
+
+    zp_long lineNumber;
 
     zp_size_t threadID;
     zp_size_t parentFrame;
@@ -61,6 +62,9 @@ struct zpProfilerFrameTimeline
     zp_time_t frameStartTime;
     zp_time_t frameEndTime;
 
+    zp_ulong frameStartCycles;
+    zp_ulong frameEndCycles;
+
     zp_size_t gpuFrameTime;
     zp_size_t gpuPrimitiveCount;
 };
@@ -74,7 +78,7 @@ public:
     ~zpProfiler();
 
     zp_size_t start( const zp_char* fileName, const zp_char* functionName, zp_long lineNumber, const zp_char* eventName );
-    void end( zp_size_t index );
+    void end( const zp_size_t index );
 
     void clear();
     void initialize();

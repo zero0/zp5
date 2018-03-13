@@ -209,7 +209,7 @@ void zpRenderingEngine::destroyShader( zpShader& shader )
 void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
 {
     ZP_PROFILER_BLOCK();
-    
+
     const zpVector< zpRenderingCommand >& cmds = context.getCommands();
 
     SortRenderCommands( cmds, 0, m_sortedCommands );

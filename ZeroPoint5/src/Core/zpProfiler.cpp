@@ -88,7 +88,7 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
     return index;
 }
 
-void zpProfiler::end( zp_size_t index )
+void zpProfiler::end( const zp_size_t index )
 {
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     zpProfilerFrame* frame = t->frames + index;
@@ -105,6 +105,8 @@ void zpProfiler::end( zp_size_t index )
 
 void zpProfiler::clear()
 {
+    m_currentFrame = 0;
+    m_previousFrame = 0;
     zp_memset( m_timelines, 0, sizeof( m_timelines ) );
 }
 
@@ -114,12 +116,14 @@ void zpProfiler::initialize()
     t->size = 0;
     t->stackSize = 0;
     t->frameStartTime = GetTime();
+    t->frameStartCycles = GetCycles();
 }
 
 void zpProfiler::finalize()
 {
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     t->frameEndTime = GetTime();
+    t->frameEndCycles = GetCycles();
 
     m_previousFrame = m_currentFrame;
     m_currentFrame = ( m_currentFrame + 1 ) % ZP_PROFILER_MAX_FRAMES;

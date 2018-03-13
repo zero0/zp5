@@ -389,6 +389,7 @@ void zpBaseApplication::runGarbageCollection()
     m_objectManager.garbageCollect();
 
     m_transformComponentManager.garbageCollect();
+    m_rectTransformComponentManager.garbageCollect();
     m_particleEmitterComponentManager.garbageCollect();
     m_meshRendererComponentManager.garbageCollect();
 
@@ -553,6 +554,9 @@ void zpBaseApplication::processFrame()
 
     // update
     update( dt, rt );
+    
+    // late update
+    lateUpdate( dt, rt );
 
     // render
     render();
@@ -656,17 +660,39 @@ void zpBaseApplication::update( zp_float dt, zp_float rt )
     onUpdate( dt, rt );
     ZP_PROFILER_END( OnUpdate );
 
+    ZP_PROFILER_START( OnComponentUpdate );
     m_transformComponentManager.update( dt, rt );
+
+    m_rectTransformComponentManager.update( dt, rt );
 
     m_particleEmitterComponentManager.update( dt, rt );
 
     m_meshRendererComponentManager.update( dt, rt );
 
     m_cameraManager.update( dt, rt );
+    ZP_PROFILER_END( OnComponentUpdate );
 
+}
+
+void zpBaseApplication::lateUpdate( zp_float dt, zp_float rt )
+{
+    ZP_PROFILER_BLOCK();
+  
     ZP_PROFILER_START( OnLateUpdate );
     onLateUpdate( dt, rt );
     ZP_PROFILER_END( OnLateUpdate );
+
+    ZP_PROFILER_START( OnComponentLateUpdate );
+    //m_transformComponentManager.lateUpdate( dt, rt );
+
+    m_rectTransformComponentManager.lateUpdate( dt, rt );
+
+    //m_particleEmitterComponentManager.lateUpdate( dt, rt );
+
+    //m_meshRendererComponentManager.lateUpdate( dt, rt );
+
+    //m_cameraManager.lateUpdate( dt, rt );
+    ZP_PROFILER_END( OnComponentLateUpdate );
 }
 
 void zpBaseApplication::render()
@@ -733,7 +759,7 @@ void zpBaseApplication::debugDrawGUI()
     ZP_PROFILER_BLOCK();
 
     zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
-    zp_char buff[ 256 ];
+    zp_char buff[ 512 ];
 
     m_debugGUI.startGUI();
 
@@ -756,23 +782,23 @@ void zpBaseApplication::debugDrawGUI()
     {
         const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
-        const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %s", "Ms", "Mem", "Function" );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %8s %s", "Ms", "Cycles", "Mem", "Function" );
         m_debugGUI.label( buff );
 
         for( ; bf != ef; ++bf )
         {
             zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+            zp_ulong ct = ( bf->endCycles - bf->startCycles );
             zp_size_t fm = ( bf->endMemory - bf->startMemory );
 
             if( bf->eventName )
             {
-                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s@%s", ft, fm, bf->functionName, bf->eventName );
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %s@%s", ft, ct, fm, bf->functionName, bf->eventName );
             }
             else
             {
-                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %s", ft, fm, bf->functionName );
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %s", ft, ct, fm, bf->functionName );
             }
             m_debugGUI.label( buff );
         }
@@ -784,7 +810,12 @@ void zpBaseApplication::debugDrawGUI()
         zp_float mem = 0.f;
         zp_char memSize = 'U';
 
-        if( memUsed > ZP_MEMORY_MB( 1 ) )
+        if( memUsed > ZP_MEMORY_GB( 1 ) )
+        {
+            mem = static_cast<zp_float>( memUsed ) / static_cast<zp_float>( ZP_MEMORY_GB( 1 ) );
+            memSize = 'G';
+        }
+        else if( memUsed > ZP_MEMORY_MB( 1 ) )
         {
             mem = static_cast<zp_float>( memUsed ) / static_cast<zp_float>( ZP_MEMORY_MB( 1 ) );
             memSize = 'M';
@@ -795,7 +826,7 @@ void zpBaseApplication::debugDrawGUI()
             memSize = 'K';
         }
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f%c %7Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
         m_debugGUI.label( buff );
 
     }
@@ -832,7 +863,7 @@ void zpBaseApplication::debugDrawGUI()
 
         for( bf = g_profiler.getPreviousFrameBegin(); bf != ef; ++bf )
         {
-            m_debugGUI.label( bf->functionName );
+            m_debugGUI.label( bf->eventName ? bf->eventName : bf->functionName );
         }
 
         m_debugGUI.endVertical();

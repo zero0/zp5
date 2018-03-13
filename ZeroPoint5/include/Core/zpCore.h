@@ -42,13 +42,16 @@
 #define ZP_CLASS                    class
 #define ZP_PURE_INTERFACE           class ZP_NO_VTABLE
 #define ZP_ABSTRACT_CLASS           class ZP_NO_VTABLE
+#define ZP_SEALED_CLASS( x )        class x final
+#define ZP_SEALED_STRUCT( x )       struct x final
 
 #define ZP_NON_COPYABLE( t )        private: t( const t& ){} t& operator=( const t& ){}
 
 #define ZP_UNUSED( v )              (void)v
 
-#define ZP_MEMORY_KB( b )           (zp_size_t)( (b) * 1024 )
-#define ZP_MEMORY_MB( b )           (zp_size_t)( ZP_MEMORY_KB( b ) * 1024 )
+#define ZP_MEMORY_KB( b )           static_cast<zp_size_t>( (b) * 1024 )
+#define ZP_MEMORY_MB( b )           static_cast<zp_size_t>( ZP_MEMORY_KB( b ) * 1024 )
+#define ZP_MEMORY_GB( b )           static_cast<zp_size_t>( ZP_MEMORY_MB( b ) * 1024 )
 
 #define ZP_CONCAT_( a, b )          a##b
 #define ZP_CONCAT( a, b )           ZP_CONCAT_( a, b )
@@ -111,6 +114,9 @@ typedef zp_ulong    zp_qword;
 typedef zp_uint     zp_hash32;
 typedef zp_ulong    zp_hash64;
 
+typedef zp_uint     zp_flag32;
+typedef zp_ulong    zp_flag64;
+
 //
 // Functions
 //
@@ -155,6 +161,30 @@ ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_move( T&& a );
 template<typename T, typename Cmp>
 void zp_qsort( T* begin, T* end, Cmp cmp );
 
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_mark( zp_flag64 flag, zp_ulong index )
+{
+    return flag | ( static_cast<zp_ulong>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_clear( zp_flag64 flag, zp_ulong index )
+{
+    return flag & ~( static_cast<zp_ulong>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_toggle( zp_flag64 flag, zp_ulong index )
+{
+    return flag ^ ( static_cast<zp_ulong>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_set( zp_flag64 flag, zp_ulong index, zp_bool set )
+{
+    return ( ( set ? static_cast<zp_ulong>( -1 ) : 0 ) ^ flag ) & ( static_cast<zp_ulong>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag_is_set( zp_flag64 flag, zp_ulong index )
+{
+    return ( flag & ( static_cast<zp_ulong>( 1 ) << index ) ) != 0;
+}
 
 //
 // Macros

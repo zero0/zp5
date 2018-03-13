@@ -13,7 +13,7 @@
 
 static ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
 {
-    static GLenum mapping[] =
+    constexpr GLenum mapping[] =
     {
         0,
         GL_POINTS,
@@ -31,7 +31,7 @@ static ZP_FORCE_INLINE GLenum _TopologyToMode( zpTopology topology )
 
 static ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
 {
-    static GLenum mapping[] =
+    constexpr GLenum mapping[] =
     {
         0,
         GL_ARRAY_BUFFER,
@@ -50,7 +50,7 @@ static ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
 
 static ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType )
 {
-    static GLenum mapping[] =
+    constexpr GLenum mapping[] =
     {
         0,
         GL_DYNAMIC_DRAW,
@@ -64,7 +64,7 @@ static ZP_FORCE_INLINE GLenum _BufferBindTypeToUsage( zpBufferBindType bindType 
 
 static ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension textureDimenision )
 {
-    static GLenum mapping[] =
+    constexpr GLenum mapping[] =
     {
         0,
         GL_TEXTURE_1D,
@@ -79,7 +79,7 @@ static ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension text
 
 static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat displayFormat )
 {
-    static GLint mapping[] =
+    constexpr GLint mapping[] =
     {
         0,
 
@@ -154,7 +154,7 @@ static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat dis
 
 static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFormat )
 {
-    static GLint mapping[] =
+    constexpr GLint mapping[] =
     {
         0,
 
@@ -229,7 +229,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFor
 
 static ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayFormat )
 {
-    static GLenum mapping[] =
+    constexpr GLenum mapping[] =
     {
         0,
 
@@ -554,6 +554,25 @@ ZP_FORCE_INLINE glDebugBlockS::~glDebugBlockS()
 #define glDebugBlock( source, message ) (void)0
 #endif
 
+#if false //ZP_DEBUG && GL_EXT_debug_marker
+struct glMarkerBlockS
+{
+    ZP_FORCE_INLINE glMarkerBlockS( const char* marker );
+    ZP_FORCE_INLINE ~glMarkerBlockS();
+};
+ZP_FORCE_INLINE glMarkerBlockS::glMarkerBlockS( const char* marker )
+{
+    glPushGroupMarkerEXT( 0, marker );
+}
+ZP_FORCE_INLINE glMarkerBlockS::~glMarkerBlockS()
+{
+    glPopGroupMarkerEXT();
+}
+#define glMarkerBlock( marker ) glMarkerBlockS( marker )
+#else
+#define glMarkerBlock( marker ) (void)0
+#endif
+
 static void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
 {
     const zp_char* src = "   ";
@@ -846,6 +865,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
 void PresentOpenGL( zp_handle hDC, zp_handle hContext )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Present" );
+    glMarkerBlock( "Present" );
 
     HDC dc = static_cast<HDC>( hDC );
     HGLRC context = static_cast<HGLRC>( hContext );
@@ -1211,6 +1231,7 @@ void DestroyShaderOpenGL( zpShader& shader )
 void BeginFrameOpenGL( zp_size_t frameIndex )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
+    glMarkerBlock( "Begin Frame" );
 
     zp_size_t sampleIndex = frameIndex % 2;
     glBeginQuery( GL_TIME_ELAPSED, g_queries[ sampleIndex ].timeElapsed );
@@ -1221,6 +1242,7 @@ void BeginFrameOpenGL( zp_size_t frameIndex )
 void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "End Frame" );
+    glMarkerBlock( "End Frame" );
 
     glEndQuery( GL_TIME_ELAPSED );
     glEndQuery( GL_PRIMITIVES_GENERATED );

@@ -40,33 +40,41 @@ add_executable( Blackjack
 
 if( ZP_BUILD_STATIC )
 target_link_Libraries( Blackjack debug
+    ZeroPoint5_Audio_lib
     ZeroPoint5_Core_lib
     ZeroPoint5_Engine_lib
+    ZeroPoint5_Physics_lib
     ZeroPoint5_Rendering_lib
 )
 target_link_Libraries( Blackjack optimized
+    ZeroPoint5_Audio_lib
     ZeroPoint5_Core_lib
     ZeroPoint5_Engine_lib
+    ZeroPoint5_Physics_lib
     ZeroPoint5_Rendering_lib
 )
 endif()
 
 if( ZP_BUILD_SHARED )
 target_link_Libraries( Blackjack debug
+    ZeroPoint5_Audio_dll
     ZeroPoint5_Core_dll
     ZeroPoint5_Engine_dll
+    ZeroPoint5_Physics_dll
     ZeroPoint5_Rendering_dll
 )
 target_link_Libraries( Blackjack optimized
+    ZeroPoint5_Audio_dll
     ZeroPoint5_Core_dll
     ZeroPoint5_Engine_dll
+    ZeroPoint5_Physics_dll
     ZeroPoint5_Rendering_dll
 )
 endif()
 
 if( WIN32 )
-set_target_properties( Blackjack PROPERTIES 
-    LINK_FLAGS "/SUBSYSTEM:WINDOWS" 
+set_target_properties( Blackjack PROPERTIES
+    LINK_FLAGS "/SUBSYSTEM:WINDOWS"
     VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
 )
 endif()

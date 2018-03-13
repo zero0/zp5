@@ -34,9 +34,6 @@ configure_file(
     "include/Core/zpConfig.h"
 )
 
-# file( GLOB ZP_CORE_SOURCE "Core/*.cpp" )
-# file( GLOB ZP_CORE_HEADER "Core/*.h" )
-# file( GLOB ZP_CORE_INLINE "Core/*.inl" )
 set( ZP_CORE_SOURCE
     "src/Core/zpBlockAllocator.cpp"
     "src/Core/zpCore.cpp"
@@ -83,10 +80,6 @@ source_group( Source FILES
 )
 
 # Engine Config
-# file( GLOB ZP_ENGINE_SOURCE "Engine/*.cpp" )
-# file( GLOB ZP_ENGINE_HEADER "Engine/*.h" )
-# file( GLOB ZP_ENGINE_INLINE "Engine/*.inl" )
-
 set( ZP_ENGINE_SOURCE
     "src/Engine/zpBaseApplication.cpp"
     "src/Engine/zpDebug.cpp"
@@ -120,11 +113,48 @@ source_group( Source FILES
     ${ZP_ENGINE_SOURCE}
 )
 
-# Rendering Config
-# file( GLOB ZP_RENDERING_SOURCE "Rendering/*.cpp" )
-# file( GLOB ZP_RENDERING_HEADER "Rendering/*.h" )
-# file( GLOB ZP_RENDERING_INLINE "Rendering/*.inl" )
+# Audio Config
+set( ZP_AUDIO_SOURCE
+    "src/Audio/zpAudio.cpp" )
+set( ZP_AUDIO_HEADER
+    "include/Audio/zpAudio.h" )
 
+set( ZP_AUDIO_IMPL_SOURCE
+    "" )
+set( ZP_AUDIO_IMPL_HEADER
+    "" )
+
+source_group( Headers FILES
+    ${ZP_AUDIO_HEADER}
+    ${ZP_AUDIO_IMPL_HEADER}
+)
+source_group( Source FILES
+    ${ZP_AUDIO_SOURCE}
+    ${ZP_AUDIO_IMPL_SOURCE}
+)
+
+# Physics Config
+set( ZP_PHYSICS_SOURCE
+    "src/Physics/zpPhysics.cpp" )
+set( ZP_PHYSICS_HEADER
+    "include/Physics/zpPhysics.h" )
+
+set( ZP_PHYSICS_IMPL_SOURCE
+    "" )
+set( ZP_PHYSICS_IMPL_HEADER
+    "" )
+
+
+source_group( Headers FILES
+    ${ZP_PHYSICS_HEADER}
+    ${ZP_PHYSICS_IMPL_HEADER}
+)
+source_group( Source FILES
+    ${ZP_PHYSICS_SOURCE}
+    ${ZP_PHYSICS_IMPL_SOURCE}
+)
+
+# Rendering Config
 set( ZP_RENDERING_SOURCE
     "src/Rendering/zpCamera.cpp"
     "src/Rendering/zpFont.cpp"
@@ -153,10 +183,6 @@ source_group( Source FILES
 )
 
 # RenderingOpenGL Config
-# file( GLOB ZP_RENDERING_OPENGL_SOURCE "RenderingOpenGL/*.cpp" )
-# file( GLOB ZP_RENDERING_OPENGL_HEADER "RenderingOpenGL/*.h" )
-# file( GLOB ZP_RENDERING_OPENGL_INLINE "RenderingOpenGL/*.inl" )
-
 set( ZP_RENDERING_OPENGL_SOURCE
     "src/RenderingOpenGL/zpRenderingOpenGL.cpp" )
 set( ZP_RENDERING_OPENGL_HEADER
@@ -170,8 +196,6 @@ source_group( Source FILES
 )
 
 # GLEW
-# file( GLOB ZP_RENDERING_GLEW_SOURCE "src/*.c" )
-# file( GLOB ZP_RENDERING_GLEW_HEADER "include/GL/*.h" )
 set( ZP_RENDERING_GLEW_SOURCE 
     "src/GL/glew.c" )
 set( ZP_RENDERING_GLEW_HEADER 
@@ -210,24 +234,24 @@ if( ZP_USE_D3D_RENDERING )
 endif( ZP_USE_D3D_RENDERING )
 
 # All Config
-set( ZP_ALL_HEADER
-    ${ZP_CORE_HEADER}
-    ${ZP_ENGINE_HEADER}
-    ${ZP_RENDERING_HEADER}
-    ${ZP_RENDERING_IMPL_HEADER}
-)
-set( ZP_ALL_INLINE
-    ${ZP_CORE_INLINE}
-    ${ZP_ENGINE_INLINE}
-    ${ZP_RENDERING_INLINE}
-    ${ZP_RENDERING_IMPL_INLINE}
-)
-set( ZP_ALL_SOURCE
-    ${ZP_CORE_SOURCE}
-    ${ZP_ENGINE_SOURCE}
-    ${ZP_RENDERING_SOURCE}
-    ${ZP_RENDERING_IMPL_SOURCE}
-)
+#set( ZP_ALL_HEADER
+#    ${ZP_CORE_HEADER}
+#    ${ZP_ENGINE_HEADER}
+#    ${ZP_RENDERING_HEADER}
+#    ${ZP_RENDERING_IMPL_HEADER}
+#)
+#set( ZP_ALL_INLINE
+#    ${ZP_CORE_INLINE}
+#    ${ZP_ENGINE_INLINE}
+#    ${ZP_RENDERING_INLINE}
+#    ${ZP_RENDERING_IMPL_INLINE}
+#)
+#set( ZP_ALL_SOURCE
+#    ${ZP_CORE_SOURCE}
+#    ${ZP_ENGINE_SOURCE}
+#    ${ZP_RENDERING_SOURCE}
+#    ${ZP_RENDERING_IMPL_SOURCE}
+#)
 
 # Static Lib build
 if( ZP_BUILD_STATIC )
@@ -267,6 +291,36 @@ if( ZP_BUILD_STATIC )
     set_property( TARGET ZeroPoint5_Engine_lib PROPERTY FOLDER "Libraries" )
     set_target_properties( ZeroPoint5_Engine_lib PROPERTIES
         OUTPUT_NAME ${PROJECT_NAME}_Engine
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Audio
+    add_library( ZeroPoint5_Audio_lib STATIC
+        ${ZP_AUDIO_HEADER}
+        ${ZP_AUDIO_SOURCE}
+        ${ZP_AUDIO_IMPL_HEADER}
+        ${ZP_AUDIO_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Audio_lib PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Audio_lib PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Audio
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Physics
+    add_library( ZeroPoint5_Physics_lib STATIC
+        ${ZP_PHYSICS_HEADER}
+        ${ZP_PHYSICS_SOURCE}
+        ${ZP_PHYSICS_IMPL_HEADER}
+        ${ZP_PHYSICS_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Physics_lib PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Physics_lib PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Physics
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )
@@ -326,6 +380,36 @@ if( ZP_BUILD_SHARED )
     set_property( TARGET ZeroPoint5_Engine_dll PROPERTY FOLDER "Libraries" )
     set_target_properties( ZeroPoint5_Engine_dll PROPERTIES
         OUTPUT_NAME ${PROJECT_NAME}_Engine
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Audio
+    add_library( ZeroPoint5_Audio_dll SHARED
+        ${ZP_AUDIO_HEADER}
+        ${ZP_AUDIO_SOURCE}
+        ${ZP_AUDIO_IMPL_HEADER}
+        ${ZP_AUDIO_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Audio_dll PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Audio_dll PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Audio
+        CLEAN_DIRECT_OUTPUT 1
+        VERSION ${ZP_VERSION}
+    )
+
+    # Physics
+    add_library( ZeroPoint5_Physics_dll SHARED
+        ${ZP_PHYSICS_HEADER}
+        ${ZP_PHYSICS_SOURCE}
+        ${ZP_PHYSICS_IMPL_HEADER}
+        ${ZP_PHYSICS_IMPL_SOURCE}
+    )
+
+    set_property( TARGET ZeroPoint5_Physics_dll PROPERTY FOLDER "Libraries" )
+    set_target_properties( ZeroPoint5_Physics_dll PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}_Physics
         CLEAN_DIRECT_OUTPUT 1
         VERSION ${ZP_VERSION}
     )

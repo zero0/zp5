@@ -15,56 +15,64 @@ class zpVector
 public:
     static const zp_size_t npos = -1;
 
+    typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+    typedef T* pointer;
+    typedef const T* const_pointer;
+    typedef T* iterator;
+    typedef const T* const_iterator;
+
     zpVector();
     explicit zpVector( const Allocator& allocator );
     zpVector( zp_size_t capacity, const Allocator& allocator = Allocator() );
     ~zpVector();
 
-    T& operator[]( zp_size_t index );
-    const T& operator[]( zp_size_t index ) const;
+    reference operator[]( zp_size_t index );
+    const_reference operator[]( zp_size_t index ) const;
 
-    const T& at( zp_size_t index ) const;
+    const_reference at( zp_size_t index ) const;
 
     zp_size_t size() const;
     zp_bool isEmpty() const;
     zp_bool isFixed() const;
 
-    void pushBack( const T& val );
-    T& pushBackEmpty();
+    void pushBack( const_reference val );
+    reference pushBackEmpty();
 
-    void pushFront( const T& val );
-    T& pushFrontEmpty();
+    void pushFront( const_reference val );
+    reference pushFrontEmpty();
 
     void popBack();
     void popFront();
 
     void erase( zp_size_t index );
-    zp_size_t eraseAll( const T& val );
+    zp_size_t eraseAll( const_reference val );
 
     void clear();
     void reset();
     void reserve( zp_size_t size );
     void destroy();
 
-    zp_size_t indexOf( const T& val ) const;
-    zp_size_t lastIndexOf( const T& val ) const;
+    zp_size_t indexOf( const_reference val ) const;
+    zp_size_t lastIndexOf( const_reference val ) const;
 
     T& front();
     T& back();
 
-    const T& front() const;
-    const T& back() const;
+    const_reference front() const;
+    const_reference back() const;
 
-    T* begin();
-    T* end();
+    iterator begin();
+    iterator end();
 
-    const T* begin() const;
-    const T* end() const;
+    const_iterator begin() const;
+    const_iterator end() const;
 
 private:
     void ensureCapacity( zp_size_t size );
 
-    T* m_data;
+    pointer m_data;
     zp_size_t m_size;
     zp_size_t m_capacity;
 

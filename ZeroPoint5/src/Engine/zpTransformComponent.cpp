@@ -378,3 +378,17 @@ zp_bool zpTransformComponentManager::findComponentByID( zp_hash64 instanceId, zp
 
     return found;
 }
+
+//
+//
+//
+
+void zpRectTransformComponentManager::createRectTransformComponent( handle_reference h, zpRectTransformComponentDesc* desc )
+{
+    createComponent( h );
+    h.addRef();
+    if( desc )
+    {
+
+    }
+}
