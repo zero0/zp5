@@ -273,6 +273,11 @@ namespace zpMath
         return _mm_div_ps( a, b );
     }
 
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Madd( zpVector4fParamF a, zpVector4fParamF b, zpVector4fParamF c )
+    {
+        return _mm_add_ps( _mm_mul_ps( a, b ), c ); //_mm_fmadd_ps( a, b, c );
+    }
+
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Scale( zpVector4fParamF a, zpScalarParamF b )
     {
         return _mm_mul_ps( a, b );
@@ -444,7 +449,7 @@ namespace zpMath
         zpScalar x = Vector4GetX( m );
         zpScalar y = Vector4GetY( m );
         zpScalar z = Vector4GetZ( m );
-        return ScalarAdd( x, ScalarAdd( y, z ) );
+        return ScalarAdd( ScalarAdd( x, y ), z );
     }
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4Dot4( zpVector4fParamF a, zpVector4fParamF b )
     {
@@ -619,22 +624,43 @@ namespace zpMath
         zpVector4f col3 = Vector4Scale( b.m_m1, Vector4GetX( a.m_m3 ) );
         zpVector4f col4 = Vector4Scale( b.m_m1, Vector4GetX( a.m_m4 ) );
 
-        col1 = Vector4Add( col1, Vector4Scale( b.m_m2, Vector4GetY( a.m_m1 ) ) );
-        col2 = Vector4Add( col2, Vector4Scale( b.m_m2, Vector4GetY( a.m_m2 ) ) );
-        col3 = Vector4Add( col3, Vector4Scale( b.m_m2, Vector4GetY( a.m_m3 ) ) );
-        col4 = Vector4Add( col4, Vector4Scale( b.m_m2, Vector4GetY( a.m_m4 ) ) );
+        col1 = Vector4Madd( b.m_m2, Vector4GetY( a.m_m1 ), col1 );
+        col2 = Vector4Madd( b.m_m2, Vector4GetY( a.m_m2 ), col2 );
+        col3 = Vector4Madd( b.m_m2, Vector4GetY( a.m_m3 ), col3 );
+        col4 = Vector4Madd( b.m_m2, Vector4GetY( a.m_m4 ), col4 );
 
-        col1 = Vector4Add( col1, Vector4Scale( b.m_m3, Vector4GetZ( a.m_m1 ) ) );
-        col2 = Vector4Add( col2, Vector4Scale( b.m_m3, Vector4GetZ( a.m_m2 ) ) );
-        col3 = Vector4Add( col3, Vector4Scale( b.m_m3, Vector4GetZ( a.m_m3 ) ) );
-        col4 = Vector4Add( col4, Vector4Scale( b.m_m3, Vector4GetZ( a.m_m4 ) ) );
+        col1 = Vector4Madd( b.m_m3, Vector4GetZ( a.m_m1 ), col1 );
+        col2 = Vector4Madd( b.m_m3, Vector4GetZ( a.m_m2 ), col2 );
+        col3 = Vector4Madd( b.m_m3, Vector4GetZ( a.m_m3 ), col3 );
+        col4 = Vector4Madd( b.m_m3, Vector4GetZ( a.m_m4 ), col4 );
 
-        s.m_m1 = Vector4Add( col1, Vector4Scale( b.m_m4, Vector4GetW( a.m_m1 ) ) );
-        s.m_m2 = Vector4Add( col2, Vector4Scale( b.m_m4, Vector4GetW( a.m_m2 ) ) );
-        s.m_m3 = Vector4Add( col3, Vector4Scale( b.m_m4, Vector4GetW( a.m_m3 ) ) );
-        s.m_m4 = Vector4Add( col4, Vector4Scale( b.m_m4, Vector4GetW( a.m_m4 ) ) );
+        s.m_m1 = Vector4Madd( b.m_m4, Vector4GetW( a.m_m1 ), col1 );
+        s.m_m2 = Vector4Madd( b.m_m4, Vector4GetW( a.m_m2 ), col2 );
+        s.m_m3 = Vector4Madd( b.m_m4, Vector4GetW( a.m_m3 ), col3 );
+        s.m_m4 = Vector4Madd( b.m_m4, Vector4GetW( a.m_m4 ), col4 );
 
         return s;
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulPoint( zpMatrix4fParamF a, zpVector4fParamF p )
+    {
+        zpVector4f point;
+        // TODO: implement
+        return point;
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulPoint3x4( zpMatrix4fParamF a, zpVector4fParamF p )
+    {
+        zpVector4f point;
+        // TODO: implement
+        return point;
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulVector( zpMatrix4fParamF a, zpVector4fParamF v )
+    {
+        zpVector4f vector;
+        // TODO: implement
+        return vector;
     }
 
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixTranspose( zpMatrix4fParamF a )

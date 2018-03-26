@@ -28,6 +28,7 @@ enum zpHandleIdType : zp_hash64
 #include "zpComponent.h"
 
 #include "zpTransformComponent.h"
+#include "zpRectTransformComponent.h"
 #include "zpParticleEmitterComponent.h"
 #include "zpMeshRendererComponent.h"
 

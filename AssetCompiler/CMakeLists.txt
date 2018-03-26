@@ -9,15 +9,15 @@ project( AssetCompiler VERSION ${ASSET_COMPILER_VERSION} LANGUAGES C CXX )
 # AssetCompiler Config
 set( ASSET_COMPILER_BIN ${PROJECT_NAME}_${PLATFORM_NAME}_${PLATFORM_ARCH} )
 
-# file( GLOB ZP_ASSET_COMPILER_SOURCE "src/*.cpp" )
-# file( GLOB ZP_ASSET_COMPILER_HEADER "include/*.h" )
-# file( GLOB ZP_ASSET_COMPILER_INLINE "include/*.inl" )
-set( ZP_ASSET_COMPILER_SOURCE 
-    "src/acApplication.cpp"
-    "src/acMain.cpp")
-set( ZP_ASSET_COMPILER_HEADER 
-    "include/acApplication.h"
-    "include/acMain.h")
+file( GLOB ZP_ASSET_COMPILER_SOURCE "src/*.cpp" )
+file( GLOB ZP_ASSET_COMPILER_HEADER "include/*.h" )
+file( GLOB ZP_ASSET_COMPILER_INLINE "include/*.inl" )
+# set( ZP_ASSET_COMPILER_SOURCE 
+#     "src/acApplication.cpp"
+#     "src/acMain.cpp")
+# set( ZP_ASSET_COMPILER_HEADER 
+#     "include/acApplication.h"
+#     "include/acMain.h")
 
 source_group( Headers FILES
     ${ZP_ASSET_COMPILER_HEADER}

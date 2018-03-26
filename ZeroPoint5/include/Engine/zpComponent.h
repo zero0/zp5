@@ -96,6 +96,11 @@ public:
         zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_SHOULD_DESTROY );
     }
 
+    void setParentObject( const zpObjectHandle& parentObject )
+    {
+        m_parentObject = parentObject;
+    }
+
     const zpObjectHandle& getParentObject() const
     {
         return m_parentObject;
@@ -111,7 +116,7 @@ public:
         m_instanceId = instanceId;
     }
 
-    ZP_INLINE zp_bool isFlagSet( zp_ulong index )
+    ZP_INLINE zp_bool isFlagSet( zp_ulong index ) const
     {
         return zp_flag_is_set( m_flags, index );
     }

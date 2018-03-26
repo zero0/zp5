@@ -90,7 +90,8 @@ set( ZP_ENGINE_SOURCE
     "src/Engine/zpObjectManager.cpp"
     "src/Engine/zpParticleEmitterComponent.cpp"
     "src/Engine/zpScene.cpp"
-    "src/Engine/zpTransformComponent.cpp" )
+    "src/Engine/zpTransformComponent.cpp"
+    "src/Engine/zpRectTransformComponent.cpp" )
 set( ZP_ENGINE_HEADER
     "include/Engine/zpAllComponents.h"
     "include/Engine/zpBaseApplication.h"
@@ -104,7 +105,8 @@ set( ZP_ENGINE_HEADER
     "include/Engine/zpObjectManager.h"
     "include/Engine/zpParticleEmitterComponent.h"
     "include/Engine/zpScene.h"
-    "include/Engine/zpTransformComponent.h" )
+    "include/Engine/zpTransformComponent.h"
+    "include/Engine/zpRectTransformComponent.h" )
 
 source_group( Headers FILES
     ${ZP_ENGINE_HEADER}

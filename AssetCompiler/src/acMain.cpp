@@ -16,13 +16,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 #endif // !ZP_WINDOWS
 {
     int r = 0;
-
-    acApplication app;
-
-    r = app.processCommandLine( lpCmdLine );
-    if( r == 0 )
     {
-        r = app.run();
+        acApplication app;
+
+        r = app.processCommandLine( lpCmdLine );
+        if( r == 0 )
+        {
+            r = app.run();
+        }
     }
 
     return r;

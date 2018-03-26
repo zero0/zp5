@@ -634,7 +634,7 @@ void zpBaseApplication::handleInput()
 
         ooo->setName( "Test Object" );
 
-        m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform );
+        m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform, ZP_NULL );
         ooo->getAllComponents()->transform->setParentObject( ooo );
 
         m_meshRendererComponentManager.createMeshRendererComponent( ooo->getAllComponents()->meshRenderer );

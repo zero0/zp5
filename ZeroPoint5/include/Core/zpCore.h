@@ -38,6 +38,7 @@
 #define ZP_NO_VTABLE                __declspec( novtable )
 #define ZP_ALIGN(x)                 __declspec( align( x ) )
 #define ZP_ALIGN16                  ZP_ALIGN( 16 )
+#define ZP_GLOBAL_CONST             extern const __declspec( selectany )
 
 #define ZP_CLASS                    class
 #define ZP_PURE_INTERFACE           class ZP_NO_VTABLE

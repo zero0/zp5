@@ -373,6 +373,7 @@ namespace zpMath
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Sub( zpVector4fParamF a, zpVector4fParamF b );
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Mul( zpVector4fParamF a, zpVector4fParamF b );
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Div( zpVector4fParamF a, zpVector4fParamF b );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Madd( zpVector4fParamF a, zpVector4fParamF b, zpVector4fParamF c );
 
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Scale( zpVector4fParamF a, zpScalarParamF b );
 
@@ -431,6 +432,9 @@ namespace zpMath
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixIdentity();
 
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixMul( zpMatrix4fParamF a, zpMatrix4fParamC b );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulPoint( zpMatrix4fParamF a, zpVector4fParamF p );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulPoint3x4( zpMatrix4fParamF a, zpVector4fParamF p );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL MatrixMulVector( zpMatrix4fParamF a, zpVector4fParamF v );
     ZP_FORCE_INLINE zpMatrix4f ZP_VECTORCALL MatrixTranspose( zpMatrix4fParamF a );
 
     ZP_FORCE_INLINE void ZP_VECTORCALL MatrixStore4( zpMatrix4fParamF s, zp_float* m );
@@ -497,42 +501,42 @@ namespace zpCollision
 
 namespace zpColor
 {
-    const zpColorf Clear =     { 0, 0, 0, 0 };
-    const zpColorf Invisible = { 1, 1, 1, 0 };
+    ZP_GLOBAL_CONST zpColorf Clear =     { 0, 0, 0, 0 };
+    ZP_GLOBAL_CONST zpColorf Invisible = { 1, 1, 1, 0 };
 
-    const zpColorf White = { 1, 1, 1, 1 };
-    const zpColorf Black = { 0, 0, 0, 1 };
-    const zpColorf Grey25 = { 0.25f, 0.25f, 0.25f, 1.0f };
-    const zpColorf Grey50 = { 0.5f, 0.5f, 0.5f, 1.0f };
-    const zpColorf Grey75 = { 0.75f, 0.75f, 0.75f, 1.0f };
+    ZP_GLOBAL_CONST zpColorf White = { 1, 1, 1, 1 };
+    ZP_GLOBAL_CONST zpColorf Black = { 0, 0, 0, 1 };
+    ZP_GLOBAL_CONST zpColorf Grey25 = { 0.25f, 0.25f, 0.25f, 1.0f };
+    ZP_GLOBAL_CONST zpColorf Grey50 = { 0.5f, 0.5f, 0.5f, 1.0f };
+    ZP_GLOBAL_CONST zpColorf Grey75 = { 0.75f, 0.75f, 0.75f, 1.0f };
+    
+    ZP_GLOBAL_CONST zpColorf Red =   { 1, 0, 0, 1 };
+    ZP_GLOBAL_CONST zpColorf Green = { 0, 1, 0, 1 };
+    ZP_GLOBAL_CONST zpColorf Blue =  { 0, 0, 1, 1 };
 
-    const zpColorf Red =   { 1, 0, 0, 1 };
-    const zpColorf Green = { 0, 1, 0, 1 };
-    const zpColorf Blue =  { 0, 0, 1, 1 };
-
-    const zpColorf Magenta = { 1, 0, 1, 1 };
-    const zpColorf Yellow =  { 1, 1, 0, 1 };
-    const zpColorf Cyan =    { 0, 1, 1, 1 };
+    ZP_GLOBAL_CONST zpColorf Magenta = { 1, 0, 1, 1 };
+    ZP_GLOBAL_CONST zpColorf Yellow =  { 1, 1, 0, 1 };
+    ZP_GLOBAL_CONST zpColorf Cyan =    { 0, 1, 1, 1 };
 };
 
 namespace zpColor32
 {
-    const zpColor32i Clear =     { 0x00, 0x00, 0x00, 0x00 };
-    const zpColor32i Invisible = { 0xFF, 0xFF, 0xFF, 0x00 };
+    ZP_GLOBAL_CONST zpColor32i Clear =     { 0x00, 0x00, 0x00, 0x00 };
+    ZP_GLOBAL_CONST zpColor32i Invisible = { 0xFF, 0xFF, 0xFF, 0x00 };
+    ZP_GLOBAL_CONST zpColor32i White = { 0xFF, 0xFF, 0xFF, 0xFF };
 
-    const zpColor32i White = { 0xFF, 0xFF, 0xFF, 0xFF };
-    const zpColor32i Black = { 0x00, 0x00, 0x00, 0xFF };
-    const zpColor32i Grey25 = { 0x3F, 0x3F, 0x3F, 0xFF };
-    const zpColor32i Grey50 = { 0x7F, 0x7F, 0x7F, 0xFF };
-    const zpColor32i Grey75 = { 0xBF, 0xBF, 0xBF, 0xFF };
-
-    const zpColor32i Red =   { 0xFF, 0x00, 0x00, 0xFF };
-    const zpColor32i Green = { 0x00, 0xFF, 0x00, 0xFF };
-    const zpColor32i Blue =  { 0x00, 0x00, 0xFF, 0xFF };
-
-    const zpColor32i Magenta = { 0xFF, 0x00, 0xFF, 0xFF };
-    const zpColor32i Yellow =  { 0xFF, 0xFF, 0x00, 0xFF };
-    const zpColor32i Cyan =    { 0x00, 0xFF, 0xFF, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Black = { 0x00, 0x00, 0x00, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Grey25 = { 0x3F, 0x3F, 0x3F, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Grey50 = { 0x7F, 0x7F, 0x7F, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Grey75 = { 0xBF, 0xBF, 0xBF, 0xFF };
+    
+    ZP_GLOBAL_CONST zpColor32i Red =   { 0xFF, 0x00, 0x00, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Green = { 0x00, 0xFF, 0x00, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Blue =  { 0x00, 0x00, 0xFF, 0xFF };
+    
+    ZP_GLOBAL_CONST zpColor32i Magenta = { 0xFF, 0x00, 0xFF, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Yellow =  { 0xFF, 0xFF, 0x00, 0xFF };
+    ZP_GLOBAL_CONST zpColor32i Cyan =    { 0x00, 0xFF, 0xFF, 0xFF };
 };
 
 #ifdef ZP_USE_SIMD
