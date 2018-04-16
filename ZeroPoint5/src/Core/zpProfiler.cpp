@@ -117,6 +117,7 @@ void zpProfiler::initialize()
     t->stackSize = 0;
     t->frameStartTime = GetTime();
     t->frameStartCycles = GetCycles();
+    t->frameStartMemory = g_globalAllocator.getMemoryUsed();
 }
 
 void zpProfiler::finalize()
@@ -124,6 +125,7 @@ void zpProfiler::finalize()
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     t->frameEndTime = GetTime();
     t->frameEndCycles = GetCycles();
+    t->frameEndMemory = g_globalAllocator.getMemoryUsed();
 
     m_previousFrame = m_currentFrame;
     m_currentFrame = ( m_currentFrame + 1 ) % ZP_PROFILER_MAX_FRAMES;

@@ -2,6 +2,12 @@
 #ifndef ZP_MATERIAL_H
 #define ZP_MATERIAL_H
 
+struct zpMaterialPartFloat
+{
+    zpString name;
+    float value;
+};
+
 struct zpMaterialPartColor
 {
     zpString name;
@@ -44,10 +50,18 @@ struct zpMaterial
 {
     zpShaderHandle shader;
 
+    zpVector< zpMaterialPartFloat > floats;
     zpVector< zpMaterialPartColor > colors;
     zpVector< zpMaterialPartVector > vectors;
     zpVector< zpMaterialPartTexture > textures;
     zpVector< zpMaterialPartMatrix > matrices;
+
+    void setFloat( const zp_char* name, const zp_float value )
+    {
+        zpMaterialPartFloat& p = floats.pushBackEmpty();
+        p.name = name;
+        p.value = value;
+    }
 
     void addColor( const zp_char* name, const zpColorf& color )
     {

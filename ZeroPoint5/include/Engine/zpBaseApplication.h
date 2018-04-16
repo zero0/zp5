@@ -102,12 +102,9 @@ private:
     zpMeshManager m_meshManager;
     zpCameraManager m_cameraManager;
 
-    zpTime m_time;
-
     zp_handle m_hWnd;
     zp_handle m_hInstance;
 
-    zp_size_t m_frameCount;
     zp_uint m_flags;
     zp_uint m_debugFlags;
 

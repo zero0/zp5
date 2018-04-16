@@ -191,9 +191,6 @@ ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag_is_set( zp_flag64 flag, zp_ulong in
 // Macros
 //
 
-#define ZP_MIN( a, b ) ( (a) < (b) ? (a) : (b) )
-#define ZP_MAX( a, b ) ( (a) > (b) ? (a) : (b) )
-
 #ifdef ZP_USE_ASSERTIONS
 #define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); }         static_cast<void>( 0 )
 #define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, msg, __VA_ARGS__ ); } static_cast<void>( 0 )
@@ -236,6 +233,7 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpDataBuffer.h"
 #include "zpFile.h"
 #include "zpProfiler.h"
+#include "zpArchive.h"
 
 #include "zpCore.inl"
 

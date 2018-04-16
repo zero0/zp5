@@ -9,7 +9,7 @@
 #ifdef ZP_USE_PROFILER
 zpProfiler g_profiler;
 #endif
-zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
+zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 32 ) );
 
 #ifdef ZP_WINDOWS
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )

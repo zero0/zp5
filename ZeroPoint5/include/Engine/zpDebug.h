@@ -6,6 +6,8 @@ enum
 {
     ZP_DEBUG_DISPLAY_PROFILER_STATS = 1 << 0,
     ZP_DEBUG_DISPLAY_OBJECT_STATS =   1 << 1,
+
+    ZP_DEBUG_WIDGET_CHILD_COUNT = 128,
 };
 
 enum zpDebugGUIWidgetType : zp_uint
@@ -53,7 +55,7 @@ struct zpDebugGUIWidget
     zpDebugGUIWidgetStyle style;
 
     zp_char text[ 256 ];
-    zp_size_t children[ 128 ];
+    zp_size_t children[ ZP_DEBUG_WIDGET_CHILD_COUNT ];
 };
 
 class zpDebugGUI

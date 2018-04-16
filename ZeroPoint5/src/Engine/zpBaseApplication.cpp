@@ -136,7 +136,6 @@ ZP_FORCE_INLINE void _AdjustWindowSize( zpRecti& windowRect, DWORD windowStyle )
 zpBaseApplication::zpBaseApplication()
     : m_hWnd( ZP_NULL )
     , m_hInstance( ZP_NULL )
-    , m_frameCount( 0 )
     , m_flags( 0 )
     , m_debugFlags( 0 )
     , m_screenSize( { 960, 640 } )
@@ -191,8 +190,6 @@ void zpBaseApplication::setup()
 {
     ZP_PROFILER_BLOCK();
     
-    m_frameCount = 0;
-
     onPreSetup();
 
     m_sceneManager.setup();
@@ -305,12 +302,15 @@ void zpBaseApplication::teardown()
     m_objectManager.teardown();
     m_sceneManager.teardown();
 
+    runGarbageCollection();
+
     m_cameraManager.teardown();
     m_meshManager.teardown();
     m_fontManager.teardown();
     m_materialManager.teardown();
     m_shaderManager.teardown();
     m_textureManager.teardown();
+
     m_renderingEngine.teardown();
 
     onPostTeardown();
@@ -399,8 +399,6 @@ void zpBaseApplication::runGarbageCollection()
     m_materialManager.garbageCollect();
     m_textureManager.garbageCollect();
     m_shaderManager.garbageCollect();
-
-    m_objectManager.garbageCollect();
 
     onGarbageCollection();
 }
@@ -525,10 +523,11 @@ void zpBaseApplication::processFrame()
 
     zp_bool paused = m_isPaused || ( m_shouldPauseInBackground && !m_isFocused );
 
-    m_time.tick();
-    zp_long startTime = m_time.getTime();
-    zp_float dt = paused ? 0.f : m_time.getDeltaSeconds();
-    zp_float rt = m_time.getActualDeltaSeconds();
+    zpTime::get().tick();
+
+    zp_long startTime = zpTime::get().getTime();
+    zp_float dt = paused ? 0.f : zpTime::get().getDeltaSeconds();
+    zp_float rt = zpTime::get().getActualDeltaSeconds();
 
     if( m_shouldGarbageCollect )
     {
@@ -563,15 +562,13 @@ void zpBaseApplication::processFrame()
 
     ZP_PROFILER_END( ProcessFrame );
 
-    ++m_frameCount;
-
     ZP_PROFILER_START( Sleep );
 
-    zp_long endTime = m_time.getTime();
+    zp_long endTime = zpTime::get().getTime();
 
     zp_float spf = 1.f / static_cast<zp_float>( m_targetFps );
     zp_long diff = ( endTime - startTime ) * 1000LL;
-    zp_float d = diff * m_time.getSecondsPerTick();
+    zp_float d = diff * zpTime::get().getSecondsPerTick();
     zp_float sleepTime = ( 1000.f * spf ) - d;
     while( sleepTime < 0.f )
     {
@@ -637,7 +634,7 @@ void zpBaseApplication::handleInput()
         m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform, ZP_NULL );
         ooo->getAllComponents()->transform->setParentObject( ooo );
 
-        m_meshRendererComponentManager.createMeshRendererComponent( ooo->getAllComponents()->meshRenderer );
+        m_meshRendererComponentManager.createMeshRendererComponent( ooo->getAllComponents()->meshRenderer, ZP_NULL );
         ooo->getAllComponents()->meshRenderer->setParentObject( ooo );
         ooo->getAllComponents()->meshRenderer->setMesh( mh );
         ooo->getAllComponents()->meshRenderer->setMaterial( tm );
@@ -683,13 +680,13 @@ void zpBaseApplication::lateUpdate( zp_float dt, zp_float rt )
     ZP_PROFILER_END( OnLateUpdate );
 
     ZP_PROFILER_START( OnComponentLateUpdate );
-    //m_transformComponentManager.lateUpdate( dt, rt );
+    m_transformComponentManager.lateUpdate( dt, rt );
 
     m_rectTransformComponentManager.lateUpdate( dt, rt );
 
     //m_particleEmitterComponentManager.lateUpdate( dt, rt );
 
-    //m_meshRendererComponentManager.lateUpdate( dt, rt );
+    m_meshRendererComponentManager.lateUpdate( dt, rt );
 
     //m_cameraManager.lateUpdate( dt, rt );
     ZP_PROFILER_END( OnComponentLateUpdate );
@@ -744,14 +741,13 @@ void zpBaseApplication::render()
 
     m_meshRendererComponentManager.render( ctx );
 
-
     // draw debug when toggled on
     if( m_debugFlags )
     {
         debugDrawGUI();
     }
 
-    m_renderingEngine.present( m_frameCount );
+    m_renderingEngine.present( zpTime::get().getFrameCount() );
 }
 
 void zpBaseApplication::debugDrawGUI()
@@ -766,11 +762,9 @@ void zpBaseApplication::debugDrawGUI()
 #ifdef ZP_USE_PROFILER
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS )
     {
-        const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
-        const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
         const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
-
-        zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+        
+        zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * zpTime::get().getSecondsPerTick();
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "Frame Time: %6.3f", pft );
         m_debugGUI.label( buff );
 
@@ -785,20 +779,29 @@ void zpBaseApplication::debugDrawGUI()
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s %8s %s", "Ms", "Cycles", "Mem", "Function" );
         m_debugGUI.label( buff );
-
-        for( ; bf != ef; ++bf )
+        zp_int statsMax = 64;
+        for( ; bf != ef && statsMax --> 0; ++bf )
         {
-            zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * m_time.getSecondsPerTick();
+            zp_size_t parentFrame = bf->parentFrame;
+
+            zp_int stackCount = 0;
+            while( parentFrame != zpProfiler::npos )
+            {
+                parentFrame = ( g_profiler.getPreviousFrameBegin() + parentFrame )->parentFrame;
+                stackCount++;
+            }
+
+            zp_float ft = ( ( bf->endTime - bf->startTime ) * static_cast<zp_time_t>( 1000 ) ) * zpTime::get().getSecondsPerTick();
             zp_ulong ct = ( bf->endCycles - bf->startCycles );
             zp_size_t fm = ( bf->endMemory - bf->startMemory );
 
             if( bf->eventName )
             {
-                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %s@%s", ft, ct, fm, bf->functionName, bf->eventName );
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %*s%s@%s", ft, ct, fm, stackCount, "", bf->functionName, bf->eventName );
             }
             else
             {
-                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %s", ft, ct, fm, bf->functionName );
+                zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6.3f %8Iu %8Iu %*s%s", ft, ct, fm, stackCount, "", bf->functionName );
             }
             m_debugGUI.label( buff );
         }
@@ -828,7 +831,6 @@ void zpBaseApplication::debugDrawGUI()
 
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
         m_debugGUI.label( buff );
-
     }
 
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_TIMELINE_STATS )
@@ -930,7 +932,7 @@ void zpBaseApplication::debugDrawGUI()
 
     m_debugGUI.endGUI();
 
-    //m_debugGUI.update( 0, 0 );
+    m_debugGUI.update( 0, 0 );
 
     m_debugGUI.render( ctx );
 }

@@ -18,12 +18,22 @@ zp_hash64 zpScene::getInstanceId() const
 
 void zpScene::addObject( const zpObjectHandle& handle )
 {
-    m_objectsInScene.pushBackEmpty() = handle;
+    m_objectsInScene.pushBack( handle );
 }
 
 void zpScene::removeObject( const zpObjectHandle& handle )
 {
     m_objectsInScene.eraseAll( handle );
+}
+
+const zpString& zpScene::getSceneName() const
+{
+    return m_sceneName;
+}
+
+void zpScene::setSceneName( const zp_char* name )
+{
+    m_sceneName = name;
 }
 
 void zpScene::removeAllObjects()

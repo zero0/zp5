@@ -13,6 +13,7 @@ zpTime::zpTime()
     , m_timeSinceStart( 0 )
     , m_wallClockDeltaTime( 0 )
     , m_countsPerSecond( 0 )
+    , m_frameCount( 0 )
     , m_secondsPerTick( 0 )
     , m_timeScale( 0 )
     , m_deltaSeconds( 0 )
@@ -31,8 +32,14 @@ zpTime::zpTime()
 }
 zpTime::~zpTime()
 {
-
 }
+
+zpTime& zpTime::get()
+{
+    static zpTime time;
+    return time;
+}
+
 
 void zpTime::tick()
 {
@@ -41,6 +48,8 @@ void zpTime::tick()
     QueryPerformanceCounter( &t );
     m_currentTime = t.QuadPart;
 #endif // !ZP_WINDOWS
+
+    ++m_frameCount;
 
     m_wallClockDeltaTime = m_currentTime - m_previousTime;
 
@@ -96,6 +105,11 @@ void zpTime::setTimeScale( zp_float timeScale )
 zp_float zpTime::getTimeScale() const
 {
     return m_timeScale;
+}
+
+zp_size_t zpTime::getFrameCount() const
+{
+    return m_frameCount;
 }
 
 zp_time_t zpTime::getTime() const

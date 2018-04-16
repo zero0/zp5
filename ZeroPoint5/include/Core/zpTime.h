@@ -4,9 +4,12 @@
 
 class zpTime
 {
-public:
+private:
     zpTime();
     ~zpTime();
+
+public:
+    static zpTime& get();
 
     void tick();
     void reset();
@@ -19,6 +22,8 @@ public:
 
     void setTimeScale( zp_float timeScale );
     zp_float getTimeScale() const;
+
+    zp_size_t getFrameCount() const;
 
     zp_time_t getTime() const;
     zp_time_t getDeltaTime() const;
@@ -34,6 +39,8 @@ private:
     zp_time_t m_timeSinceStart;
     zp_time_t m_wallClockDeltaTime;
     zp_time_t m_countsPerSecond;
+
+    zp_size_t m_frameCount;
 
     zp_float m_secondsPerTick;
     zp_float m_timeScale;

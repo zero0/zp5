@@ -13,6 +13,9 @@ public:
     void addObject( const zpObjectHandle& handle );
     void removeObject( const zpObjectHandle& handle );
 
+    const zpString& getSceneName() const;
+    void setSceneName( const zp_char* name );
+
     void removeAllObjects();
 
     void destroyAllObjectsInScene();
@@ -21,6 +24,7 @@ private:
     void setInstanceId( zp_hash64 instanceId );
 
     zp_hash64 m_instanceId;
+    zpString m_sceneName;
 
     zpVector< zpObjectHandle > m_objectsInScene;
 
@@ -31,8 +35,6 @@ struct zpSceneInstance
 {
     zpScene scene;
     zp_size_t refCount;
-    zp_hash64 m_instanceId;
-    zpString m_sceneName;
 };
 
 class zpSceneHandle

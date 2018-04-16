@@ -7,8 +7,8 @@
 zpRenderingContext::zpRenderingContext()
     : m_currentCommnad( npos )
     , m_commands( 512 )
-    , m_scratchVertexBuffer( ZP_MEMORY_MB( 1 ) )
-    , m_scratchIndexBuffer( ZP_MEMORY_MB( 1 ) )
+    , m_scratchVertexBuffer( ZP_MEMORY_MB( 4 ) )
+    , m_scratchIndexBuffer( ZP_MEMORY_MB( 4 ) )
     , m_currentBufferIndex( 0 )
     , m_immediateVertexSize( 0 )
     , m_immediateIndexSize( 0 )
@@ -21,8 +21,8 @@ zpRenderingContext::~zpRenderingContext()
 
 void zpRenderingContext::setup()
 {
-    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateVertexBuffers[ 0 ] );
-    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateVertexBuffers[ 1 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 4 ), ZP_NULL, m_immidateVertexBuffers[ 0 ] );
+    CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_VERTEX, ZP_BUFFER_BIND_STREAM, ZP_MEMORY_MB( 4 ), ZP_NULL, m_immidateVertexBuffers[ 1 ] );
 
     CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_STREAM,  ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateIndexBuffers[ 0 ] );
     CreateRenderBufferOpenGL( ZP_BUFFER_TYPE_INDEX, ZP_BUFFER_BIND_STREAM,  ZP_MEMORY_MB( 1 ), ZP_NULL, m_immidateIndexBuffers[ 1 ] );

@@ -52,7 +52,8 @@ zpObject* zpObjectHandle::get()
 
 zp_bool zpObjectHandle::isValid() const
 {
-    return m_objectInstance != ZP_NULL && m_objectInstance->object.getInstanceId() == m_instanceId;
+    const zp_bool isValid = m_objectInstance != ZP_NULL && m_objectInstance->object.getInstanceId() == m_instanceId;
+    return isValid;
 }
 
 void zpObjectHandle::addRef()
@@ -186,7 +187,7 @@ void zpObjectManager::garbageCollect()
         zpObjectInstance* b = m_activeObjects[ i ];
         if( b->refCount == 0 || b->object.shouldDestroy() )
         {
-            ( &b->object )->~zpObject();
+            ( b )->~zpObjectInstance();
             g_globalAllocator.free( b );
 
             m_activeObjects.erase( i );

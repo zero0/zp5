@@ -223,24 +223,30 @@ public:
     handle_reference operator=( handle_move other )
     {
         set( other.m_instanceId, other.m_instance );
+        other.releaseRef();
 
         return *this;
+    }
+
+    ZP_FORCE_INLINE zp_bool operator==( handle_const_reference other )
+    {
+        return m_instanceId == other.m_instanceId && m_instance == other.m_instance;
     }
 
     ZP_FORCE_INLINE component_const_pointer operator->() const { return get(); }
     ZP_FORCE_INLINE component_pointer operator->() { return get(); }
 
-    component_const_pointer get() const
+    ZP_FORCE_INLINE component_const_pointer get() const
     {
         return isValid() ? &m_instance->component : ZP_NULL;
     }
 
-    component_pointer get()
+    ZP_FORCE_INLINE component_pointer get()
     {
         return isValid() ? &m_instance->component : ZP_NULL;
     }
 
-    zp_bool isValid() const
+    ZP_FORCE_INLINE zp_bool isValid() const
     {
         return m_instance && m_instance->component.getInstanceId() == m_instanceId;
     }
@@ -250,17 +256,7 @@ public:
         releaseRef();
     }
 
-    void set( zp_hash64 instanceId, instance_pointer instance )
-    {
-        releaseRef();
-
-        m_instanceId = instanceId;
-        m_instance = instance;
-
-        addRef();
-    }
-
-private:
+public:
     void addRef()
     {
         if( isValid() )
@@ -278,9 +274,19 @@ private:
         }
     }
 
+    void set( zp_hash64 instanceId, instance_pointer instance )
+    {
+        releaseRef();
+
+        m_instanceId = instanceId;
+        m_instance = instance;
+
+        addRef();
+    }
+
     void invalidate()
     {
-        m_instanceId = ZP_HANDLE_ID_INVALID;
+        set( ZP_HANDLE_ID_INVALID, ZP_NULL );
     }
 
     zp_hash64 m_instanceId;
@@ -388,6 +394,7 @@ public:
             zpVector< instance_pointer >::iterator t = m_activeComponents.begin() + i;
             if( (*t)->refCount == 0 )
             {
+                ( *t )->~Instance();
                 m_activeComponents.erase( i );
 
                 --i;
@@ -448,7 +455,7 @@ protected:
     virtual void onPreFixedUpdate( zp_float ft, zp_float rt ) {}
     virtual void onPostFixedUpdate( zp_float ft, zp_float rt ) {}
 
-private:
+protected:
     zpVector< instance_pointer > m_activeComponents;
     zp_size_t m_newComponentInstanceId;
 };

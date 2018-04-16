@@ -96,7 +96,6 @@ void zpObject::destroy()
 {
     setActive( false );
     m_flags |= ( 1ULL << ZP_OBJECT_FLAG_SHOULD_DESTROY );
-    m_instanceId = ZP_HANDLE_ID_EMPTY;
 }
 
 void zpObject::setInstanceId( zp_hash64 instanceId )

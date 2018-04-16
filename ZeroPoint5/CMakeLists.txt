@@ -35,6 +35,7 @@ configure_file(
 )
 
 set( ZP_CORE_SOURCE
+    "src/Core/zpArchive.cpp"
     "src/Core/zpBlockAllocator.cpp"
     "src/Core/zpCore.cpp"
     "src/Core/zpDataBuffer.cpp"
@@ -49,6 +50,7 @@ set( ZP_CORE_SOURCE
     )
 set( ZP_CORE_HEADER
     "include/Core/zpAllocator.h"
+    "include/Core/zpArchive.h"
     "include/Core/zpBlockAllocator.h"
     "include/Core/zpConfig.h"
     "include/Core/zpCore.h"

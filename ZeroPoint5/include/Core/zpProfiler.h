@@ -2,8 +2,11 @@
 #ifndef ZP_PROFILER_H
 #define ZP_PROFILER_H
 
+#define ZP_T( e ) #e
+
 #ifndef ZP_USE_PROFILER
 #define ZP_PROFILER_BLOCK()         (void)0
+#define ZP_PROFILER_FUNCTION( ... ) (void)0
 #define ZP_PROFILER_START( ... )    (void)0
 #define ZP_PROFILER_END( ... )      (void)0
 #define ZP_PROFILER_INITIALIZE()    (void)0
@@ -11,6 +14,7 @@
 #define ZP_PROFILER_GPU( ... )      (void)0
 #else
 #define ZP_PROFILER_BLOCK()         zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, __FUNCTION__, __LINE__, ZP_NULL )
+#define ZP_PROFILER_FUNCTION( e )   zpProfilerBlockS ZP_CONCAT( __profilerBlock, __LINE__)( __FILE__, e, __LINE__, ZP_NULL )
 #define ZP_PROFILER_START( e )      const zp_size_t __profilerIndex##e = g_profiler.start( __FILE__, __FUNCTION__, __LINE__, #e )
 #define ZP_PROFILER_END( e )        g_profiler.end( __profilerIndex##e )
 #define ZP_PROFILER_INITIALIZE()    g_profiler.initialize()
@@ -64,6 +68,9 @@ struct zpProfilerFrameTimeline
 
     zp_ulong frameStartCycles;
     zp_ulong frameEndCycles;
+
+    zp_size_t frameStartMemory;
+    zp_size_t frameEndMemory;
 
     zp_size_t gpuFrameTime;
     zp_size_t gpuPrimitiveCount;

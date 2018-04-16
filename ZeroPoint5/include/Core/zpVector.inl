@@ -338,6 +338,7 @@ void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
         }
 
         pointer newArray = m_allocator.allocate( m_capacity );
+        zp_memset( newArray, 0, m_capacity * sizeof( T ) );
 
         if( m_data )
         {

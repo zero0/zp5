@@ -21,6 +21,13 @@
 #define ZP_DEG_TO_RAD( d )    ( (d) * ZP_PIOVER180 )
 
 //
+// Macros
+//
+
+#define ZP_MIN( a, b ) ( (a) < (b) ? (a) : (b) )
+#define ZP_MAX( a, b ) ( (a) > (b) ? (a) : (b) )
+
+//
 // Types
 //
 
@@ -314,6 +321,16 @@ struct zpFrustum
 zp_float zp_cos( zp_float r );
 zp_float zp_sin( zp_float r );
 zp_float zp_tan( zp_float r );
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_clamp( zp_float value, zp_float min, zp_float max )
+{
+    return value < min ? min : value > max ? max : value;
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_clamp01( zp_float value )
+{
+    return zp_clamp( value, 0.f, 1.f );
+}
 
 namespace zpMath
 {

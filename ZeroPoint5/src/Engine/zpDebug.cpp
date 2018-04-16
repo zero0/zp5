@@ -67,15 +67,23 @@ void zpDebugGUI::startGUI()
 
     window.type = ZP_WIDGET_TYPE_CONTAINER;
     window.style = m_style;
+
+    window.childCount = 0;
 }
 
 void zpDebugGUI::update( zp_float dt, zp_float rt )
 {
-    ++m_frame;
+    ZP_PROFILER_BLOCK();
+
+    m_frame = zpTime::get().getFrameCount();
+
+    updateWidget( 0 );
 }
 
 void zpDebugGUI::render( zpRenderingContext* ctx )
 {
+    ZP_PROFILER_BLOCK();
+
     zp_bool isRenderingText = false;
 
     ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
@@ -123,7 +131,9 @@ void zpDebugGUI::beginWindow( zpRecti& area )
     window.layout.cursor = area.position;
 
     window.type = ZP_WIDGET_TYPE_WINDOW;
+    window.childCount = 0;
 
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
@@ -160,6 +170,9 @@ void zpDebugGUI::beginVertical()
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
+    box.childCount = 0;
+
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
@@ -196,6 +209,9 @@ void zpDebugGUI::beginHorizontal( zp_int width )
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
+    box.childCount = 0;
+
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
@@ -241,7 +257,9 @@ void zpDebugGUI::label( const zp_char* text )
     zp_size_t len = zp_strlen( text );
     zp_memcpy( label.text, len, text, len );
     label.text[ len ] = '\0';
+    label.childCount = 0;
 
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
@@ -257,14 +275,18 @@ zp_bool zpDebugGUI::button( const zp_char* label )
     zpDebugGUIWidget& parentWidget = m_widgets[ parent ];
 
     button.frameUpdated = npos;
+    button.frameRendered = npos;
     button.parentWidget = parent;
 
     button.layout.rect = { 0, 0, 0, 0 };
 
     button.type = ZP_WIDGET_TYPE_BUTTON;
     button.style = m_style;
+    button.childCount = 0;
 
     zp_strcpy( button.text, zp_strlen( label ), label );
+
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 
     return false;
@@ -297,6 +319,9 @@ void zpDebugGUI::box( zp_int x, zp_int y, zp_int width, zp_int height )
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
 
     box.text[ 0 ] = '\0';
+    box.childCount = 0;
+
+    ZP_ASSERT( parentWidget.childCount < ZP_DEBUG_WIDGET_CHILD_COUNT, "" );
     parentWidget.children[ parentWidget.childCount++ ] = index;
 }
 
@@ -312,18 +337,19 @@ void zpDebugGUI::updateWidget( zp_size_t widgetIndex )
             zpDebugGUIWidget& parent = m_widgets[ widget.parentWidget ];
 
         }
-    }
 
-    const zp_size_t* childBegin = widget.children;
-    const zp_size_t* childEnd = widget.children + widget.childCount;
-    for( ; childBegin != childEnd; ++childBegin )
-    {
-        updateWidget( *childBegin );
+        const zp_size_t* childBegin = widget.children;
+        const zp_size_t* childEnd = widget.children + widget.childCount;
+        for( ; childBegin != childEnd; ++childBegin )
+        {
+            updateWidget( *childBegin );
+        }
     }
 }
 
 void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, zp_bool& isRenderingText )
 {
+
     zpDebugGUIWidget& widget = m_widgets[ widgetIndex ];
     if( widget.frameRendered != m_frame )
     {
@@ -410,12 +436,12 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
 
             } break;
         }
-    }
-
-    const zp_size_t* childBegin = widget.children;
-    const zp_size_t* childEnd = widget.children + widget.childCount;
-    for( ; childBegin != childEnd; ++childBegin )
-    {
-        renderWidget( ctx, *childBegin, isRenderingText );
+        
+        const zp_size_t* childBegin = widget.children;
+        const zp_size_t* childEnd = widget.children + widget.childCount;
+        for( ; childBegin != childEnd; ++childBegin )
+        {
+            renderWidget( ctx, *childBegin, isRenderingText );
+        }
     }
 }

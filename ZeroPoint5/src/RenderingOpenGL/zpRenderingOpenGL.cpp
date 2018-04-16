@@ -417,6 +417,17 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 
     if( cmd->material.isValid() )
     {
+        const zpMaterialPartFloat* fb = cmd->material->floats.begin();
+        const zpMaterialPartFloat* fe = cmd->material->floats.end();
+        for( ; fb != fe; ++fb )
+        {
+            GLint c = glGetUniformLocation( prog, fb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform1f( c, fb->value );
+            }
+        }
+
         const zpMaterialPartColor* cb = cmd->material->colors.begin();
         const zpMaterialPartColor* ce = cmd->material->colors.end();
         for( ; cb != ce; ++cb )
