@@ -24,7 +24,8 @@ include_directories( "include" )
 if( WIN32 )
 include_directories( BEFORE SYSTEM
     "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
-    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt"
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/ucrt"
+    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/um"
 )
 endif()
 
@@ -45,6 +46,7 @@ set( ZP_CORE_SOURCE
     "src/Core/zpMemoryStorage.cpp"
     "src/Core/zpMemoryPolicy.cpp"
     "src/Core/zpProfiler.cpp"
+    "src/Core/zpStackTrace.cpp"
     "src/Core/zpString.cpp"
     "src/Core/zpTime.cpp"
     "src/Core/zpTLSF.cpp"
@@ -61,6 +63,7 @@ set( ZP_CORE_HEADER
     "include/Core/zpMemoryStorage.h"
     "include/Core/zpMemoryPolicy.h"
     "include/Core/zpProfiler.h"
+    "include/Core/zpStackTrace.h"
     "include/Core/zpString.h"
     "include/Core/zpTime.h"
     "include/Core/zpTLSF.h"
@@ -69,7 +72,6 @@ set( ZP_CORE_HEADER
 set( ZP_CORE_INLINE
     "include/Core/zpCore.inl"
     "include/Core/zpMathSimd.inl"
-    "include/Core/zpStackAllocator.inl"
     "include/Core/zpVector.inl"
     )
 

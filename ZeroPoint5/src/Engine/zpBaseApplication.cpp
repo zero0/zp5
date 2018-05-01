@@ -647,6 +647,10 @@ void zpBaseApplication::handleInput()
         cam->flags |= 0xFF;
         cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
     }
+    else if( m_input.isKeyPressed( ZP_KEY_CODE_U ) )
+    {
+        zpStackTrace::Dump();
+    }
 }
 
 void zpBaseApplication::update( zp_float dt, zp_float rt )

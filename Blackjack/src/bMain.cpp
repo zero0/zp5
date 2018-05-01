@@ -21,6 +21,8 @@ zpIMemoryAllocator* g_globalDebugAllocator;
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
+    zpStackTrace::Initialize();
+
     zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
 
 #if ZP_DEBUG
@@ -48,6 +50,8 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 #if ZP_DEBUG
     globalDebugAllocator.teardown();
 #endif
+
+    zpStackTrace::Shutdown();
 
     return r;
 }

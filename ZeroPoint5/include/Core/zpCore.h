@@ -142,6 +142,22 @@ zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 );
 //
 
 template<typename T>
+ZP_FORCE_INLINE void zp_zero_memory( T* ptr )
+{
+    zp_memset( ptr, 0, sizeof( T ) );
+}
+template<typename T>
+ZP_FORCE_INLINE void zp_zero_memory_array( T* ptr, zp_size_t count )
+{
+    zp_memset( ptr, 0, count * sizeof( T ) );
+}
+template<typename T, zp_size_t Size>
+ZP_FORCE_INLINE void zp_zero_memory_array( T( &arr )[ Size ] )
+{
+    zp_memset( arr, 0, Size * sizeof( T ) );
+}
+
+template<typename T>
 ZP_FORCE_INLINE void zp_swap( T& a, T& b );
 
 template<typename T>
@@ -231,8 +247,10 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpVector.h"
 #include "zpDataBuffer.h"
 #include "zpFile.h"
-#include "zpProfiler.h"
 #include "zpArchive.h"
+
+#include "zpProfiler.h"
+#include "zpStackTrace.h"
 
 #include "zpCore.inl"
 
