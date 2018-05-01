@@ -2,13 +2,13 @@
 
 zp_byte* zpDataBufferAllocator::allocate( zp_size_t size )
 {
-    void* data = g_globalAllocator.allocate( size );
+    void* data = g_globalAllocator->allocate( size );
     return static_cast<zp_byte*>( data );
 }
 
 void zpDataBufferAllocator::free( zp_byte* ptr )
 {
-    g_globalAllocator.free( ptr );
+    g_globalAllocator->free( ptr );
 }
 
 zpDataBuffer::zpDataBuffer()

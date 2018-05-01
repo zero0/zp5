@@ -248,7 +248,7 @@ void zpCameraManager::createCamera( zpCameraHandle& handle )
 {
     zp_hash64 instanceId = ++m_newCameraInstanceId;
 
-    zpCameraInstance* instance = static_cast<zpCameraInstance*>( g_globalAllocator.allocate( sizeof( zpCameraInstance ) ) );
+    zpCameraInstance* instance = static_cast<zpCameraInstance*>( g_globalAllocator->allocate( sizeof( zpCameraInstance ) ) );
 
     new ( &instance->camera ) zpCamera();
 
@@ -287,7 +287,7 @@ void zpCameraManager::garbageCollect()
         {
             b->~zpCameraInstance();
 
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_cameraInstances.erase( i );
 

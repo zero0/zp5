@@ -186,7 +186,7 @@ void zpParticleEmitterComponentManager::createParticleEmitterComponent( zpPartic
 {
     zp_hash64 instanceId = ++m_newParticleEmitterComponentInstanceId;
 
-    zpParticleEmitterComponentInstance* instance = static_cast<zpParticleEmitterComponentInstance*>( g_globalAllocator.allocate( sizeof( zpParticleEmitterComponentInstance ) ) );
+    zpParticleEmitterComponentInstance* instance = static_cast<zpParticleEmitterComponentInstance*>( g_globalAllocator->allocate( sizeof( zpParticleEmitterComponentInstance ) ) );
 
     new ( &instance->particleEmitter ) zpParticleEmitterComponent();
 
@@ -215,7 +215,7 @@ void zpParticleEmitterComponentManager::garbageCollect()
         if( b->refCount == 0 )
         {
             ( &b->particleEmitter )->~zpParticleEmitterComponent();
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_activeComponents.erase( i );
 

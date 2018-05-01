@@ -2,12 +2,12 @@
 
 zp_char* zpStringAllocator::allocate( zp_size_t size )
 {
-    void* str = g_globalAllocator.allocate( size );
+    void* str = g_globalAllocator->allocate( size );
     return static_cast<zp_char*>( str );
 }
 void zpStringAllocator::free( zp_char* ptr )
 {
-    g_globalAllocator.free( ptr );
+    g_globalAllocator->free( ptr );
 }
 
 

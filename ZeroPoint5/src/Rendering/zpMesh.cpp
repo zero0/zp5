@@ -232,7 +232,7 @@ zp_bool zpMeshManager::loadMesh( const zp_char* meshFile, zpMeshHandle& mesh )
 
     if( foundMeshInstance == ZP_NULL )
     {
-        foundMeshInstance = new( g_globalAllocator.allocate( sizeof( zpMeshInstance ) ) ) zpMeshInstance;
+        foundMeshInstance = new( g_globalAllocator->allocate( sizeof( zpMeshInstance ) ) ) zpMeshInstance;
         m_meshInstances.pushBack( foundMeshInstance );
     }
 
@@ -275,7 +275,7 @@ zp_bool zpMeshManager::getMesh( const zp_char* meshName, zpMeshHandle& mesh )
 
     if( foundMeshInstance == ZP_NULL )
     {
-        foundMeshInstance = new( g_globalAllocator.allocate( sizeof( zpMeshInstance ) ) ) zpMeshInstance;
+        foundMeshInstance = new( g_globalAllocator->allocate( sizeof( zpMeshInstance ) ) ) zpMeshInstance;
         m_meshInstances.pushBack( foundMeshInstance );
     }
 
@@ -305,7 +305,7 @@ void zpMeshManager::garbageCollect()
 
             b->~zpMeshInstance();
 
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_meshInstances.erase( i );
 

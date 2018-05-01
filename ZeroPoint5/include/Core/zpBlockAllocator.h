@@ -19,7 +19,7 @@ struct zpMemoryBlock
     zpMemoryChunk* chunk;
 };
 
-class zpBlockAllocator : public zpAllocator
+class zpBlockAllocator
 {
 public:
     zpBlockAllocator( zp_size_t minChunckSize );

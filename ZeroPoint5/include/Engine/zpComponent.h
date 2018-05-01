@@ -400,7 +400,7 @@ public:
                 --i;
                 --imax;
 
-                g_globalAllocator.free( *t );
+                g_globalAllocator->free( *t );
             }
         }
     }
@@ -434,7 +434,7 @@ protected:
     {
         zp_hash64 instanceId = ++m_newComponentInstanceId;
 
-        instance_pointer instance = static_cast<instance_pointer>( g_globalAllocator.allocate( sizeof( Instance ) ) );
+        instance_pointer instance = static_cast<instance_pointer>( g_globalAllocator->allocate( sizeof( Instance ) ) );
 
         new ( &instance->component ) Component();
 

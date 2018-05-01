@@ -128,7 +128,7 @@ void zpObjectManager::createObject( zpObjectHandle& handle )
 {
     zp_hash64 instanceId = ++m_newObjectInstanceId;
 
-    zpObjectInstance* instance = static_cast<zpObjectInstance*>( g_globalAllocator.allocate( sizeof( zpObjectInstance ) ) );
+    zpObjectInstance* instance = static_cast<zpObjectInstance*>( g_globalAllocator->allocate( sizeof( zpObjectInstance ) ) );
    
     new ( &instance->object ) zpObject();
     
@@ -188,7 +188,7 @@ void zpObjectManager::garbageCollect()
         if( b->refCount == 0 || b->object.shouldDestroy() )
         {
             ( b )->~zpObjectInstance();
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_activeObjects.erase( i );
 

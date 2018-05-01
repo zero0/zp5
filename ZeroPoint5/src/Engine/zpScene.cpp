@@ -186,7 +186,7 @@ void zpSceneManager::createScene( zpSceneHandle& handle )
 {
     zp_hash64 instanceId = ++m_newSceneInstanceId;
 
-    zpSceneInstance* instance = static_cast<zpSceneInstance*>( g_globalAllocator.allocate( sizeof( zpSceneInstance ) ) );
+    zpSceneInstance* instance = static_cast<zpSceneInstance*>( g_globalAllocator->allocate( sizeof( zpSceneInstance ) ) );
 
     new ( &instance->scene ) zpScene();
 
@@ -226,7 +226,7 @@ void zpSceneManager::garbageCollect()
         if( b->refCount == 0 )
         {
             ( &b->scene )->~zpScene();
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_activeScenes.erase( i );
 

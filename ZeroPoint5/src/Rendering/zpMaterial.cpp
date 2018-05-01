@@ -263,7 +263,7 @@ zp_bool zpMaterialManager::loadMaterial( const zp_char* materialFile, zpMaterial
 
     if( foundMaterialInstance == ZP_NULL )
     {
-        foundMaterialInstance = new( g_globalAllocator.allocate( sizeof( zpMaterialInstance ) ) ) zpMaterialInstance;
+        foundMaterialInstance = new( g_globalAllocator->allocate( sizeof( zpMaterialInstance ) ) ) zpMaterialInstance;
         m_materialInstances.pushBack( foundMaterialInstance );
     }
 
@@ -308,7 +308,7 @@ zp_bool zpMaterialManager::getMaterial( const zp_char* materialName, zpMaterialH
 
     if( foundMaterialInstance == ZP_NULL )
     {
-        foundMaterialInstance = new( g_globalAllocator.allocate( sizeof( zpMaterialInstance ) ) ) zpMaterialInstance;
+        foundMaterialInstance = new( g_globalAllocator->allocate( sizeof( zpMaterialInstance ) ) ) zpMaterialInstance;
         m_materialInstances.pushBack( foundMaterialInstance );
     }
 
@@ -333,7 +333,7 @@ void zpMaterialManager::garbageCollect()
 
             b->~zpMaterialInstance();
 
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_materialInstances.erase( i );
 

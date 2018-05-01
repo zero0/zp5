@@ -223,10 +223,9 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpMath.h"
 #include "zpTLSF.h"
 #include "zpLZF.h"
-#include "zpAllocator.h"
-#include "zpBlockAllocator.h"
-#include "zpStackAllocator.h"
-#include "zpPoolAllocator.h"
+#include "zpMemoryAllocator.h"
+#include "zpMemoryPolicy.h"
+#include "zpMemoryStorage.h"
 #include "zpTime.h"
 #include "zpString.h"
 #include "zpVector.h"
@@ -237,7 +236,11 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 
 #include "zpCore.inl"
 
-extern zpBlockAllocator g_globalAllocator;
+#if ZP_DEBUG
+extern zpIMemoryAllocator* g_globalDebugAllocator;
+#endif
+
+extern zpIMemoryAllocator* g_globalAllocator;
 
 #endif // !ZP_CORE_H
 

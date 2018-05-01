@@ -4,14 +4,14 @@
 template< typename T >
 T* zpVectorAllocator< T >::allocate( zp_size_t count )
 {
-    void* ptr = g_globalAllocator.allocate( sizeof( T ) * count );
+    void* ptr = g_globalAllocator->allocate( sizeof( T ) * count );
     return static_cast<T*>( ptr );
 }
 
 template< typename T >
 void zpVectorAllocator< T >::free( T* ptr )
 {
-    g_globalAllocator.free( ptr );
+    g_globalAllocator->free( ptr );
 }
 
 //

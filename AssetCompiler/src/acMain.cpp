@@ -9,12 +9,19 @@
 #ifdef ZP_USE_PROFILER
 zpProfiler g_profiler;
 #endif
-zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
+
+//zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
+zpIMemoryAllocator* g_globalAllocator;
+zpIMemoryAllocator* g_globalDebugAllocator;
+
+static zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 10 ) >, zpTLFSMemoryPolicy > s_globalAllocator;
 
 #ifdef ZP_WINDOWS
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
+    g_globalAllocator = &s_globalAllocator;
+
     int r = 0;
     {
         acApplication app;

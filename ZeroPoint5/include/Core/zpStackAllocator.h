@@ -9,7 +9,7 @@ struct zpStackBlock
 };
 
 template< zp_size_t Size, zp_size_t StackBlocks = 32 >
-class zpStackAllocator : public zpAllocator
+class zpStackAllocator
 {
 public:
     zpStackAllocator();

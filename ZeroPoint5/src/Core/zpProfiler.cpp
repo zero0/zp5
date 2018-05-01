@@ -82,7 +82,7 @@ zp_size_t zpProfiler::start( const zp_char* fileName, const zp_char* functionNam
     frame->startCycles = GetCycles();
     frame->endCycles = 0;
 
-    frame->startMemory = g_globalAllocator.getMemoryUsed();
+    frame->startMemory = g_globalAllocator->getMemoryUsed();
     frame->endMemory = 0;
 
     return index;
@@ -95,7 +95,7 @@ void zpProfiler::end( const zp_size_t index )
 
     frame->endTime = GetTime();
     frame->endCycles = GetCycles();
-    frame->endMemory = g_globalAllocator.getMemoryUsed();
+    frame->endMemory = g_globalAllocator->getMemoryUsed();
 
     if( t->stackSize > 0 )
     {
@@ -117,7 +117,7 @@ void zpProfiler::initialize()
     t->stackSize = 0;
     t->frameStartTime = GetTime();
     t->frameStartCycles = GetCycles();
-    t->frameStartMemory = g_globalAllocator.getMemoryUsed();
+    t->frameStartMemory = g_globalAllocator->getMemoryUsed();
 }
 
 void zpProfiler::finalize()
@@ -125,7 +125,7 @@ void zpProfiler::finalize()
     zpProfilerFrameTimeline* t = m_timelines + m_currentFrame;
     t->frameEndTime = GetTime();
     t->frameEndCycles = GetCycles();
-    t->frameEndMemory = g_globalAllocator.getMemoryUsed();
+    t->frameEndMemory = g_globalAllocator->getMemoryUsed();
 
     m_previousFrame = m_currentFrame;
     m_currentFrame = ( m_currentFrame + 1 ) % ZP_PROFILER_MAX_FRAMES;

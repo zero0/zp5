@@ -160,7 +160,7 @@ zp_bool zpFontManager::getFont( const zp_char* fontName, zpFontHandle& font )
 
     if( foundFontInstance == ZP_NULL )
     {
-        foundFontInstance = new( g_globalAllocator.allocate( sizeof( zpFontInstance ) ) ) zpFontInstance;
+        foundFontInstance = new( g_globalAllocator->allocate( sizeof( zpFontInstance ) ) ) zpFontInstance;
         m_fontInstances.pushBack( foundFontInstance );
     }
 
@@ -206,7 +206,7 @@ zp_bool zpFontManager::loadFont( const zp_char* fontFile, zpFontHandle& font )
 
     if( foundFontInstance == ZP_NULL )
     {
-        foundFontInstance = new( g_globalAllocator.allocate( sizeof( zpFontInstance ) ) ) zpFontInstance;
+        foundFontInstance = new( g_globalAllocator->allocate( sizeof( zpFontInstance ) ) ) zpFontInstance;
         m_fontInstances.pushBack( foundFontInstance );
     }
 
@@ -232,7 +232,7 @@ void zpFontManager::garbageCollect()
             b->font.fontMaterial.release();
             b->~zpFontInstance();
 
-            g_globalAllocator.free( b );
+            g_globalAllocator->free( b );
 
             m_fontInstances.erase( i );
 

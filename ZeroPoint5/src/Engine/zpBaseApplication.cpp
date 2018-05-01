@@ -809,7 +809,7 @@ void zpBaseApplication::debugDrawGUI()
         zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s", "Mem", "Allocs" );
         m_debugGUI.label( buff );
 
-        zp_size_t memUsed = g_globalAllocator.getMemoryUsed();
+        zp_size_t memUsed = g_globalAllocator->getMemoryUsed();
         zp_float mem = 0.f;
         zp_char memSize = 'U';
 
@@ -829,7 +829,7 @@ void zpBaseApplication::debugDrawGUI()
             memSize = 'K';
         }
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8Iu", mem, memSize, g_globalAllocator.getNumAllocations() );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8Iu", mem, memSize, g_globalAllocator->getNumAllocations() );
         m_debugGUI.label( buff );
     }
 
