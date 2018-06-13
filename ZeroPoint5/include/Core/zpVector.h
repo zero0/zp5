@@ -2,14 +2,7 @@
 #ifndef ZP_VECTOR_H
 #define ZP_VECTOR_H
 
-template< typename T >
-struct zpVectorAllocator
-{
-    T* allocate( zp_size_t count );
-    void free( T* ptr );
-};
-
-template< typename T, typename Allocator = zpVectorAllocator< T > >
+template< typename T, typename Allocator = zpDefaultGlobalTemplateArrayAllocator< T > >
 class zpVector
 {
 public:
@@ -23,9 +16,12 @@ public:
     typedef T* iterator;
     typedef const T* const_iterator;
 
+    typedef Allocator allocator_value;
+    typedef const allocator_value& allocator_const_reference;
+
     zpVector();
-    explicit zpVector( const Allocator& allocator );
-    zpVector( zp_size_t capacity, const Allocator& allocator = Allocator() );
+    explicit zpVector( allocator_const_reference );
+    zpVector( zp_size_t capacity, allocator_const_reference = allocator_value() );
     ~zpVector();
 
     reference operator[]( zp_size_t index );
@@ -46,7 +42,10 @@ public:
     void popBack();
     void popFront();
 
-    void erase( zp_size_t index );
+    void eraseAt( zp_size_t index );
+    void eraseAtSwapBack( zp_size_t index );
+    zp_bool erase( const_reference val );
+    zp_bool eraseSwapBack( const_reference val );
     zp_size_t eraseAll( const_reference val );
 
     void clear();

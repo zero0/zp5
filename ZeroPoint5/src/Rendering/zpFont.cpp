@@ -234,7 +234,7 @@ void zpFontManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_fontInstances.erase( i );
+            m_fontInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

@@ -116,7 +116,7 @@ void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
         case IDOK:
         case IDYES:
         case IDABORT:
-            __debugbreak();
+            DebugBreak();
             break;
         case IDNO:
         case IDRETRY:
@@ -158,7 +158,7 @@ void zp_assert_warning( const zp_char* file, zp_int line, const zp_char* msg, ..
     switch( result )
     {
         case IDRETRY:
-            __debugbreak();
+            DebugBreak();
             break;
         case IDCANCEL:
             // ignore

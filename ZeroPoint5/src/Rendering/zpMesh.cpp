@@ -307,7 +307,7 @@ void zpMeshManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_meshInstances.erase( i );
+            m_meshInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

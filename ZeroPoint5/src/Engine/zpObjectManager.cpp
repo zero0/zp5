@@ -190,7 +190,7 @@ void zpObjectManager::garbageCollect()
             ( b )->~zpObjectInstance();
             g_globalAllocator->free( b );
 
-            m_activeObjects.erase( i );
+            m_activeObjects.eraseAtSwapBack( i );
 
             --i;
             --imax;

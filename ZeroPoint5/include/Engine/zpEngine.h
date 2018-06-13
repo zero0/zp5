@@ -14,14 +14,9 @@ struct zpPlatform
     PlatformFreeFunc free;
 };
 
-enum zpHandleIdType : zp_hash64
-{
-    ZP_HANDLE_ID_EMPTY = 0ULL,
-    ZP_HANDLE_ID_INVALID = static_cast<zp_hash64>( -1 )
-};
-
 #include "zpInput.h"
 #include "zpDebug.h"
+#include "zpHandle.h"
 
 #include "zpObjectManager.h"
 

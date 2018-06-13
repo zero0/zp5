@@ -1,19 +1,6 @@
 
 #include <new>
 
-template< typename T >
-T* zpVectorAllocator< T >::allocate( zp_size_t count )
-{
-    void* ptr = g_globalAllocator->allocate( sizeof( T ) * count );
-    return static_cast<T*>( ptr );
-}
-
-template< typename T >
-void zpVectorAllocator< T >::free( T* ptr )
-{
-    g_globalAllocator->free( ptr );
-}
-
 //
 //
 //
@@ -23,11 +10,11 @@ zpVector< T, Allocator >::zpVector()
     : m_data( ZP_NULL )
     , m_size( 0 )
     , m_capacity( 0 )
-    , m_allocator( Allocator() )
+    , m_allocator( allocator_value() )
 {}
 
 template< typename T, typename Allocator >
-zpVector< T, Allocator >::zpVector( const Allocator& allocator )
+zpVector< T, Allocator >::zpVector( allocator_const_reference allocator )
     : m_data( ZP_NULL )
     , m_size( 0 )
     , m_capacity( 0 )
@@ -35,7 +22,7 @@ zpVector< T, Allocator >::zpVector( const Allocator& allocator )
 {}
 
 template< typename T, typename Allocator >
-zpVector< T, Allocator >::zpVector( zp_size_t capacity, const Allocator& allocator )
+zpVector< T, Allocator >::zpVector( zp_size_t capacity, allocator_const_reference allocator )
     : m_data( ZP_NULL )
     , m_size( 0 )
     , m_capacity( 0 )
@@ -165,7 +152,7 @@ void zpVector< T, Allocator >::popFront()
 }
 
 template< typename T, typename Allocator >
-void zpVector< T, Allocator >::erase( zp_size_t index )
+void zpVector< T, Allocator >::eraseAt( zp_size_t index )
 {
     ( m_data + index )->~T();
     m_data[ index ] = zp_move( zp_forward( m_data[ m_size - 1 ] ) );
@@ -173,7 +160,43 @@ void zpVector< T, Allocator >::erase( zp_size_t index )
 }
 
 template< typename T, typename Allocator >
-zp_size_t zpVector< T, Allocator >::eraseAll( const T& val )
+void zpVector< T, Allocator >::eraseAtSwapBack( zp_size_t index )
+{
+    ( m_data + index )->~T();
+    m_data[ index ] = zp_move( zp_forward( m_data[ m_size - 1 ] ) );
+    --m_size;
+}
+
+template< typename T, typename Allocator >
+zp_bool zpVector< T, Allocator >::erase( const_reference val )
+{
+    zp_size_t index = indexOf( val );
+    zp_bool found = index != npos;
+
+    if( found )
+    {
+        eraseAt( index );
+    }
+
+    return found;
+}
+
+template< typename T, typename Allocator >
+zp_bool zpVector< T, Allocator >::eraseSwapBack( const_reference val )
+{
+    zp_size_t index = indexOf( val );
+    zp_bool found = index != npos;
+
+    if( found )
+    {
+        eraseAtSwapBack( index );
+    }
+
+    return found;
+}
+
+template< typename T, typename Allocator >
+zp_size_t zpVector< T, Allocator >::eraseAll( const_reference val )
 {
     zp_size_t numErased = 0;
     for( zp_size_t i = 0; i < m_size; ++i )
@@ -222,13 +245,14 @@ void zpVector< T, Allocator >::reserve( zp_size_t size )
 template< typename T, typename Allocator >
 void zpVector< T, Allocator >::destroy()
 {
+    clear();
+
     if( m_data )
     {
         m_allocator.free( m_data );
         m_data = ZP_NULL;
     }
 
-    m_size = 0;
     m_capacity = 0;
 }
 
@@ -337,7 +361,7 @@ void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
             }
         }
 
-        pointer newArray = m_allocator.allocate( m_capacity );
+        pointer newArray = static_cast<pointer>( m_allocator.allocate( m_capacity ) );
         zp_memset( newArray, 0, m_capacity * sizeof( T ) );
 
         if( m_data )

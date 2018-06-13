@@ -289,7 +289,7 @@ void zpCameraManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_cameraInstances.erase( i );
+            m_cameraInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

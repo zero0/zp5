@@ -14,7 +14,10 @@ enum zpComponentFlags : zp_ulong
     ZP_COMPONENT_FLAG_USER_START = zpComponentFlags_Count,
 };
 
-template< typename Manager >
+//
+//
+//
+
 ZP_ABSTRACT_CLASS zpComponent
 {
     ZP_NON_COPYABLE( zpComponent );
@@ -82,18 +85,18 @@ public:
     {
         onCreated();
 
-        zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_CREATED );
+        m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_CREATED );
     }
 
     void destroy()
     {
-        zp_flag_clear( m_flags, ZP_COMPONENT_FLAG_ENABLE );
+        m_flags = zp_flag_clear( m_flags, ZP_COMPONENT_FLAG_ENABLE );
 
         onDisabled();
 
         onDestroyed();
 
-        zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_SHOULD_DESTROY );
+        m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_SHOULD_DESTROY );
     }
 
     void setParentObject( const zpObjectHandle& parentObject )
@@ -151,7 +154,7 @@ protected:
 
     ZP_INLINE void setFlag( zp_ulong index, zp_bool set )
     {
-        m_flags = zp_flag_set( index, set );
+        m_flags = zp_flag_set( m_flags, index, set );
     }
 
 private:
@@ -160,156 +163,24 @@ private:
 
     zp_hash64 m_instanceId;
     zp_flag64 m_flags;
-
-    friend Manager;
 };
+
+//
+//
+//
 
 template< typename Component >
-ZP_SEALED_STRUCT( zpComponentInstance )
-{
-    typedef Component value_type;
-
-    value_type component;
-    zp_size_t refCount;
-};
-
-template< typename Component, typename Instance, typename Manager >
-ZP_SEALED_CLASS( zpComponentHandle )
-{
-public:
-    typedef zpComponentHandle< Component, Instance, Manager > handle;
-
-    typedef zpComponentHandle< Component, Instance, Manager >& handle_reference;
-    typedef const handle& handle_const_reference;
-    typedef handle&& handle_move;
-
-    typedef Component* component_pointer;
-    typedef const Component* component_const_pointer;
-
-    typedef Instance* instance_pointer;
-
-    zpComponentHandle()
-        : m_instanceId( ZP_HANDLE_ID_EMPTY )
-        , m_instance( ZP_NULL )
-    {}
-    
-    zpComponentHandle( handle_const_reference other )
-        : m_instanceId( other.m_instanceId )
-        , m_instance( other.m_instance )
-    {
-        addRef();
-    }
-
-    zpComponentHandle( handle_move other )
-        : m_instanceId( other.m_instanceId )
-        , m_instance( other.m_instance )
-    {
-        addRef();
-        other.releaseRef();
-    }
-
-    ~zpComponentHandle()
-    {
-        release();
-    }
-
-    handle_reference operator=( handle_const_reference other )
-    {
-        set( other.m_instanceId, other.m_instance );
-        
-        return *this;
-    }
-
-    handle_reference operator=( handle_move other )
-    {
-        set( other.m_instanceId, other.m_instance );
-        other.releaseRef();
-
-        return *this;
-    }
-
-    ZP_FORCE_INLINE zp_bool operator==( handle_const_reference other )
-    {
-        return m_instanceId == other.m_instanceId && m_instance == other.m_instance;
-    }
-
-    ZP_FORCE_INLINE component_const_pointer operator->() const { return get(); }
-    ZP_FORCE_INLINE component_pointer operator->() { return get(); }
-
-    ZP_FORCE_INLINE component_const_pointer get() const
-    {
-        return isValid() ? &m_instance->component : ZP_NULL;
-    }
-
-    ZP_FORCE_INLINE component_pointer get()
-    {
-        return isValid() ? &m_instance->component : ZP_NULL;
-    }
-
-    ZP_FORCE_INLINE zp_bool isValid() const
-    {
-        return m_instance && m_instance->component.getInstanceId() == m_instanceId;
-    }
-
-    void release()
-    {
-        releaseRef();
-    }
-
-public:
-    void addRef()
-    {
-        if( isValid() )
-        {
-            ++m_instance->refCount;
-        }
-    }
-
-    void releaseRef()
-    {
-        if( isValid() )
-        {
-            ZP_ASSERT( m_instance->refCount, "" );
-            --m_instance->refCount;
-        }
-    }
-
-    void set( zp_hash64 instanceId, instance_pointer instance )
-    {
-        releaseRef();
-
-        m_instanceId = instanceId;
-        m_instance = instance;
-
-        addRef();
-    }
-
-    void invalidate()
-    {
-        set( ZP_HANDLE_ID_INVALID, ZP_NULL );
-    }
-
-    zp_hash64 m_instanceId;
-    instance_pointer m_instance;
-
-    friend Manager;
-};
-
-template< typename Component, typename Instance, typename Manager, typename Handle >
-ZP_ABSTRACT_CLASS zpComponentManager
+ZP_ABSTRACT_CLASS zpComponentManager : public zpHandleManager< Component >
 {
     ZP_NON_COPYABLE( zpComponentManager );
 public:
-    typedef Handle& handle_reference;
-    typedef const Handle& handle_const_reference;
-
-    typedef Instance* instance_pointer;
-    typedef const Instance* instance_const_pointer;
-    typedef Instance** instance_iterator;
-    typedef Instance* const* instance_const_iterator;
+    //typedef zpHandleManager< Component >::handle_reference handle_reference;
+    //typedef zpHandleManager< Component >::handle_const_reference handle_const_reference;
+    //
+    //typedef zpHandleManager< Component >::instance_pointer instance_pointer;
+    //typedef zpHandleManager< Component >::instance_const_pointer instance_const_pointer;
 
     zpComponentManager()
-        : m_newComponentInstanceId( 0 )
     {
     }
 
@@ -323,8 +194,8 @@ public:
 
         onPreUpdate( dt, rt );
 
-        zpVector< instance_pointer >::iterator b = m_activeComponents.begin();
-        zpVector< instance_pointer >::iterator e = m_activeComponents.end();
+        zpVector< instance_pointer >::iterator b = m_instances.begin();
+        zpVector< instance_pointer >::iterator e = m_instances.end();
 
         for( ; b != e; ++b )
         {
@@ -349,8 +220,8 @@ public:
 
         onPreFixedUpdate( ft, rt );
 
-        zpVector< instance_pointer >::iterator b = m_activeComponents.begin();
-        zpVector< instance_pointer >::iterator e = m_activeComponents.end();
+        zpVector< instance_pointer >::iterator b = m_instances.begin();
+        zpVector< instance_pointer >::iterator e = m_instances.end();
 
         for( ; b != e; ++b )
         {
@@ -370,8 +241,8 @@ public:
 
         onPreLateUpdate( dt, rt );
 
-        zpVector< instance_pointer >::iterator b = m_activeComponents.begin();
-        zpVector< instance_pointer >::iterator e = m_activeComponents.end();
+        zpVector< instance_pointer >::iterator b = m_instances.begin();
+        zpVector< instance_pointer >::iterator e = m_instances.end();
 
         for( ; b != e; ++b )
         {
@@ -385,67 +256,8 @@ public:
         onPostLateUpdate( dt, rt );
     }
 
-    void garbageCollect()
-    {
-        ZP_PROFILER_BLOCK();
-        
-        for( zp_size_t i = 0, imax = m_activeComponents.size(); i < imax; ++i )
-        {
-            zpVector< instance_pointer >::iterator t = m_activeComponents.begin() + i;
-            if( (*t)->refCount == 0 )
-            {
-                ( *t )->~Instance();
-                m_activeComponents.erase( i );
-
-                --i;
-                --imax;
-
-                g_globalAllocator->free( *t );
-            }
-        }
-    }
-
-    zp_bool findComponentByInstanceId( zp_hash64 instanceId, handle_reference handle ) const
-    {
-        ZP_PROFILER_BLOCK();
-        
-        zp_bool found = false;
-
-        zpVector< instance_pointer >::const_iterator b = m_activeComponents.begin();
-        zpVector< instance_pointer >::const_iterator e = m_activeComponents.end();
-
-        for( ; b != e; ++b )
-        {
-            zpVector< instance_pointer >::pointer t = *b;
-            zp_hash64 id = t->component.getInstanceId();
-            if( id == instanceId )
-            {
-                handle.set( id, t );
-                found = true;
-                break;
-            }
-        }
-
-        return found;
-    }
 
 protected:
-    void createComponent( handle_reference handle )
-    {
-        zp_hash64 instanceId = ++m_newComponentInstanceId;
-
-        instance_pointer instance = static_cast<instance_pointer>( g_globalAllocator->allocate( sizeof( Instance ) ) );
-
-        new ( &instance->component ) Component();
-
-        instance->component.setInstanceId( instanceId );
-        instance->refCount = 0;
-
-        handle.set( instanceId, instance );
-
-        m_activeComponents.pushBack( instance );
-    }
-
     virtual void onPreUpdate( zp_float dt, zp_float rt ) {}
     virtual void onPostUpdate( zp_float dt, zp_float rt ) {}
 
@@ -454,10 +266,6 @@ protected:
 
     virtual void onPreFixedUpdate( zp_float ft, zp_float rt ) {}
     virtual void onPostFixedUpdate( zp_float ft, zp_float rt ) {}
-
-protected:
-    zpVector< instance_pointer > m_activeComponents;
-    zp_size_t m_newComponentInstanceId;
 };
 
 #endif // !ZP_COMPONENT_H

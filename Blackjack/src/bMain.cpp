@@ -4,6 +4,9 @@
 #ifdef ZP_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <io.h>
 #endif // !ZP_WINDOWS
 
 #ifdef ZP_USE_PROFILER
@@ -21,16 +24,15 @@ zpIMemoryAllocator* g_globalDebugAllocator;
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
+#if ZP_DEBUG
     zpStackTrace::Initialize();
 
-    zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
-
-#if ZP_DEBUG
     zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 8 ) >, zpTLFSMemoryPolicy > globalDebugAllocator;
     globalDebugAllocator.setup();
     g_globalDebugAllocator = &globalDebugAllocator;
 #endif
 
+    zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
     globalAllocator.setup();
     g_globalAllocator = &globalAllocator;
 
@@ -47,11 +49,12 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     }
 
     globalAllocator.teardown();
+
 #if ZP_DEBUG
     globalDebugAllocator.teardown();
-#endif
 
     zpStackTrace::Shutdown();
+#endif
 
     return r;
 }

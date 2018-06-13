@@ -31,7 +31,7 @@ void* zpTLFSMemoryPolicy::allocate( zp_size_t size )
     return ptr;
 }
 
-void zpTLFSMemoryPolicy::free( void* ptr )
+void zpTLFSMemoryPolicy::free( const void* ptr )
 {
     m_totalMemoryUsed -= zp_tlsf_block_size( ptr );
     zp_tlsf_free( m_tlsf, ptr );

@@ -217,7 +217,7 @@ void zpParticleEmitterComponentManager::garbageCollect()
             ( &b->particleEmitter )->~zpParticleEmitterComponent();
             g_globalAllocator->free( b );
 
-            m_activeComponents.erase( i );
+            m_activeComponents.eraseAtSwapBack( i );
 
             --i;
             --imax;

@@ -617,7 +617,7 @@ void* zp_tlsf_malloc( zp_tlsf_t tlsf, zp_size_t size )
     return ptr;
 }
 
-void zp_tlsf_free( zp_tlsf_t tlsf, void* ptr )
+void zp_tlsf_free( zp_tlsf_t tlsf, const void* ptr )
 {
     if( ptr )
     {

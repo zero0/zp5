@@ -33,6 +33,11 @@ public:
 
     zp_bool operator==( const zpObjectHandle& other ) const;
 
+    ZP_FORCE_INLINE operator zp_bool() const
+    {
+        return isValid();
+    }
+
 private:
     void addRef();
     void releaseRef();

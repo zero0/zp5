@@ -14,11 +14,11 @@ struct zpTransformComponentDesc
 class zpTransformComponentManager;
 class zpTransformComponent;
 
-typedef zpComponentInstance< zpTransformComponent > zpTransformComponentInstance;
-typedef zpComponentHandle< zpTransformComponent, zpTransformComponentInstance, zpTransformComponentManager > zpTransformComponentHandle;
+typedef zpHandleInstance< zpTransformComponent > zpTransformComponentInstance;
+typedef zpHandle< zpTransformComponent > zpTransformComponentHandle;
 
 
-class zpTransformComponentManager : public zpComponentManager< zpTransformComponent, zpTransformComponentInstance, zpTransformComponentManager, zpTransformComponentHandle >
+class zpTransformComponentManager : public zpComponentManager< zpTransformComponent >
 {
 public:
     zpTransformComponentManager();
@@ -30,7 +30,7 @@ protected:
 
 };
 
-class zpTransformComponent : public zpComponent< zpTransformComponentManager >
+class zpTransformComponent : public zpComponent
 {
 public:
     zpTransformComponent();

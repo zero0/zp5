@@ -335,7 +335,7 @@ void zpMaterialManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_materialInstances.erase( i );
+            m_materialInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

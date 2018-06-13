@@ -10,11 +10,11 @@ struct zpRectTransformComponentDesc
 class zpRectTransformComponentManager;
 class zpRectTransformComponent;
 
-typedef zpComponentInstance< zpRectTransformComponent > zpRectTransformComponentInstance;
-typedef zpComponentHandle< zpRectTransformComponent, zpRectTransformComponentInstance, zpRectTransformComponentManager > zpRectTransformComponentHandle;
+typedef zpHandleInstance< zpRectTransformComponent > zpRectTransformComponentInstance;
+typedef zpHandle< zpRectTransformComponent > zpRectTransformComponentHandle;
 
 
-class zpRectTransformComponentManager : public zpComponentManager< zpRectTransformComponent, zpRectTransformComponentInstance, zpRectTransformComponentManager, zpRectTransformComponentHandle >
+class zpRectTransformComponentManager : public zpComponentManager< zpRectTransformComponent >
 {
 public:
     void createRectTransformComponent( handle_reference h, zpRectTransformComponentDesc* desc );
@@ -23,7 +23,7 @@ protected:
 
 };
 
-class zpRectTransformComponent : public zpComponent< zpRectTransformComponentManager >
+class zpRectTransformComponent : public zpComponent
 {
 public:
     const zpRectf& getRect() const;

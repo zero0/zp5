@@ -451,7 +451,7 @@ void zpTextureManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_textureInstances.erase( i );
+            m_textureInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

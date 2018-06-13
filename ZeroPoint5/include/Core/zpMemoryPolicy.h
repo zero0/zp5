@@ -50,7 +50,7 @@ public:
         return ptr;
     }
 
-    void free( void* ptr )
+    void free( const void* ptr )
     {
         ZP_ASSERT( m_stackCount > 0, "" );
 
@@ -93,7 +93,7 @@ public:
     void teardown();
 
     void* allocate( zp_size_t size );
-    void free( void* ptr );
+    void free( const void* ptr );
 
     zp_size_t getMemoryUsed() const;
 

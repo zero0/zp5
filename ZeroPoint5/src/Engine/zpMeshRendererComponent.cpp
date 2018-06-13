@@ -50,8 +50,8 @@ void zpMeshRendererComponentManager::render( zpRenderingContext* ctx )
 {
     ZP_PROFILER_BLOCK();
     
-    zpVector< instance_pointer >::iterator b = m_activeComponents.begin();
-    zpVector< instance_pointer >::iterator e = m_activeComponents.end();
+    zpVector< instance_pointer >::iterator b = m_instances.begin();
+    zpVector< instance_pointer >::iterator e = m_instances.end();
 
     for( ; b != e; ++b )
     {

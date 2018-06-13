@@ -6,7 +6,7 @@ ZP_PURE_INTERFACE zpIMemoryAllocator
 {
 public:
     virtual void* allocate( zp_size_t size ) = 0;
-    virtual void free( void* ptr ) = 0;
+    virtual void free( const void* ptr ) = 0;
 
     virtual zp_size_t getMemoryUsed() const = 0;
     virtual zp_size_t getTotalMemory() const = 0;
@@ -25,7 +25,7 @@ public:
     ~zpMemoryAllocator();
 
     void* allocate( zp_size_t size );
-    void free( void* ptr );
+    void free( const void* ptr );
 
     void setup();
     void teardown();
@@ -71,7 +71,7 @@ void* zpMemoryAllocator<Storage, Policy>::allocate( zp_size_t size )
 }
 
 template<typename Storage, typename Policy>
-void zpMemoryAllocator<Storage, Policy>::free( void* ptr )
+void zpMemoryAllocator<Storage, Policy>::free( const void* ptr )
 {
     ++m_numFrees;
     m_policy.free( ptr );

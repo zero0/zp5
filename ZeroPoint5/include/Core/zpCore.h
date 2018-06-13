@@ -260,5 +260,67 @@ extern zpIMemoryAllocator* g_globalDebugAllocator;
 
 extern zpIMemoryAllocator* g_globalAllocator;
 
+//
+//
+//
+
+struct zpDefaultGlobalAllocator
+{
+    ZP_FORCE_INLINE void* allocate( zp_size_t size )
+    {
+        void* ptr = g_globalAllocator->allocate( size );
+        return ptr;
+    }
+
+    ZP_FORCE_INLINE void free( const void* ptr )
+    {
+        g_globalAllocator->free( ptr );
+    }
+};
+
+struct zpDefaultGlobalArrayAllocator
+{
+    ZP_FORCE_INLINE void* allocate( zp_size_t size, zp_size_t count )
+    {
+        void* ptr = g_globalAllocator->allocate( size * count );
+        return ptr;
+    }
+
+    ZP_FORCE_INLINE void free( const void* ptr )
+    {
+        g_globalAllocator->free( ptr );
+    }
+};
+
+template< typename T >
+struct zpDefaultGlobalTemplateAllocator
+{
+    ZP_FORCE_INLINE void* allocate()
+    {
+        void* ptr = g_globalAllocator->allocate( sizeof( T ) );
+        return ptr;
+    }
+
+    ZP_FORCE_INLINE void free( const void* ptr )
+    {
+        g_globalAllocator->free( ptr );
+    }
+};
+
+template< typename T >
+struct zpDefaultGlobalTemplateArrayAllocator
+{
+    ZP_FORCE_INLINE void* allocate( zp_size_t count )
+    {
+        void* ptr = g_globalAllocator->allocate( sizeof( T ) * count );
+        return ptr;
+    }
+
+    ZP_FORCE_INLINE void free( const void* ptr )
+    {
+        g_globalAllocator->free( ptr );
+    }
+};
+
 #endif // !ZP_CORE_H
 

@@ -193,7 +193,7 @@ void zpShaderManager::garbageCollect()
 
             g_globalAllocator->free( b );
 
-            m_shaderInstances.erase( i );
+            m_shaderInstances.eraseAtSwapBack( i );
 
             --i;
             --imax;

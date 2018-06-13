@@ -228,7 +228,7 @@ void zpSceneManager::garbageCollect()
             ( &b->scene )->~zpScene();
             g_globalAllocator->free( b );
 
-            m_activeScenes.erase( i );
+            m_activeScenes.eraseAtSwapBack( i );
 
             --i;
             --imax;

@@ -11,14 +11,14 @@ struct zpMeshRendererComponentDesc
 class zpMeshRendererComponentManager;
 class zpMeshRendererComponent;
 
-typedef zpComponentInstance< zpMeshRendererComponent > zpMeshRendererComponentInstance;
-typedef zpComponentHandle< zpMeshRendererComponent, zpMeshRendererComponentInstance, zpMeshRendererComponentManager > zpMeshRendererComponentHandle;
+typedef zpHandleInstance< zpMeshRendererComponent > zpMeshRendererComponentInstance;
+typedef zpHandle< zpMeshRendererComponent > zpMeshRendererComponentHandle;
 
 //
 //
 //
 
-class zpMeshRendererComponentManager : public zpComponentManager< zpMeshRendererComponent, zpMeshRendererComponentInstance, zpMeshRendererComponentManager, zpMeshRendererComponentHandle >
+class zpMeshRendererComponentManager : public zpComponentManager< zpMeshRendererComponent >
 {
 public:
     void createMeshRendererComponent( handle_reference handle, zpMeshRendererComponentDesc* desc );
@@ -30,7 +30,7 @@ public:
 //
 //
 
-class zpMeshRendererComponent : public zpComponent< zpMeshRendererComponentManager >
+class zpMeshRendererComponent : public zpComponent
 {
 public:
     zpMeshRendererComponent();
