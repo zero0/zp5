@@ -58,6 +58,7 @@ set( ZP_CORE_HEADER
     "include/Core/zpDataBuffer.h"
     "include/Core/zpFile.h"
     "include/Core/zpLZF.h"
+    "include/Core/zpMap.h"
     "include/Core/zpMath.h"
     "include/Core/zpMemoryAllocator.h"
     "include/Core/zpMemoryStorage.h"

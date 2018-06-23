@@ -115,6 +115,12 @@ typedef zp_ulong    zp_qword;
 typedef zp_uint     zp_hash32;
 typedef zp_ulong    zp_hash64;
 
+#if ZP_64BIT
+typedef zp_hash64   zp_hash_t;
+#else
+typedef zp_hash32   zp_hash_t;
+#endif
+
 typedef zp_uint     zp_flag32;
 typedef zp_ulong    zp_flag64;
 
@@ -137,25 +143,32 @@ zp_size_t zp_strlen( const zp_char* srcString );
 zp_int zp_strcmp( const zp_char* str1, const zp_char* str2 );
 zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 );
 
+zp_hash32 zp_hash_fnv32( const void* data, zp_size_t size );
+zp_hash64 zp_hash_fnv64( const void* data, zp_size_t size );
+
+zp_hash32 zp_hash_fnv32_str( const zp_char* str, zp_size_t length );
+zp_hash64 zp_hash_fnv64_str( const zp_char* str, zp_size_t length );
+
+#if ZP_64BIT
+#define zp_hash_fnv_t zp_hash_fnv64
+#define zp_hash_fnv_t_str zp_hash_fnv64_str
+#else
+#define zp_hash_fnv_t zp_hash_fnv32
+#define zp_hash_fnv_t_str zp_hash_fnv32_str
+#endif
+
 //
 // Template function
 //
 
 template<typename T>
-ZP_FORCE_INLINE void zp_zero_memory( T* ptr )
-{
-    zp_memset( ptr, 0, sizeof( T ) );
-}
+ZP_FORCE_INLINE void zp_zero_memory( T* ptr );
+
 template<typename T>
-ZP_FORCE_INLINE void zp_zero_memory_array( T* ptr, zp_size_t count )
-{
-    zp_memset( ptr, 0, count * sizeof( T ) );
-}
+ZP_FORCE_INLINE void zp_zero_memory_array( T* ptr, zp_size_t count );
+
 template<typename T, zp_size_t Size>
-ZP_FORCE_INLINE void zp_zero_memory_array( T( &arr )[ Size ] )
-{
-    zp_memset( arr, 0, Size * sizeof( T ) );
-}
+ZP_FORCE_INLINE void zp_zero_memory_array( T( &arr )[ Size ] );
 
 template<typename T>
 ZP_FORCE_INLINE void zp_swap( T& a, T& b );
@@ -244,6 +257,7 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpMemoryStorage.h"
 #include "zpTime.h"
 #include "zpString.h"
+#include "zpMap.h"
 #include "zpVector.h"
 #include "zpDataBuffer.h"
 #include "zpFile.h"
@@ -264,55 +278,31 @@ extern zpIMemoryAllocator* g_globalAllocator;
 //
 //
 
+template<typename T>
+struct zpDefaultEqualityComparer
+{
+    typedef const T& const_reference;
+
+    ZP_FORCE_INLINE zp_hash_t getHash( const_reference val ) const
+    {
+        return static_cast<zp_hash_t>( val );
+    }
+
+    ZP_FORCE_INLINE zp_bool equals( const_reference x, const_reference y ) const
+    {
+        return x == y;
+    }
+};
+
+//
+//
+//
+
 struct zpDefaultGlobalAllocator
 {
     ZP_FORCE_INLINE void* allocate( zp_size_t size )
     {
         void* ptr = g_globalAllocator->allocate( size );
-        return ptr;
-    }
-
-    ZP_FORCE_INLINE void free( const void* ptr )
-    {
-        g_globalAllocator->free( ptr );
-    }
-};
-
-struct zpDefaultGlobalArrayAllocator
-{
-    ZP_FORCE_INLINE void* allocate( zp_size_t size, zp_size_t count )
-    {
-        void* ptr = g_globalAllocator->allocate( size * count );
-        return ptr;
-    }
-
-    ZP_FORCE_INLINE void free( const void* ptr )
-    {
-        g_globalAllocator->free( ptr );
-    }
-};
-
-template< typename T >
-struct zpDefaultGlobalTemplateAllocator
-{
-    ZP_FORCE_INLINE void* allocate()
-    {
-        void* ptr = g_globalAllocator->allocate( sizeof( T ) );
-        return ptr;
-    }
-
-    ZP_FORCE_INLINE void free( const void* ptr )
-    {
-        g_globalAllocator->free( ptr );
-    }
-};
-
-template< typename T >
-struct zpDefaultGlobalTemplateArrayAllocator
-{
-    ZP_FORCE_INLINE void* allocate( zp_size_t count )
-    {
-        void* ptr = g_globalAllocator->allocate( sizeof( T ) * count );
         return ptr;
     }
 

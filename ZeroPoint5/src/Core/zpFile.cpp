@@ -23,12 +23,12 @@ const zp_char* g_zpFileModeToString[] =
     "wb+"
 };
 
+ZP_STATIC_ASSERT( ( sizeof( g_zpFileModeToString ) / sizeof( g_zpFileModeToString[ 0 ] ) ) == zpFileMode_Count );
+    
 zpFile::zpFile( const zp_char* filename, zpFileMode filemode )
     : m_filename( filename )
     , m_fileHandle( ZP_NULL )
 {
-    ZP_STATIC_ASSERT( ( sizeof( g_zpFileModeToString ) / sizeof( g_zpFileModeToString[ 0 ] ) ) == zpFileMode_Count );
-
     FILE* f;
     errno_t err;
 #ifdef ZP_USE_SAFE_FUNCTIONS
@@ -37,7 +37,6 @@ zpFile::zpFile( const zp_char* filename, zpFileMode filemode )
     f = fopen( m_filename.str(), g_zpFileModeToString[ filemode ] );
     err = errno;
 #endif
-
     m_fileHandle = f;
 
     m_result = err == 0 ? ZP_FILE_SUCCESS : ZP_FILE_ERROR_ON_OPEN;
@@ -86,11 +85,55 @@ zp_size_t zpFile::read( void* data, zp_size_t offset, zp_size_t length ) const
 
 zp_time_t zpFile::lastModifiedTime( const zp_char* filepath )
 {
-    zp_time_t lastModifiedTime;
-#if ZP_WINDOWS
+    zp_time_t lastModifiedTime = 0;
+
     struct stat fileStat;
     zp_int r = stat( filepath, &fileStat );
-    lastModifiedTime = static_cast<zp_time_t>( fileStat.st_mtime );
-#endif
+    lastModifiedTime = r == 0 ? static_cast<zp_time_t>( fileStat.st_mtime ) : 0;
+
     return lastModifiedTime;
+}
+
+zp_time_t zpFile::lastAccessedTime( const zp_char* filepath )
+{
+    zp_time_t lastAccessedTime = 0;
+
+    struct stat fileStat;
+    zp_int r = stat( filepath, &fileStat );
+    lastAccessedTime = r == 0 ? static_cast<zp_time_t>( fileStat.st_atime ) : 0;
+
+    return lastAccessedTime;
+}
+
+zp_time_t zpFile::creationTime( const zp_char* filepath )
+{
+    zp_time_t creationTime = 0;
+
+    struct stat fileStat;
+    zp_int r = stat( filepath, &fileStat );
+    creationTime = r == 0 ? static_cast<zp_time_t>( fileStat.st_ctime ) : 0;
+
+    return creationTime;
+}
+
+zp_bool zpFile::exists( const zp_char* filepath )
+{
+    zp_bool exists = false;
+
+    struct stat fileStat;
+    zp_int r = stat( filepath, &fileStat );
+    exists = r == 0;
+
+    return exists;
+}
+
+zp_size_t zpFile::size( const zp_char* filepath )
+{
+    zp_size_t size = 0;
+
+    struct stat fileStat;
+    zp_int r = stat( filepath, &fileStat );
+    size = r == 0 ? static_cast<zp_size_t>( fileStat.st_size ) : 0;
+
+    return size;
 }

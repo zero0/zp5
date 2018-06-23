@@ -22,6 +22,16 @@ zpVector< T, Allocator >::zpVector( allocator_const_reference allocator )
 {}
 
 template< typename T, typename Allocator >
+zpVector< T, Allocator >::zpVector( zp_size_t capacity )
+    : m_data( ZP_NULL )
+    , m_size( 0 )
+    , m_capacity( 0 )
+    , m_allocator( allocator_value() )
+{
+    ensureCapacity( capacity );
+}
+
+template< typename T, typename Allocator >
 zpVector< T, Allocator >::zpVector( zp_size_t capacity, allocator_const_reference allocator )
     : m_data( ZP_NULL )
     , m_size( 0 )
@@ -361,8 +371,9 @@ void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
             }
         }
 
-        pointer newArray = static_cast<pointer>( m_allocator.allocate( m_capacity ) );
-        zp_memset( newArray, 0, m_capacity * sizeof( T ) );
+        const zp_size_t size = sizeof( T ) * m_capacity;
+        pointer newArray = static_cast<pointer>( m_allocator.allocate( size ) );
+        zp_memset( newArray, 0, size );
 
         if( m_data )
         {
@@ -377,6 +388,7 @@ void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
             }
 
             m_allocator.free( m_data );
+            m_data = ZP_NULL;
         }
 
         m_data = newArray;

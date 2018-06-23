@@ -56,11 +56,18 @@ public:
 
     zpString substr( zp_size_t pos, zp_size_t count = npos ) const;
 
+    zp_bool operator==( const zpString& rhs ) const;
+    zp_bool operator!=( const zpString& rhs ) const;
+
+    operator zp_hash_t() const;
+
 private:
     zp_char* m_str;
     zp_size_t m_length;
     zp_size_t m_capacity;
+    mutable zp_hash_t m_hash;
     zpStringAllocator m_alloc;
 };
+
 
 #endif // !ZP_STRING_H

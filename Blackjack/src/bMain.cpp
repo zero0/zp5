@@ -35,7 +35,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
     globalAllocator.setup();
     g_globalAllocator = &globalAllocator;
-
+    
     int r = 0;// = zpMain();
 
     {

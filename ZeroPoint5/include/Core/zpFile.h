@@ -2,12 +2,15 @@
 #ifndef ZP_FILE_H
 #define ZP_FILE_H
 
-enum zpFileResult : zp_uint
+enum zpFileResult : zp_int
 {
     ZP_FILE_SUCCESS = 0,
 
-    ZP_FILE_ERROR_ON_OPEN,
-    ZP_FILE_ERROR_ON_CLOSE,
+    ZP_FILE_ERROR_ON_OPEN = -1,
+    ZP_FILE_ERROR_ON_CLOSE = -2,
+
+    zpFileResult_Force32 = ZP_FORECE_32BIT
+
 };
 
 enum zpFileMode : zp_uint
@@ -47,7 +50,11 @@ public:
     zp_size_t write( const void* data, zp_size_t offset, zp_size_t length ) const;
     zp_size_t read( void* data, zp_size_t offset, zp_size_t length ) const;
 
-    static zp_time_t lastModifiedTime( const zp_char* filenname );
+    static zp_time_t lastModifiedTime( const zp_char* filepath );
+    static zp_time_t lastAccessedTime( const zp_char* filepath );
+    static zp_time_t creationTime( const zp_char* filepath );
+    static zp_bool exists( const zp_char* filepath );
+    static zp_size_t size( const zp_char* filepath );
 
 private:
     zpFile();

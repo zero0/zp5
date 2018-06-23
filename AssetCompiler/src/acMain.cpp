@@ -1,4 +1,3 @@
-#include "Core/zpCore.h"
 #include "acMain.h"
 
 #ifdef ZP_WINDOWS
@@ -12,7 +11,9 @@ zpProfiler g_profiler;
 
 //zpBlockAllocator g_globalAllocator( ZP_MEMORY_MB( 10 ) );
 zpIMemoryAllocator* g_globalAllocator;
+#if ZP_DEBUG
 zpIMemoryAllocator* g_globalDebugAllocator;
+#endif
 
 static zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 10 ) >, zpTLFSMemoryPolicy > s_globalAllocator;
 

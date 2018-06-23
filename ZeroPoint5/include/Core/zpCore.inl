@@ -1,5 +1,23 @@
 
 template<typename T>
+ZP_FORCE_INLINE void zp_zero_memory( T* ptr )
+{
+    zp_memset( ptr, 0, sizeof( T ) );
+}
+
+template<typename T>
+ZP_FORCE_INLINE void zp_zero_memory_array( T* ptr, zp_size_t count )
+{
+    zp_memset( ptr, 0, count * sizeof( T ) );
+}
+
+template<typename T, zp_size_t Size>
+ZP_FORCE_INLINE void zp_zero_memory_array( T( &arr )[ Size ] )
+{
+    zp_memset( arr, 0, Size * sizeof( T ) );
+}
+
+template<typename T>
 ZP_FORCE_INLINE void zp_swap( T& a, T& b )
 {
     T t = a;
@@ -12,7 +30,7 @@ ZP_FORCE_INLINE void zp_move_swap( T& a, T& b )
 {
     T t = zp_move( zp_forward( a ) );
     a = zp_move( zp_forward( b ) );
-    b = zp_move( t );
+    b = zp_move( zp_forward( t ) );
 }
 
 template<typename T>
@@ -20,7 +38,7 @@ ZP_FORCE_INLINE void zp_move_swap( T&& a, T&& b )
 {
     T t = zp_move( a );
     a = zp_move( b );
-    b = zp_move( t );
+    b = zp_move( zp_forward( t ) );
 }
 
 template<typename T>

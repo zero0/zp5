@@ -2,7 +2,7 @@
 #ifndef ZP_VECTOR_H
 #define ZP_VECTOR_H
 
-template< typename T, typename Allocator = zpDefaultGlobalTemplateArrayAllocator< T > >
+template< typename T, typename Allocator = zpDefaultGlobalAllocator >
 class zpVector
 {
 public:
@@ -21,7 +21,8 @@ public:
 
     zpVector();
     explicit zpVector( allocator_const_reference );
-    zpVector( zp_size_t capacity, allocator_const_reference = allocator_value() );
+    explicit zpVector( zp_size_t capacity );
+    zpVector( zp_size_t capacity, allocator_const_reference );
     ~zpVector();
 
     reference operator[]( zp_size_t index );
@@ -75,7 +76,7 @@ private:
     zp_size_t m_size;
     zp_size_t m_capacity;
 
-    Allocator m_allocator;
+    allocator_value m_allocator;
 };
 
 #include "zpVector.inl"

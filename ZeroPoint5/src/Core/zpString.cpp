@@ -15,6 +15,7 @@ zpString::zpString()
     : m_str( ZP_NULL )
     , m_length( 0 )
     , m_capacity( 0 )
+    , m_hash( 0 )
     , m_alloc()
 {}
 
@@ -22,6 +23,7 @@ zpString::zpString( const zp_char* str )
     : m_str( ZP_NULL )
     , m_length( 0 )
     , m_capacity( 0 )
+    , m_hash( 0 )
     , m_alloc()
 {
     assign( str );
@@ -31,6 +33,7 @@ zpString::zpString( const zp_char* str, zp_size_t length )
     : m_str( ZP_NULL )
     , m_length( 0 )
     , m_capacity( 0 )
+    , m_hash( 0 )
     , m_alloc()
 {
     assign( str, length );
@@ -40,6 +43,7 @@ zpString::zpString( const zpString& other )
     : m_str( ZP_NULL )
     , m_length( 0 )
     , m_capacity( 0 )
+    , m_hash( 0 )
     , m_alloc()
 {
     assign( other.m_str, other.m_length );
@@ -49,6 +53,7 @@ zpString::zpString( zpString&& other )
     : m_str( other.m_str )
     , m_length( other.m_length )
     , m_capacity( other.m_capacity )
+    , m_hash( 0 )
     , m_alloc()
 {
     other.m_str = ZP_NULL;
@@ -240,3 +245,30 @@ zpString zpString::substr( zp_size_t pos, zp_size_t count ) const
     return zpString( m_str + pos, count );
 }
 
+zp_bool zpString::operator==( const zpString& rhs ) const
+{
+    if( m_str == rhs.m_str ) return true;
+
+    if( m_length == rhs.m_length )
+    {
+        const zp_int cmp = zp_strcmp( m_str, rhs.m_str );
+        return cmp == 0;
+    }
+
+    return false;
+}
+
+zp_bool zpString::operator!=( const zpString& rhs ) const
+{
+    return !operator==( rhs );
+}
+
+zpString::operator zp_hash_t() const
+{
+    if( m_hash == 0 )
+    {
+        m_hash = zp_hash_fnv_t_str( m_str, m_length );
+    }
+
+    return m_hash;
+}

@@ -2,8 +2,6 @@
 #ifndef AC_APPLICATION_H
 #define AC_APPLICATION_H
 
-#include "Core\zpCore.h"
-
 class acApplication
 {
 public:

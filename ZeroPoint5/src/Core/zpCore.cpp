@@ -85,6 +85,75 @@ zp_int zp_stricmp( const zp_char* str1, const zp_char* str2 )
     return _stricmp( str1, str2 );
 }
 
+zp_hash32 zp_hash_fnv32( const void* data, zp_size_t size )
+{
+    const zp_byte* d = static_cast<const zp_byte*>( data );
+
+    const zp_hash32 offsetBias = 0x811c9dc5U;
+    const zp_hash32 prime = 16777619U;
+
+
+    zp_hash32 hash = offsetBias;
+
+    for( zp_size_t i = 0; i != size; ++i )
+    {
+        hash = hash * prime;
+        hash = hash ^ d[ i ];
+    }
+
+    return hash;
+}
+
+zp_hash64 zp_hash_fnv64( const void* data, zp_size_t size )
+{
+    const zp_byte* d = static_cast<const zp_byte*>( data );
+
+    const zp_hash64 offsetBias = 0xcbf29ce484222325UL;
+    const zp_hash64 prime = 1099511628211UL;
+
+    zp_hash64 hash = offsetBias;
+
+    for( zp_size_t i = 0; i != size; ++i )
+    {
+        hash = hash * prime;
+        hash = hash ^ d[ i ];
+    }
+
+    return hash;
+}
+
+zp_hash32 zp_hash_fnv32_str( const zp_char* str, zp_size_t length )
+{
+    const zp_hash32 offsetBias = 0x811c9dc5U;
+    const zp_hash32 prime = 16777619U;
+
+    zp_hash32 hash = offsetBias;
+
+    for( zp_size_t i = 0; i != length; ++i )
+    {
+        hash = hash * prime;
+        hash = hash ^ str[ i ];
+    }
+
+    return hash;
+}
+
+zp_hash64 zp_hash_fnv64_str( const zp_char* str, zp_size_t length )
+{
+    const zp_hash64 offsetBias = 0xcbf29ce484222325UL;
+    const zp_hash64 prime = 1099511628211UL;
+
+    zp_hash64 hash = offsetBias;
+
+    for( zp_size_t i = 0; i != length; ++i )
+    {
+        hash = hash * prime;
+        hash = hash ^ str[ i ];
+    }
+
+    return hash;
+}
+
 #ifdef ZP_USE_ASSERTIONS
 void zp_assert( const zp_char* file, zp_int line, const zp_char* msg, ... )
 {
