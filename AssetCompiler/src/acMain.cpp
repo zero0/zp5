@@ -15,13 +15,21 @@ zpIMemoryAllocator* g_globalAllocator;
 zpIMemoryAllocator* g_globalDebugAllocator;
 #endif
 
-static zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 10 ) >, zpTLFSMemoryPolicy > s_globalAllocator;
-
 #ifdef ZP_WINDOWS
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow )
 #endif // !ZP_WINDOWS
 {
-    g_globalAllocator = &s_globalAllocator;
+#if ZP_DEBUG
+    zpStackTrace::Initialize();
+
+    zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 8 ) >, zpTLFSMemoryPolicy > globalDebugAllocator;
+    globalDebugAllocator.setup();
+    g_globalDebugAllocator = &globalDebugAllocator;
+#endif
+
+    zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
+    globalAllocator.setup();
+    g_globalAllocator = &globalAllocator;
 
     int r = 0;
     {
@@ -33,6 +41,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
             r = app.run();
         }
     }
+
+    globalAllocator.teardown();
+
+#if ZP_DEBUG
+    globalDebugAllocator.teardown();
+
+    zpStackTrace::Shutdown();
+#endif
 
     return r;
 }

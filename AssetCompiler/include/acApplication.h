@@ -18,6 +18,8 @@ private:
     void teardown();
 
     zp_int m_exitCode;
+
+    acCommandLineProcessor m_cmd;
 };
 
 #endif

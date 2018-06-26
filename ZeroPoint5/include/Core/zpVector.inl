@@ -11,7 +11,8 @@ zpVector< T, Allocator >::zpVector()
     , m_size( 0 )
     , m_capacity( 0 )
     , m_allocator( allocator_value() )
-{}
+{
+}
 
 template< typename T, typename Allocator >
 zpVector< T, Allocator >::zpVector( allocator_const_reference allocator )
@@ -19,7 +20,8 @@ zpVector< T, Allocator >::zpVector( allocator_const_reference allocator )
     , m_size( 0 )
     , m_capacity( 0 )
     , m_allocator( allocator )
-{}
+{
+}
 
 template< typename T, typename Allocator >
 zpVector< T, Allocator >::zpVector( zp_size_t capacity )
@@ -44,14 +46,7 @@ zpVector< T, Allocator >::zpVector( zp_size_t capacity, allocator_const_referenc
 template< typename T, typename Allocator >
 zpVector< T, Allocator >::~zpVector()
 {
-    if( m_data )
-    {
-        m_allocator.free( m_data );
-        m_data = ZP_NULL;
-    }
-
-    m_size = 0;
-    m_capacity = 0;
+    destroy();
 }
 
 template< typename T, typename Allocator >
@@ -93,14 +88,20 @@ zp_bool zpVector< T, Allocator >::isFixed() const
 template< typename T, typename Allocator >
 void zpVector< T, Allocator >::pushBack( const_reference val )
 {
-    ensureCapacity( m_size + 1 );
+    if( m_size == m_capacity )
+    {
+        ensureCapacity( m_capacity * 2 );
+    }
     m_data[ m_size++ ] = val;
 }
 
 template< typename T, typename Allocator >
 typename zpVector< T, Allocator >::reference zpVector< T, Allocator >::pushBackEmpty()
 {
-    ensureCapacity( m_size + 1 );
+    if( m_size == m_capacity )
+    {
+        ensureCapacity( m_capacity * 2 );
+    }
     new ( m_data + m_size ) T();
     return m_data[ m_size++ ];
 }
@@ -108,7 +109,10 @@ typename zpVector< T, Allocator >::reference zpVector< T, Allocator >::pushBackE
 template< typename T, typename Allocator >
 void zpVector< T, Allocator >::pushFront( const_reference val )
 {
-    ensureCapacity( m_size + 1 );
+    if( m_size == m_capacity )
+    {
+        ensureCapacity( m_capacity * 2 );
+    }
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
@@ -123,7 +127,10 @@ void zpVector< T, Allocator >::pushFront( const_reference val )
 template< typename T, typename Allocator >
 typename zpVector< T, Allocator >::reference zpVector< T, Allocator >::pushFrontEmpty()
 {
-    ensureCapacity( m_size + 1 );
+    if( m_size == m_capacity )
+    {
+        ensureCapacity( m_capacity * 2 );
+    }
 
     for( zp_size_t i = m_size + 1; i >= 1; --i )
     {
@@ -249,7 +256,10 @@ void zpVector< T, Allocator >::reset()
 template< typename T, typename Allocator >
 void zpVector< T, Allocator >::reserve( zp_size_t size )
 {
-    ensureCapacity( size );
+    if( size > m_capacity )
+    {
+        ensureCapacity( size );
+    }
 }
 
 template< typename T, typename Allocator >
@@ -355,42 +365,24 @@ typename zpVector< T, Allocator >::const_iterator zpVector< T, Allocator >::end(
 }
 
 template< typename T, typename Allocator >
-void zpVector< T, Allocator >::ensureCapacity( zp_size_t size )
+void zpVector< T, Allocator >::ensureCapacity( zp_size_t capacity )
 {
-    if( m_capacity < size )
+    capacity = ZP_MAX( capacity, 4 );
+
+    pointer newArray = static_cast<pointer>( m_allocator.allocate( sizeof( T ) * capacity ) );
+    zp_zero_memory_array( newArray, capacity );
+
+    if( m_data != ZP_NULL )
     {
-        if( m_capacity == 0 )
+        for( zp_size_t i = 0; i != m_size; ++i )
         {
-            m_capacity = size < 4 ? 4 : size;
-        }
-        else
-        {
-            while( m_capacity < size )
-            {
-                m_capacity *= 2;
-            }
+            newArray[ i ] = zp_move( zp_forward( m_data[ i ] ) );
         }
 
-        const zp_size_t size = sizeof( T ) * m_capacity;
-        pointer newArray = static_cast<pointer>( m_allocator.allocate( size ) );
-        zp_memset( newArray, 0, size );
-
-        if( m_data )
-        {
-            //if( m_size )
-            //{
-            //    zp_memcpy( newArray, sizeof( T ) * m_capacity, m_data, sizeof( T ) * m_size );
-            //}
-
-            for( zp_size_t i = 0; i != m_size; ++i )
-            {
-                newArray[ i ] = zp_move( zp_forward( m_data[ i ] ) );
-            }
-
-            m_allocator.free( m_data );
-            m_data = ZP_NULL;
-        }
-
-        m_data = newArray;
+        m_allocator.free( m_data );
+        m_data = ZP_NULL;
     }
+
+    m_data = newArray;
+    m_capacity = capacity;
 }

@@ -64,6 +64,8 @@ set( ZP_CORE_HEADER
     "include/Core/zpMemoryStorage.h"
     "include/Core/zpMemoryPolicy.h"
     "include/Core/zpProfiler.h"
+    "include/Core/zpQueue.h"
+    "include/Core/zpStack.h"
     "include/Core/zpStackTrace.h"
     "include/Core/zpString.h"
     "include/Core/zpTime.h"

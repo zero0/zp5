@@ -259,6 +259,8 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpString.h"
 #include "zpMap.h"
 #include "zpVector.h"
+#include "zpQueue.h"
+#include "zpStack.h"
 #include "zpDataBuffer.h"
 #include "zpFile.h"
 #include "zpArchive.h"

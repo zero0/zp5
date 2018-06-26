@@ -37,7 +37,6 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     g_globalAllocator = &globalAllocator;
     
     int r = 0;// = zpMain();
-
     {
         zpBaseApplication app;
         app.setHandle( hInstance );
@@ -49,9 +48,11 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     }
 
     globalAllocator.teardown();
+    g_globalAllocator = ZP_NULL;
 
 #if ZP_DEBUG
     globalDebugAllocator.teardown();
+    g_globalDebugAllocator = ZP_NULL;
 
     zpStackTrace::Shutdown();
 #endif

@@ -195,8 +195,8 @@ void zpMap< Key, Value, Comparer, Allocator>::set( key_const_reference key, valu
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 zp_bool zpMap< Key, Value, Comparer, Allocator>::containsKey( key_const_reference key ) const
 {
-    const zp_bool found = findIndex( key );
-    return found != npos;
+    const zp_size_t index = findIndex( key );
+    return index != npos;
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>

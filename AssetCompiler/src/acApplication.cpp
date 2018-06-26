@@ -11,7 +11,9 @@ acApplication::~acApplication()
 
 zp_int acApplication::processCommandLine( const zp_char* cmdLine )
 {
-    zp_int r = 0;
+    m_cmd.addFlag( "", false );
+
+    zp_int r = m_cmd.process( cmdLine );
     return r;
 }
 

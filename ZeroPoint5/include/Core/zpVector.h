@@ -20,9 +20,9 @@ public:
     typedef const allocator_value& allocator_const_reference;
 
     zpVector();
-    explicit zpVector( allocator_const_reference );
+    explicit zpVector( allocator_const_reference allocator );
     explicit zpVector( zp_size_t capacity );
-    zpVector( zp_size_t capacity, allocator_const_reference );
+    zpVector( zp_size_t capacity, allocator_const_reference allocator );
     ~zpVector();
 
     reference operator[]( zp_size_t index );
@@ -70,7 +70,7 @@ public:
     const_iterator end() const;
 
 private:
-    void ensureCapacity( zp_size_t size );
+    void ensureCapacity( zp_size_t capacity );
 
     pointer m_data;
     zp_size_t m_size;
