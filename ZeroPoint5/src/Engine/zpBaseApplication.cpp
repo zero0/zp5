@@ -766,6 +766,7 @@ void zpBaseApplication::debugDrawGUI()
 #ifdef ZP_USE_PROFILER
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_FRAME_STATS )
     {
+        ZP_PROFILER_FUNCTION( "FrameStats" );
         const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
         
         zp_float pft = ( ( tl->frameEndTime - tl->frameStartTime ) * static_cast<zp_time_t>( 1000 ) ) * zpTime::get().getSecondsPerTick();
@@ -778,6 +779,7 @@ void zpBaseApplication::debugDrawGUI()
 
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_PROFILER_STATS )
     {
+        ZP_PROFILER_FUNCTION( "ProfilerStats" );
         const zpProfilerFrame* bf = g_profiler.getPreviousFrameBegin();
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
 
@@ -810,7 +812,7 @@ void zpBaseApplication::debugDrawGUI()
             m_debugGUI.label( buff );
         }
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s", "Mem", "Allocs" );
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%6s %8s", "Mem", "Live Mem" );
         m_debugGUI.label( buff );
 
         zp_size_t memUsed = g_globalAllocator->getMemoryUsed();
@@ -833,12 +835,14 @@ void zpBaseApplication::debugDrawGUI()
             memSize = 'K';
         }
 
-        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8Iu", mem, memSize, g_globalAllocator->getNumAllocations() );
+        const zp_ptrdiff_t liveMem = g_globalAllocator->getNumAllocations() - g_globalAllocator->getNumFrees();
+        zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "%5.3f%c %8d", mem, memSize, liveMem );
         m_debugGUI.label( buff );
     }
 
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_TIMELINE_STATS )
     {
+        ZP_PROFILER_FUNCTION( "TimelineStats" );
         const zpProfilerFrame* bf;
         const zpProfilerFrame* ef = g_profiler.getPreviousFrameEnd();
         const zpProfilerFrameTimeline* tl = g_profiler.getPreviousFrameTimeline();
@@ -880,6 +884,7 @@ void zpBaseApplication::debugDrawGUI()
 
     if( m_debugFlags & ZP_BASE_APPLICATION_FLAG_DEBUG_DISPLAY_OBJECT_STATS )
     {
+        ZP_PROFILER_FUNCTION( "ObjectStats" );
         const zpObjectInstance* const* bo = m_objectManager.beginActiveObjects();
         const zpObjectInstance* const* eo = m_objectManager.endActiveObjects();
 

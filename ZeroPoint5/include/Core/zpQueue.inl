@@ -88,7 +88,7 @@ typename zpQueue<T, Allocator>::value_type zpQueue<T, Allocator>::dequeue()
     m_head = ( m_head + 1 ) % m_capacity;
     --m_size;
 
-    return v;
+    return zp_move( zp_forward( v ) );
 }
 
 template<typename T, typename Allocator>
