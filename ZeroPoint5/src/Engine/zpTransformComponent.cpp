@@ -174,7 +174,7 @@ zpTransformComponentManager::~zpTransformComponentManager()
 {
 }
 
-void zpTransformComponentManager::createTransformComponent( zpTransformComponentHandle& handle, zpTransformComponentDesc* desc )
+void zpTransformComponentManager::createTransformComponent( handle_reference handle, zpTransformComponentDesc* desc )
 {
     createComponent( handle );
 

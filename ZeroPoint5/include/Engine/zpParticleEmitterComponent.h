@@ -2,8 +2,16 @@
 #ifndef ZP_PARTICLE_EMITTER_COMPONENT_H
 #define ZP_PARTICLE_EMITTER_COMPONENT_H
 
+struct zpParticleEmitterComponentDesc
+{
+    zpObjectHandle parentObject;
+};
+
+class zpParticleEmitterComponentManager;
 class zpParticleEmitterComponent;
-struct zpParticleEmitterComponentInstance;
+
+typedef zpHandleInstance< zpParticleEmitterComponent > zpParticleEmitterComponentInstance;
+typedef zpHandle< zpParticleEmitterComponent > zpParticleEmitterComponentHandle;
 
 enum zpParticleEffectShape
 {
@@ -114,59 +122,30 @@ struct zpParticleEffect
     zpMaterialHandle material;
 };
 
-class zpParticleEmitterComponentHandle
+//
+//
+//
+
+class zpParticleEmitterComponentManager : public zpComponentManager< zpParticleEmitterComponent >
 {
 public:
-    zpParticleEmitterComponentHandle();
-    zpParticleEmitterComponentHandle( const zpParticleEmitterComponentHandle& other );
-    zpParticleEmitterComponentHandle( zpParticleEmitterComponentHandle&& other );
-    ~zpParticleEmitterComponentHandle();
+    zpParticleEmitterComponentManager();
+    ~zpParticleEmitterComponentManager();
 
-    zpParticleEmitterComponentHandle& operator=( const zpParticleEmitterComponentHandle& other );
-    zpParticleEmitterComponentHandle& operator=( zpParticleEmitterComponentHandle&& other );
+    void createParticleEmitterComponent( handle_reference h, zpParticleEmitterComponentDesc* desc );
 
-    ZP_FORCE_INLINE const zpParticleEmitterComponent* operator->() const
-    {
-        return get();
-    }
-    ZP_FORCE_INLINE zpParticleEmitterComponent* operator->()
-    {
-        return get();
-    }
-
-    const zpParticleEmitterComponent* get() const;
-    zpParticleEmitterComponent* get();
-
-    zp_bool isValid() const;
-    void release();
-
-private:
-    void addRef();
-    void releaseRef();
-
-    void set( zp_hash64 instanceId, zpParticleEmitterComponentInstance* objectInstance );
-
-    zp_hash64 m_instanceId;
-    zpParticleEmitterComponentInstance* m_particleEmitterInstance;
-
-    friend class zpParticleEmitterComponentManager;
+protected:
 };
 
-class zpParticleEmitterComponent
+//
+//
+//
+
+class zpParticleEmitterComponent : public zpComponent
 {
 public:
     zpParticleEmitterComponent();
     ~zpParticleEmitterComponent();
-
-    void setParentObject( const zpObjectHandle& parent );
-    const zpObjectHandle& getParentObject() const;
-
-    void update( zp_float dt, zp_float rt );
-
-    zp_bool isEnabled() const;
-    void setEnabled( zp_bool enabled );
-
-    zp_hash64 getInstanceId() const;
 
     zp_size_t addEffect( zpParticleEffect* effect );
     void removeEffect( const zp_char* effectName );
@@ -183,49 +162,12 @@ public:
     zp_bool isAllPlaying() const;
     zp_bool isAnyPlaying() const;
 
+protected:
+    void onUpdate( zp_float dt, zp_float rt );
+
 private:
-    void setInstanceId( zp_hash64 instanceId );
-
-    zp_hash64 m_instanceID;
-    zp_ulong m_flags;
-
-    zpObjectHandle m_parentObject;
-
     zpVector< zpParticleEffect > m_effects;
     zpVector< zpParticle > m_particles;
-
-    friend class zpParticleEmitterComponentManager;
-};
-
-struct zpParticleEmitterComponentInstance
-{
-    zpParticleEmitterComponent particleEmitter;
-    zp_size_t refCount;
-};
-
-struct zpParticleEmitterComponentDesc
-{
-    zpObjectHandle parentObject;
-};
-
-class zpParticleEmitterComponentManager
-{
-public:
-    zpParticleEmitterComponentManager();
-    ~zpParticleEmitterComponentManager();
-
-    void update( zp_float dt, zp_float rt );
-
-    void createParticleEmitterComponent( zpParticleEmitterComponentHandle& handle );
-    void createParticleEmitterComponent( zpParticleEmitterComponentHandle& handle, zpParticleEmitterComponentDesc* desc );
-
-    void garbageCollect();
-
-    zp_bool findComponentByID( zp_hash64 instanceId, zpParticleEmitterComponentHandle& handle ) const;
-
-private:
-    zpVector< zpParticleEmitterComponentInstance* > m_activeComponents;
-    zp_size_t m_newParticleEmitterComponentInstanceId;
 };
 
 #endif // ZP_PARTICLE_EMITTER_COMPONENT_H

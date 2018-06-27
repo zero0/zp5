@@ -17,6 +17,9 @@ class zpTransformComponent;
 typedef zpHandleInstance< zpTransformComponent > zpTransformComponentInstance;
 typedef zpHandle< zpTransformComponent > zpTransformComponentHandle;
 
+//
+//
+//
 
 class zpTransformComponentManager : public zpComponentManager< zpTransformComponent >
 {
@@ -29,6 +32,10 @@ public:
 protected:
 
 };
+
+//
+//
+//
 
 class zpTransformComponent : public zpComponent
 {
@@ -72,9 +79,6 @@ private:
 
     zpMatrix4fData m_localMatrix;
     zpMatrix4fData m_worldMatrix;
-
 };
-
-
 
 #endif // !ZP_TRANSFORM_COMPONENT_H
