@@ -8,7 +8,7 @@ enum zpCameraFlag
     ZP_CAMERA_FLAG_PROJECTION_DIRTY =   1 << 2,
 
     zpCameraFlag_Count,
-    zpCameraFlag_Force32 = ZP_FORECE_32BIT
+    zpCameraFlag_Force32 = ZP_FORCE_32BIT
 };
 
 const zp_hash64 ZP_CAMERA_ID_INVALID = (zp_hash64)-1;
@@ -264,12 +264,15 @@ zp_bool zpCameraManager::findCameraForLayer( zp_uint layerIndex, zpCameraHandle&
 {
     zp_bool found = false;
 
-    for( zp_size_t i = 0, imax = m_cameraInstances.size(); i != imax; ++i )
+    zpVector<zpCameraInstance*>::const_iterator b = m_cameraInstances.begin();
+    zpVector<zpCameraInstance*>::const_iterator e = m_cameraInstances.end();
+
+    for( ; b != e; ++b )
     {
-        zpCameraInstance* b = m_cameraInstances[ i ];
-        if( b->refCount && ( b->camera.layerMask & ( 1 << layerIndex ) ))
+        zpCameraInstance* c = *b;
+        if( c->refCount && ( c->camera.layerMask & ( 1 << layerIndex ) ))
         {
-            handle.set( b->instanceId, b );
+            handle.set( c->instanceId, c );
             found = true;
             break;
         }
@@ -293,6 +296,21 @@ void zpCameraManager::garbageCollect()
 
             --i;
             --imax;
+        }
+    }
+}
+
+void zpCameraManager::render( zpRenderingEngine* engine )
+{
+    zpVector<zpCameraInstance*>::const_iterator b = m_cameraInstances.begin();
+    zpVector<zpCameraInstance*>::const_iterator e = m_cameraInstances.end();
+
+    for( ; b != e; ++b )
+    {
+        zpCameraInstance* c = *b;
+        if( c->refCount )
+        {
+            engine->renderCamera( &c->camera );
         }
     }
 }

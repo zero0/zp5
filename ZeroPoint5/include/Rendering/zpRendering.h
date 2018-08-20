@@ -73,7 +73,7 @@ enum zpDisplayFormat : zp_uint
     ZP_DISPLAY_FORMAT_ATI2N,
 
     zpDisplayFormat_Count,
-    zpDisplayFormat_Force32 = ZP_FORECE_32BIT,
+    zpDisplayFormat_Force32 = ZP_FORCE_32BIT,
 };
 
 enum zpTopology : zp_uint
@@ -89,24 +89,44 @@ enum zpTopology : zp_uint
     ZP_TOPOLOGY_TRIANGLE_STRIP,
 
     zpTopology_Count,
-    zpTopology_Force32 = ZP_FORECE_32BIT
+    zpTopology_Force32 = ZP_FORCE_32BIT
 };
 
-enum zpRenderingCommandType : zp_uint
+enum zpRenderCommandType : zp_uint
 {
-    ZP_RENDERING_COMMNAD_NOOP = 0,
+    ZP_RENDER_COMMNAD_NOOP = 0,
 
-    ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT,
-    ZP_RENDERING_COMMNAD_SET_VIEWPORT,
+    ZP_RENDER_COMMNAD_SET_VIEWPORT,
 
-    ZP_RENDERING_COMMNAD_CLEAR,
+    ZP_RENDER_COMMNAD_SET_SCISSOR_RECT,
+
+    ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL,
+    ZP_RENDER_COMMNAD_CLEAR_COLOR,
+    ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH,
+    ZP_RENDER_COMMNAD_CLEAR_DEPTH_STENCIL,
+    ZP_RENDER_COMMNAD_CLEAR_DEPTH,
+    ZP_RENDER_COMMNAD_CLEAR_STENCIL,
+
+    ZP_RENDER_COMMNAD_SET_RT_COLOR,
+    ZP_RENDER_COMMNAD_SET_RT_COLOR_DEPTH,
+    ZP_RENDER_COMMNAD_SET_RT_COLORS,
+    ZP_RENDER_COMMNAD_SET_RT_COLORS_DEPTH, 
+    ZP_RENDER_COMMNAD_SET_RT_DEPTH,
+
+    ZP_RENDER_COMMNAD_DRAW_RENDERERS,
+
+    ZP_RENDER_COMMNAD_BLIT_RT,
+    ZP_RENDER_COMMNAD_BLIT_TEXTURE,
+
+    zpRenderCommandType_Count,
+
+    ZP_RENDER_COMMNAD_PRESENT,
 
     ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE,
     ZP_RENDERING_COMMNAD_DRAW_BUFFERED,
     ZP_RENDERING_COMMNAD_DRAW_INSTANCED,
 
-    zpRenderingCommandType_Count,
-    zpRenderingCommandType_Force32 = ZP_FORECE_32BIT
+    zpRenderCommandType_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpVertexFormat : zp_uint
@@ -120,7 +140,7 @@ enum zpVertexFormat : zp_uint
     ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2,
 
     zpVertexFormat_Count,
-    zpVertexFormat_Force32 = ZP_FORECE_32BIT
+    zpVertexFormat_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpBufferType : zp_uint
@@ -136,7 +156,7 @@ enum zpBufferType : zp_uint
     ZP_BUFFER_TYPE_UNORDERED_ACCESS,
 
     zpBufferType_Count,
-    zpBufferType_Force32 = ZP_FORECE_32BIT
+    zpBufferType_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpBufferBindType : zp_uint
@@ -147,7 +167,7 @@ enum zpBufferBindType : zp_uint
     ZP_BUFFER_BIND_IMMUTABLE,
 
     zpBufferBindType_Count,
-    zpBufferBindType_Force32 = ZP_FORECE_32BIT
+    zpBufferBindType_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpMapType : zp_uint
@@ -159,7 +179,7 @@ enum zpMapType : zp_uint
     ZP_MAP_TYPE_WRITE_NO_OVERWRITE,
 
     zpMapType_Count,
-    zpMapType_Force32 = ZP_FORECE_32BIT
+    zpMapType_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpTextureDimension : zp_uint
@@ -171,7 +191,7 @@ enum zpTextureDimension : zp_uint
     ZP_TEXTURE_DIMENSION_CUBE_MAP,
 
     zpTextureDimension_Count,
-    zpTextureDimension_Force32 = ZP_FORECE_32BIT
+    zpTextureDimension_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpTextureType : zp_uint
@@ -181,7 +201,7 @@ enum zpTextureType : zp_uint
     ZP_TEXTURE_TYPE_RENDER_TEXTURE,
 
     zpTextureType_Count,
-    zpTextureType_Force32 = ZP_FORECE_32BIT
+    zpTextureType_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpViewportType : zp_uint
@@ -197,7 +217,18 @@ enum zpViewportType : zp_uint
     ZP_VIEWPORT_TYPE_BOTTOM_RIGHT,
 
     zpViewportType_Count,
-    zpViewportType_Force32 = ZP_FORECE_32BIT
+    zpViewportType_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpRenderSortOrder : zp_uint
+{
+    ZP_RENDER_SORT_ORDER_NONE = 0,
+
+    ZP_RENDER_SORT_ORDER_FRONT_TO_BACK,
+    ZP_RENDER_SORT_ORDER_BACK_TO_FRONT,
+
+    zpRenderSortOrder_Count,
+    zpRenderSortOrder_Force32 = ZP_FORCE_32BIT
 };
 
 union zpRenderHandle
@@ -226,24 +257,37 @@ struct zpViewport
     zp_float maxDepth;
 };
 
-union zpRenderingSortKey
+union zpRenderSortKey
 {
     struct
     {
-        zp_bool anchor : 1;
         zp_byte viewport : 3;
         zp_byte layer : 4;
         zp_uint depth : 24;
         zp_uint material : 30;
-        zp_byte pass : 2;
+        zp_byte pass : 3;
     };
     zp_ulong key;
 };
 
 struct zpSortRenderCommandData
 {
-    zpRenderingSortKey key;
+    zpRenderSortKey key;
     zp_size_t index;
+};
+
+struct zpRenderRange
+{
+    zp_uint minRenderQueue;
+    zp_uint maxRenderQueue;
+};
+
+struct zpDrawRenderersDesc
+{
+    zpRenderSortOrder sortOrder;
+    zpRenderRange renderRange;
+    zp_flag32 renderLayers;
+    zp_uint passIndex;
 };
 
 struct zpRenderingStat
@@ -257,17 +301,44 @@ struct zpRenderingStat
 class zpRenderingEngine;
 
 #include "zpTexture.h"
+#include "zpRenderTarget.h"
 #include "zpShader.h"
 #include "zpMaterial.h"
 #include "zpFont.h"
 #include "zpMesh.h"
 #include "zpCamera.h"
 
+#include "zpRenderCommandBuffer.h"
+
+struct zpDrawRendererCommand
+{
+    zpRenderSortKey sortKey;
+
+    zpMatrix4fData localToWorld;
+    zpMatrix4fData worldToLocal;
+
+    zpBoundingAABB bounds;
+
+    zpVertexFormat vertexFormat;
+    zpTopology topology;
+
+    zp_size_t vertexOffset;
+    zp_size_t vertexCount;
+    zp_size_t indexOffset;
+    zp_size_t indexCount;
+
+    zpRenderBuffer vertexBuffer;
+    zpRenderBuffer indexBuffer;
+
+    zpMaterialHandle material;
+    zpMeshHandle mesh;
+};
+
 struct zpRenderingCommand
 {
-    zpRenderingCommandType type;
+    zpRenderCommandType type;
     zp_uint id;
-    zpRenderingSortKey sortKey;
+    zpRenderSortKey sortKey;
 
     // draw command data
     zpMatrix4fData transform;
@@ -302,6 +373,123 @@ struct zpRenderingCommand
     zp_int clearStencil;
 };
 
+struct zpRenderCommandHeader
+{
+    zpRenderCommandType type;
+    zp_uint id;
+};
+
+struct zpRenderCommandSetViewport
+{
+    zpRenderCommandHeader header;
+    zpViewport viewport;
+};
+
+struct zpRenderCommandSetScissorRect
+{
+    zpRenderCommandHeader header;
+    zpRecti scissorRect;
+};
+
+struct zpRenderCommandClear
+{
+    zpRenderCommandHeader header;
+    zpColorf color;
+    zp_float depth;
+    zp_int stencil;
+};
+
+struct zpRenderCommandClearColor
+{
+    zpRenderCommandHeader header;
+    zpColorf color;
+};
+
+struct zpRenderCommandClearColorDepth
+{
+    zpRenderCommandHeader header;
+    zpColorf color;
+    zp_float depth;
+};
+
+struct zpRenderCommandClearDepthStencil
+{
+    zpRenderCommandHeader header;
+    zp_float depth;
+    zp_int stencil;
+};
+
+struct zpRenderCommandClearDepth
+{
+    zpRenderCommandHeader header;
+    zp_float depth;
+};
+
+struct zpRenderCommandClearStencil
+{
+    zpRenderCommandHeader header;
+    zp_int stencil;
+};
+
+struct zpRenderCommandSetRenderTargetColor
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtColor;
+};
+
+struct zpRenderCommandSetRenderTargetColorDepth
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtColor;
+    zpRenderTargetIdentifier rtDepth;
+};
+
+struct zpRenderCommandSetRenderTargetColors
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtColor[ 8 ];
+    zp_size_t rtCount;
+};
+
+struct zpRenderCommandSetRenderTargetColorsDepth
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtColors[8];
+    zpRenderTargetIdentifier rtDepth;
+    zp_size_t rtCount;
+};
+
+struct zpRenderCommandSetRenderTargetDepth
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtDepth;
+};
+
+struct zpRenderCommandDrawRenderers
+{
+    zpRenderCommandHeader header;
+    zpDrawRenderersDesc desc;
+};
+
+struct zpRenderCommandBlitRenderTexture
+{
+    zpRenderCommandHeader header;
+};
+
+struct zpRenderCommandBlitTexture
+{
+    zpRenderCommandHeader header;
+};
+
+struct zpRenderCommandPresent
+{
+    zpRenderCommandHeader header;
+    zp_handle hDC;
+    zp_handle hContext;
+    zp_ulong frameIndex;
+};
+
+#include "zpRenderPipeline.h"
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"
 

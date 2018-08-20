@@ -12,7 +12,7 @@ enum zpBaseApplicationFlags
     ZP_BASE_APPLICATION_FLAG_SHOULD_PAUSE_IN_BACKGROUND,
 
     zpBaseApplicationFlags_Count,
-    zpBaseApplicationFlags_Force32 = ZP_FORECE_32BIT,
+    zpBaseApplicationFlags_Force32 = ZP_FORCE_32BIT,
 };
 
 enum
@@ -646,6 +646,7 @@ void zpBaseApplication::handleInput()
         cam->projectionType = ZP_CAMERA_PROJECTION_PERSPECTIVE;
         cam->flags |= 0xFF;
         cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
+        cam->clearColor = zpColor::Blue;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_U ) )
     {
@@ -751,7 +752,13 @@ void zpBaseApplication::render()
         debugDrawGUI();
     }
 
-    m_renderingEngine.present( zpTime::get().getFrameCount() );
+    m_renderingEngine.beginFrame( zpTime::get().getFrameCount() );
+    
+    m_cameraManager.render( &m_renderingEngine );
+
+    m_renderingEngine.endFrame();
+
+    m_renderingEngine.submit();
 }
 
 void zpBaseApplication::debugDrawGUI()

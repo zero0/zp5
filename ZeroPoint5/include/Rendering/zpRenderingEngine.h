@@ -2,6 +2,21 @@
 #ifndef ZP_RENDERING_ENGINE_H
 #define ZP_RENDERING_ENGINE_H
 
+struct zpCreateRenderBufferDesc
+{
+
+};
+
+struct zpCreateTextureDesc
+{
+
+};
+
+struct zpCreateShaderDesc
+{
+
+};
+
 class zpRenderingEngine
 {
 public:
@@ -13,7 +28,10 @@ public:
 
     void setWindowSize( const zpVector2i& size );
 
-    void present( zp_size_t frameIndex );
+    void beginFrame( zp_size_t frameIndex );
+    void renderCamera( const zpCamera* camera );
+    void endFrame();
+    void submit();
 
     zp_bool isVSync() const;
     void setVSync( zp_bool vsync );
@@ -32,13 +50,18 @@ public:
 private:
     void renderingPassForward( zpRenderingContext& context );
 
+    void submitCommandBuffer( zpRenderCommandBuffer* buffer );
+    void submitRawCommand( const void* cmd, zp_size_t size );
+
     zpRenderingContext m_immidiateContext;
+    zpRenderPipeline m_pipeline;
+    zpRenderCommandBuffer m_commandBuffer;
 
     zpVector< zpSortRenderCommandData > m_sortedCommands;
 
     zp_handle m_hDC;
     zp_handle m_hContext;
-
+    zp_size_t m_currentFrame;
     zp_bool m_isVSync;
 };
 

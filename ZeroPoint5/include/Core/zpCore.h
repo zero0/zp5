@@ -22,7 +22,7 @@
 #endif
 
 #define ZP_MALLOC_ALIGNMENT         16
-#define ZP_FORECE_32BIT             0x7FFFFFFF
+#define ZP_FORCE_32BIT              0x7FFFFFFF
 
 #define ZP_STDCALL                  __stdcall
 #define ZP_FASTCALL                 __fastcall
@@ -47,6 +47,7 @@
 #define ZP_SEALED_STRUCT( x )       struct x final
 
 #define ZP_NON_COPYABLE( t )        private: t( const t& ){} t& operator=( const t& ){}
+#define ZP_STATIC_CLASS( t )        private: t() {} ~t() {} t( const t& ){} t& operator=( const t& ){}
 
 #define ZP_UNUSED( v )              (void)v
 

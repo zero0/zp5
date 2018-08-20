@@ -6,14 +6,14 @@
 
 static ZP_FORCE_INLINE void SkipAnchors( zpSortRenderCommandData* &start, zpSortRenderCommandData* end )
 {
-    for( ; start != end && start->key.anchor; ++start )
+    //for( ; start != end && start->key.anchor; ++start )
     {
     }
 }
 
 static ZP_FORCE_INLINE void SkipToNextAnchor( zpSortRenderCommandData* &start, zpSortRenderCommandData* end )
 {
-    for( ; start != end && !start->key.anchor; ++start )
+    //for( ; start != end && !start->key.anchor; ++start )
     {
     }
 }
@@ -130,24 +130,92 @@ void zpRenderingEngine::setWindowSize( const zpVector2i& size )
     //m_engine.setWindowSize( size );
 }
 
-void zpRenderingEngine::present( zp_size_t frameIndex )
+void zpRenderingEngine::beginFrame( zp_size_t frameIndex )
 {
     ZP_PROFILER_BLOCK();
 
-    BeginFrameOpenGL( frameIndex );
+    m_currentFrame = frameIndex;
+
+    BeginFrameOpenGL( m_currentFrame );
 
     m_immidiateContext.fillBuffers();
 
-    renderingPassForward( m_immidiateContext );
+    m_commandBuffer.reset();
+}
+
+void zpRenderingEngine::renderCamera( const zpCamera* camera )
+{
+    ZP_PROFILER_BLOCK();
+
+    //renderingPassForward( m_immidiateContext );
+
+    // TODO: move to pass
+    // set viewport
+    m_commandBuffer.setViewport( camera->viewport );
+    m_commandBuffer.setScissorRect( camera->clipRect );
+   
+    // clear camera
+    if( camera->clearMode )
+    {
+        if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+        {
+            m_commandBuffer.clearColorDepthStencil( camera->clearColor, camera->clearDepth, camera->clearStencil );
+        }
+        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH ) )
+        {
+            m_commandBuffer.clearColorDepth( camera->clearColor, camera->clearDepth );
+        }
+        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+        {
+            m_commandBuffer.clearDepthStencil( camera->clearDepth, camera->clearStencil );
+        }
+        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR ) )
+        {
+            m_commandBuffer.clearColor( camera->clearColor );
+        }
+        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH ) )
+        {
+            m_commandBuffer.clearDepth( camera->clearDepth );
+        }
+        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+        {
+            m_commandBuffer.clearStencil( camera->clearStencil );
+        }
+    }
+
+
+    //m_pipeline.executePipeline( camera, &m_commandBuffer );
+}
+
+void zpRenderingEngine::endFrame()
+{
+    ZP_PROFILER_BLOCK();
 
     m_immidiateContext.flipBuffers();
 
     zpRenderingStat stat;
-    EndFrameOpenGL( frameIndex, stat );
-
-    PresentOpenGL( m_hDC, m_hContext );
+    EndFrameOpenGL( m_currentFrame, stat );
 
     ZP_PROFILER_GPU( stat.frameTime, stat.primitiveCount );
+
+    submitCommandBuffer( &m_commandBuffer );
+}
+
+void zpRenderingEngine::submit()
+{
+    ZP_PROFILER_BLOCK();
+
+    //PresentOpenGL( m_hDC, m_hContext );
+    
+    zpRenderCommandPresent cmd;
+    cmd.header.type = ZP_RENDER_COMMNAD_PRESENT;
+    cmd.header.id = -1;
+
+    cmd.hDC = m_hDC;
+    cmd.hContext = m_hContext;
+    cmd.frameIndex = m_currentFrame;
+
+    submitRawCommand( &cmd, sizeof( zpRenderCommandPresent ) );
 }
 
 zp_bool zpRenderingEngine::isVSync() const
@@ -219,4 +287,17 @@ void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
         const zpRenderingCommand* cmd = cmds.begin() + b->index;
         ProcessRenderingCommandOpenGL( cmd );
     }
+}
+
+void zpRenderingEngine::submitCommandBuffer( zpRenderCommandBuffer* buffer )
+{
+    if( buffer && buffer->getLength() )
+    {
+        submitRawCommand( buffer->getBuffer(), buffer->getLength() );
+    }
+}
+
+void zpRenderingEngine::submitRawCommand( const void* cmd, zp_size_t size )
+{
+    ProcessRenderCommandOpenGL( cmd, size );
 }

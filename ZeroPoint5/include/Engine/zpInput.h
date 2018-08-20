@@ -160,7 +160,7 @@ enum zpMouseButton : zp_uint
     ZP_MOUSE_BUTTON_7,
 
     zpMouseButton_Count,
-    zpMouseButton_Force32 = ZP_FORECE_32BIT,
+    zpMouseButton_Force32 = ZP_FORCE_32BIT,
 
     // Button alias
     ZP_MOUSE_BUTTON_LEFT = ZP_MOUSE_BUTTON_0,

@@ -19,7 +19,7 @@ enum zpDebugGUIWidgetType : zp_uint
     ZP_WIDGET_TYPE_BUTTON,
 
     zpDebugGUIWidgetType_Count,
-    zpDebugGUIWidgetType_Force32 = ZP_FORECE_32BIT
+    zpDebugGUIWidgetType_Force32 = ZP_FORCE_32BIT
 };
 
 struct zpDebugGUIWidgetStyle

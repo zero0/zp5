@@ -810,7 +810,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
 {
     switch( cmd->type )
     {
-        case ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT:
+        case ZP_RENDER_COMMNAD_SET_SCISSOR_RECT:
         {
             glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
             glScissor( cmd->scissorRect.x,
@@ -820,7 +820,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
         }
             break;
 
-        case ZP_RENDERING_COMMNAD_SET_VIEWPORT:
+        case ZP_RENDER_COMMNAD_SET_VIEWPORT:
         {
             glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Viewport" );
             glViewport( cmd->viewport.topX,
@@ -831,7 +831,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
         }
             break;
 
-        case ZP_RENDERING_COMMNAD_CLEAR:
+        case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL:
         {
             glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear" );
             glClearColor( cmd->clearColor.r,
@@ -870,6 +870,158 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
         default:
             ZP_INVALID_CODE_PATH();
             break;
+    }
+}
+
+void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
+{
+    zp_size_t position = 0;
+
+    const zp_size_t length = size;
+    const zp_byte* data = static_cast<const zp_byte*>( cmd );
+
+    while( position < length )
+    {
+        const void* ptr = data + position;
+        const zpRenderCommandHeader* type = static_cast<const zpRenderCommandHeader*>( ptr );
+
+        switch( type->type )
+        {
+            case ZP_RENDER_COMMNAD_NOOP:
+            {
+                position += sizeof( zpRenderCommandHeader );
+            } break;
+
+            case ZP_RENDER_COMMNAD_SET_VIEWPORT:
+            {
+                const zpRenderCommandSetViewport* cmd = static_cast<const zpRenderCommandSetViewport*>( ptr );
+                
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Viewport" );
+                glViewport( cmd->viewport.topX,
+                            cmd->viewport.topY,
+                            cmd->viewport.width,
+                            cmd->viewport.height );
+                glDepthRange( cmd->viewport.minDepth, cmd->viewport.maxDepth );
+
+                position += sizeof( zpRenderCommandSetViewport );
+            } break;
+
+            case ZP_RENDER_COMMNAD_SET_SCISSOR_RECT:
+            {
+                const zpRenderCommandSetScissorRect* cmd = static_cast<const zpRenderCommandSetScissorRect*>( ptr );
+               
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
+                glScissor( cmd->scissorRect.x,
+                           cmd->scissorRect.y,
+                           cmd->scissorRect.width,
+                           cmd->scissorRect.height );
+                
+                position += sizeof( zpRenderCommandSetScissorRect );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL:
+            {
+                const zpRenderCommandClear* cmd = static_cast<const zpRenderCommandClear*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth Stencil" );
+                glClearColor( cmd->color.r,
+                              cmd->color.g,
+                              cmd->color.b,
+                              cmd->color.a );
+                glClearDepth( cmd->depth );
+                glClearStencil( cmd->stencil );
+                glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClear );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_COLOR:
+            {
+                const zpRenderCommandClearColor* cmd = static_cast<const zpRenderCommandClearColor*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Color" );
+                glClearColor( cmd->color.r,
+                              cmd->color.g,
+                              cmd->color.b,
+                              cmd->color.a );
+                glClear( GL_COLOR_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClearColor );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH:
+            {
+                const zpRenderCommandClearColorDepth* cmd = static_cast<const zpRenderCommandClearColorDepth*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Color Depth" );
+                glClearColor( cmd->color.r,
+                              cmd->color.g,
+                              cmd->color.b,
+                              cmd->color.a );
+                glClearDepth( cmd->depth );
+                glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClearColorDepth );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_DEPTH_STENCIL:
+            {
+                const zpRenderCommandClearDepthStencil* cmd = static_cast<const zpRenderCommandClearDepthStencil*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth Stencil" );
+                glClearDepth( cmd->depth );
+                glClearStencil( cmd->stencil );
+                glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClearDepthStencil );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_DEPTH:
+            {
+                const zpRenderCommandClearDepth* cmd = static_cast<const zpRenderCommandClearDepth*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth" );
+                glClearDepth( cmd->depth );
+                glClear( GL_DEPTH_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClearDepth );
+            } break;
+
+            case ZP_RENDER_COMMNAD_CLEAR_STENCIL:
+            {
+                const zpRenderCommandClearStencil* cmd = static_cast<const zpRenderCommandClearStencil*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Stencil" );
+                glClearStencil( cmd->stencil );
+                glClear( GL_STENCIL_BUFFER_BIT );
+
+                position += sizeof( zpRenderCommandClearStencil );
+            } break;
+
+            case ZP_RENDER_COMMNAD_PRESENT:
+            {
+                const zpRenderCommandPresent* cmd = static_cast<const zpRenderCommandPresent*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Present" );
+                glMarkerBlock( "Present" );
+
+                const HDC dc = static_cast<const HDC>( cmd->hDC );
+                const HGLRC context = static_cast<const HGLRC>( cmd->hContext );
+
+                wglMakeCurrent( dc, context );
+
+                glFlush();
+
+                SwapBuffers( dc );
+
+                position += sizeof( zpRenderCommandPresent );
+            } break;
+
+            default:
+            {
+                position += sizeof( zpRenderCommandHeader );
+            } break;
+        }
     }
 }
 

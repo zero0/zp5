@@ -21,7 +21,7 @@ enum zpParticleEffectShape
     ZP_PARTICLE_EFFECT_SHAPE_BOX,
 
     zpParticleEffectShape_Count,
-    zpParticleEffectShape_Force32 = ZP_FORECE_32BIT
+    zpParticleEffectShape_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpParticleEffectRange
@@ -32,7 +32,7 @@ enum zpParticleEffectRange
     ZP_PARTICLE_EFFECT_RANGE_VELOCITY,
 
     zpParticleEffectRange_Count,
-    zpParticleEffectRange_Force32 = ZP_FORECE_32BIT
+    zpParticleEffectRange_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpParticleEffectState
@@ -43,7 +43,7 @@ enum zpParticleEffectState
     ZP_PARTICLE_EFFECT_STATE_FINISHING,
 
     zpParticleEffectState_Count,
-    zpParticleEffectState_Force32 = ZP_FORECE_32BIT
+    zpParticleEffectState_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpParticleEffectFlag
@@ -60,7 +60,7 @@ enum zpParticleEffectFlag
     ZP_PARTICLE_EFFECT_FLAG_USE_DEPTH_SORT,
 
     zpParticleEffectFlag_Count,
-    zpParticleEffectFlag_Force32 = ZP_FORECE_32BIT
+    zpParticleEffectFlag_Force32 = ZP_FORCE_32BIT
 };
 
 struct zpParticle

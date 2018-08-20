@@ -42,9 +42,8 @@ void zpRenderingContext::clear( const zpColorf& clearColor, zp_float clearDepth,
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_CLEAR;
+    cmd.type = ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL;
     cmd.sortKey.key = 0;
-    cmd.sortKey.anchor = true;
     cmd.clearColor = clearColor;
     cmd.clearDepth = clearDepth;
     cmd.clearStencil = clearStencil;
@@ -60,9 +59,8 @@ void zpRenderingContext::setViewport( const zpViewport& viewport )
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_SET_VIEWPORT;
+    cmd.type = ZP_RENDER_COMMNAD_SET_VIEWPORT;
     cmd.sortKey.key = 0;
-    cmd.sortKey.anchor = true;
     cmd.viewport = viewport;
 }
 
@@ -71,9 +69,8 @@ void zpRenderingContext::setScissorRect( const zpRecti& scissorRect )
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_SET_SCISSOR_RECT;
+    cmd.type = ZP_RENDER_COMMNAD_SET_SCISSOR_RECT;
     cmd.sortKey.key = 0;
-    cmd.sortKey.anchor = true;
     cmd.scissorRect = scissorRect;
 }
 

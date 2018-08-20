@@ -32,6 +32,18 @@ public:
     zp_size_t write( const void* data, zp_size_t offset, zp_size_t length );
     zp_size_t read( void* data, zp_size_t offset, zp_size_t length );
 
+    template<typename T>
+    ZP_FORCE_INLINE zp_size_t write( const T& data )
+    {
+        return write( &data, 0, sizeof( T ) );
+    }
+
+    template<typename T>
+    ZP_FORCE_INLINE zp_size_t read( T& data )
+    {
+        return read( &data, 0, sizeof( T ) );
+    }
+
 protected:
     zpDataBuffer( zp_byte* data, zp_size_t capacity );
 

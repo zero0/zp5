@@ -12,7 +12,7 @@ enum zpCameraProjection
     ZP_CAMERA_PROJECTION_PERSPECTIVE_OFFSET,
 
     zpCameraProjection_Count,
-    zpCameraProjection_Force32 = ZP_FORECE_32BIT
+    zpCameraProjection_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpCameraClearMode
@@ -25,7 +25,7 @@ enum zpCameraClearMode
 
     ZP_CAMERA_CLEAR_MODE_DEFAULT = ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL | ZP_CAMERA_CLEAR_MODE_BEFORE_RENDER,
 
-    zpCameraClearMode_Force32 = ZP_FORECE_32BIT
+    zpCameraClearMode_Force32 = ZP_FORCE_32BIT
 };
 
 struct zpCamera
@@ -117,6 +117,8 @@ public:
     zp_bool findCameraForLayer( zp_uint layerIndex, zpCameraHandle& handle ) const;
 
     void garbageCollect();
+
+    void render( zpRenderingEngine* engine );
 
 private:
     zpVector< zpCameraInstance* > m_cameraInstances;

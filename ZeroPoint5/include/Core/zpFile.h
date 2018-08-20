@@ -9,7 +9,7 @@ enum zpFileResult : zp_int
     ZP_FILE_ERROR_ON_OPEN = -1,
     ZP_FILE_ERROR_ON_CLOSE = -2,
 
-    zpFileResult_Force32 = ZP_FORECE_32BIT
+    zpFileResult_Force32 = ZP_FORCE_32BIT
 
 };
 
@@ -34,7 +34,7 @@ enum zpFileMode : zp_uint
     ZP_FILE_MODE_BINARY_READ_TRUNCATE_WRITE,
 
     zpFileMode_Count,
-    zpFileMode_Force32 = ZP_FORECE_32BIT
+    zpFileMode_Force32 = ZP_FORCE_32BIT
 };
 
 class zpFile
