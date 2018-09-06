@@ -9,6 +9,9 @@ public:
     zpRenderCommandBuffer( zp_size_t capacity );
     ~zpRenderCommandBuffer();
 
+    void pushMarker( const zp_char* marker );
+    void popMarker();
+
     void clearColorDepthStencil( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil );
     void clearColorDepth( const zpColorf& clearColor, zp_float clearDepth );
     void clearDepthStencil( zp_float clearDepth, zp_uint clearStencil );
@@ -25,10 +28,12 @@ public:
     void setViewport( const zpViewport& viewport );
     void setScissorRect( const zpRecti& scissorRect );
 
-    void drawRenderers( const zpDrawRenderersDesc& desc );
+    void drawMesh( const zpMatrix4fData& transform, const zpMesh* mesh, const zpMaterial* material, zp_size_t subMeshIndex, zp_int passIndex );
 
     void blit( const zpRenderTargetIdentifier& src, const zpRenderTargetIdentifier& dest );
     void blit( const zpTexture& src, const zpRenderTargetIdentifier& dest );
+
+    void executeCommandBuffer( const zpRenderCommandBuffer& buffer );
 
     const zp_byte* getBuffer() const;
     zp_size_t getLength() const;

@@ -17,6 +17,33 @@ zpRenderCommandBuffer::~zpRenderCommandBuffer()
 {
 }
 
+void zpRenderCommandBuffer::pushMarker( const zp_char* marker )
+{
+#if ZP_DEBUG
+    zpRenderCommandPushMarker cmd;
+    cmd.header.type = ZP_RENDER_COMMNAD_PUSH_MARKER;
+    cmd.header.id = ++m_uniqueID;
+
+    const zp_size_t len = zp_strlen( marker );
+    cmd.length = ZP_MIN( len, ZP_MAX_MARKER_NAME_SIZE );
+
+    zp_strcpy( cmd.marker, cmd.length, marker );
+
+    m_buffer.write( cmd );
+#endif
+}
+
+void zpRenderCommandBuffer::popMarker()
+{
+#if ZP_DEBUG
+    zpRenderCommandPopMarker cmd;
+    cmd.header.type = ZP_RENDER_COMMNAD_POP_MARKER;
+    cmd.header.id = ++m_uniqueID;
+
+    m_buffer.write( cmd );
+#endif
+}
+
 void zpRenderCommandBuffer::clearColorDepthStencil( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil )
 {
     zpRenderCommandClear cmd;
@@ -165,13 +192,26 @@ void zpRenderCommandBuffer::setScissorRect( const zpRecti& scissorRect )
     m_buffer.write( cmd );
 }
 
-void zpRenderCommandBuffer::drawRenderers( const zpDrawRenderersDesc& desc )
+void zpRenderCommandBuffer::drawMesh( const zpMatrix4fData& transform, const zpMesh* mesh, const zpMaterial* material, zp_size_t subMeshIndex, zp_int passIndex )
 {
-    zpRenderCommandDrawRenderers cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_DRAW_RENDERERS;
+    zpRenderCommandDrawMesh cmd;
+    cmd.header.type = ZP_RENDER_COMMNAD_DRAW_MESH;
     cmd.header.id = ++m_uniqueID;
 
-    cmd.desc = desc;
+    cmd.vertexBuffer = mesh->vertexData;
+    cmd.indexBuffer = mesh->indexData;
+    cmd.vertexOffset = mesh->parts[ subMeshIndex ].vertexOffset;
+    cmd.vertexCount = mesh->parts[ subMeshIndex ].vertexCount;
+    cmd.indexOffset = mesh->parts[ subMeshIndex ].indexOffset;
+    cmd.indexCount = mesh->parts[ subMeshIndex ].indexCount;
+    cmd.indexStride = sizeof( zp_ushort );
+    cmd.vertexFormat = mesh->vertexFormat;
+    cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+
+    cmd.localToWorld = transform;
+
+    cmd.material = material;
+    cmd.passIndex = passIndex;
 
     m_buffer.write( cmd );
 }
@@ -192,6 +232,11 @@ void zpRenderCommandBuffer::blit( const zpTexture& src, const zpRenderTargetIden
     cmd.header.id = ++m_uniqueID;
 
     m_buffer.write( cmd );
+}
+
+void zpRenderCommandBuffer::executeCommandBuffer( const zpRenderCommandBuffer& buffer )
+{
+    m_buffer.write( buffer.m_buffer.getBuffer(), 0, buffer.m_buffer.getLength() );
 }
 
 const zp_byte* zpRenderCommandBuffer::getBuffer() const

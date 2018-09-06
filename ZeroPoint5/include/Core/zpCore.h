@@ -122,6 +122,8 @@ typedef zp_hash64   zp_hash_t;
 typedef zp_hash32   zp_hash_t;
 #endif
 
+typedef zp_byte     zp_flag8;
+typedef zp_ushort   zp_flag16;
 typedef zp_uint     zp_flag32;
 typedef zp_ulong    zp_flag64;
 

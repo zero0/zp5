@@ -4,6 +4,13 @@
 
 #include "Core\zpCore.h"
 
+enum zpRenderingConstants
+{
+    ZP_MAX_GLOBAL_NAME_SIZE = 32,
+    ZP_MAX_MARKER_NAME_SIZE = 32,
+
+};
+
 enum zpDisplayFormat : zp_uint
 {
     ZP_DISPLAY_FORMAT_UNKNOWN = 0,
@@ -96,6 +103,9 @@ enum zpRenderCommandType : zp_uint
 {
     ZP_RENDER_COMMNAD_NOOP = 0,
 
+    ZP_RENDER_COMMNAD_PUSH_MARKER,
+    ZP_RENDER_COMMNAD_POP_MARKER,
+
     ZP_RENDER_COMMNAD_SET_VIEWPORT,
 
     ZP_RENDER_COMMNAD_SET_SCISSOR_RECT,
@@ -113,18 +123,24 @@ enum zpRenderCommandType : zp_uint
     ZP_RENDER_COMMNAD_SET_RT_COLORS_DEPTH, 
     ZP_RENDER_COMMNAD_SET_RT_DEPTH,
 
-    ZP_RENDER_COMMNAD_DRAW_RENDERERS,
-
     ZP_RENDER_COMMNAD_BLIT_RT,
     ZP_RENDER_COMMNAD_BLIT_TEXTURE,
+
+    ZP_RENDER_COMMNAD_SET_GLOBAL_INT,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_FLOAT,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_COLOR,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_VECTOR,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_MATRIX,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_TEXTURE,
+    ZP_RENDER_COMMNAD_SET_GLOBAL_BUFFER,
 
     zpRenderCommandType_Count,
 
     ZP_RENDER_COMMNAD_PRESENT,
 
-    ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE,
-    ZP_RENDERING_COMMNAD_DRAW_BUFFERED,
-    ZP_RENDERING_COMMNAD_DRAW_INSTANCED,
+    ZP_RENDER_COMMNAD_DRAW_MESH,
+    ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED,
+    ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED_INDIRECT,
 
     zpRenderCommandType_Force32 = ZP_FORCE_32BIT
 };
@@ -288,6 +304,7 @@ struct zpDrawRenderersDesc
     zpRenderRange renderRange;
     zp_flag32 renderLayers;
     zp_uint passIndex;
+    zp_flag32 viewPorts;
 };
 
 struct zpRenderingStat
@@ -308,7 +325,6 @@ class zpRenderingEngine;
 #include "zpMesh.h"
 #include "zpCamera.h"
 
-#include "zpRenderCommandBuffer.h"
 
 struct zpDrawRendererCommand
 {
@@ -377,6 +393,18 @@ struct zpRenderCommandHeader
 {
     zpRenderCommandType type;
     zp_uint id;
+};
+
+struct zpRenderCommandPushMarker
+{
+    zpRenderCommandHeader header;
+    zp_char marker[ ZP_MAX_MARKER_NAME_SIZE ];
+    zp_size_t length;
+};
+
+struct zpRenderCommandPopMarker
+{
+    zpRenderCommandHeader header;
 };
 
 struct zpRenderCommandSetViewport
@@ -481,6 +509,62 @@ struct zpRenderCommandBlitTexture
     zpRenderCommandHeader header;
 };
 
+struct zpRenderCommandSetGlobalInt
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zp_int value;
+};
+
+struct zpRenderCommandSetGlobalFloat
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zp_float value;
+};
+
+struct zpRenderCommandSetGlobalColor
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zpColorf value;
+};
+
+struct zpRenderCommandSetGlobalVector
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zpVector4fData value;
+};
+
+struct zpRenderCommandSetGlobalMatrix
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zpMatrix4fData value;
+};
+
+struct zpRenderCommandSetGlobalTexture
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zpRenderHandle value;
+};
+
+struct zpRenderCommandSetGlobalBuffer
+{
+    zpRenderCommandHeader header;
+    zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
+    zpRenderHandle value;
+    zp_size_t offset;
+    zp_size_t length;
+    zp_size_t stride;
+};
+
+//
+// Internal Commands
+//
+
 struct zpRenderCommandPresent
 {
     zpRenderCommandHeader header;
@@ -488,6 +572,52 @@ struct zpRenderCommandPresent
     zp_handle hContext;
     zp_ulong frameIndex;
 };
+
+struct zpRenderCommandDrawMesh
+{
+    zpRenderCommandHeader header;
+    zpRenderBuffer vertexBuffer;
+    zpRenderBuffer indexBuffer;
+    zp_size_t vertexOffset;
+    zp_size_t vertexCount;
+    zp_size_t indexOffset;
+    zp_size_t indexCount;
+    zp_uint indexStride;
+    zpVertexFormat vertexFormat;
+    zpTopology topology;
+
+    const zpMaterial* material;
+    zp_int passIndex;
+
+    zpMatrix4fData localToWorld;
+};
+
+//
+//
+//
+
+struct zpDrawRenderable
+{
+    zp_flag32 renderLayers;
+    zp_int passIndex;
+    zp_int subMeshIndex;
+
+    zpMeshHandle mesh;
+    zpMaterialHandle material;
+
+    zpMatrix4fData localToWorld;
+    zpBoundingAABB bounds;
+};
+
+struct zpDrawRenderableSort
+{
+    zpRenderSortKey sortKey;
+    const zpDrawRenderable* drawRenderable;
+};
+
+
+#include "zpRenderCommandBuffer.h"
+#include "zpRenderContext.h"
 
 #include "zpRenderPipeline.h"
 #include "zpRenderingContext.h"

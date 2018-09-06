@@ -86,7 +86,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = topology;
@@ -112,7 +112,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = topology;
@@ -139,7 +139,7 @@ void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font 
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
@@ -393,7 +393,7 @@ void zpRenderingContext::drawMesh( zp_byte layer, const zpMatrix4fData& transfor
         const zpMeshPart* p = m->parts + i;
 
         zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-        cmd.type = ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE;
+        cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
         cmd.sortKey.key = 0;
         cmd.sortKey.layer = layer;
         cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;

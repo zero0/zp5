@@ -731,9 +731,9 @@ void zpBaseApplication::render()
     zpVector2f uv3 = { 1, 1 };
 
 
-    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
-    ctx->setViewport( vp );
-    ctx->clear( clearColor, 1, 0 );
+    //zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
+    //ctx->setViewport( vp );
+    //ctx->clear( clearColor, 1, 0 );
 
     //ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, tm );
     //ctx->setTransform( viewProj );
@@ -744,7 +744,7 @@ void zpBaseApplication::render()
     //ctx->addQuadIndex( 0, 1, 2, 3 );
     //ctx->endDraw();
 
-    m_meshRendererComponentManager.render( ctx );
+    //m_meshRendererComponentManager.render( ctx );
 
     // draw debug when toggled on
     if( m_debugFlags )

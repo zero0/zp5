@@ -110,13 +110,13 @@ void zpRenderingEngine::setup( zp_handle hWindow )
     //m_engine.setup( hWindow );
     SetupRenderingOpenGL( hWindow, m_hDC, m_hContext );
 
-    m_immidiateContext.setup();
+    //m_immidiateContext.setup();
 }
 void zpRenderingEngine::teardown()
 {
     ZP_PROFILER_BLOCK();
     
-    m_immidiateContext.teardown();
+    //m_immidiateContext.teardown();
 
     //m_engine.teardown();
     TeardownRenderingOpenGL( m_hContext );
@@ -138,7 +138,7 @@ void zpRenderingEngine::beginFrame( zp_size_t frameIndex )
 
     BeginFrameOpenGL( m_currentFrame );
 
-    m_immidiateContext.fillBuffers();
+    //m_immidiateContext.fillBuffers();
 
     m_commandBuffer.reset();
 }
@@ -191,7 +191,7 @@ void zpRenderingEngine::endFrame()
 {
     ZP_PROFILER_BLOCK();
 
-    m_immidiateContext.flipBuffers();
+    //m_immidiateContext.flipBuffers();
 
     zpRenderingStat stat;
     EndFrameOpenGL( m_currentFrame, stat );
@@ -293,7 +293,7 @@ void zpRenderingEngine::submitCommandBuffer( zpRenderCommandBuffer* buffer )
 {
     if( buffer && buffer->getLength() )
     {
-        submitRawCommand( buffer->getBuffer(), buffer->getLength() );
+        ProcessRenderCommandOpenGL( buffer->getBuffer(), buffer->getLength() );
     }
 }
 

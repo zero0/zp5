@@ -54,6 +54,8 @@ private:
     void submitRawCommand( const void* cmd, zp_size_t size );
 
     zpRenderingContext m_immidiateContext;
+
+    zpRenderContext m_context;
     zpRenderPipeline m_pipeline;
     zpRenderCommandBuffer m_commandBuffer;
 

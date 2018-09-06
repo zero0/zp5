@@ -322,6 +322,16 @@ zp_float zp_cos( zp_float r );
 zp_float zp_sin( zp_float r );
 zp_float zp_tan( zp_float r );
 
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_abs( zp_float value )
+{
+    return value < 0.f ? -value : value;
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_abs( zp_int value )
+{
+    return value < 0 ? -value : value;
+}
+
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_clamp( zp_float value, zp_float min, zp_float max )
 {
     return value < min ? min : value > max ? max : value;
@@ -330,6 +340,43 @@ ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_clamp( zp_float value, zp_float min, zp
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_clamp01( zp_float value )
 {
     return zp_clamp( value, 0.f, 1.f );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_floor( zp_float value )
+{
+    const zp_int valuei = static_cast<zp_int>( value );
+    return static_cast<zp_float>( valuei - ( valuei > value ? 1 : 0 ) );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_floor_to_int( zp_float value )
+{
+    return static_cast<zp_int>( zp_floor( value ) );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_ceil( zp_float value )
+{
+    const zp_int valuei = static_cast<zp_int>( value );
+    return static_cast<zp_float>( valuei + ( valuei < value ? 1 : 0 ) );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_ceil_to_int( zp_float value )
+{
+    return static_cast<zp_int>( zp_ceil( value ) );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_round( zp_float value )
+{
+    return zp_floor( value + 0.5f );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_round_to_int( zp_float value )
+{
+    return static_cast<zp_int>( zp_floor( value + 0.5f ) );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_float zp_sign( zp_float value )
+{
+    return value < 0.f ? -1.f : 1.f;
 }
 
 namespace zpMath

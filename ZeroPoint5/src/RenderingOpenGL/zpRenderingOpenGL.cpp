@@ -543,6 +543,214 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
     glUseProgram( 0 );
 }
 
+static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd )
+{
+    constexpr zp_int strides[] =
+    {
+        sizeof( zp_float ) * 0,
+        sizeof( zp_float ) * ( 4 + 1 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
+    };
+    constexpr zp_size_t offsets[] =
+    {
+        sizeof( zp_float ) * 0,
+        sizeof( zp_float ) * ( 4 ),
+        sizeof( zp_float ) * ( 4 + 1 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
+        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 )
+    };
+    ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
+    ZP_STATIC_ASSERT( ( sizeof( offsets ) / sizeof( offsets[ 0 ] ) ) == zpVertexFormat_Count );
+
+    GLuint prog = 0;
+    if( cmd->material && cmd->material->shader.isValid() )
+    {
+        prog = cmd->material->shader->programShader.index;
+    }
+
+    // TODO: remove when testing complete
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            prog = ( g_shaderVC.programShader.index );
+            break;
+
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            prog = ( g_shaderVCU.programShader.index );
+            break;
+    }
+
+    glUseProgram( prog );
+
+    zp_int stride = strides[ cmd->vertexFormat ];
+
+    GLuint vao = g_vaos[ cmd->vertexFormat ];
+    glBindVertexArray( vao );
+    glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.buffer.index );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.buffer.index );
+
+    zp_size_t vertexOffset = cmd->vertexOffset;
+
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
+            glEnableVertexAttribArray( 5 );
+            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
+            glEnableVertexAttribArray( 4 );
+            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
+            glEnableVertexAttribArray( 3 );
+            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            glEnableVertexAttribArray( 2 );
+            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            glEnableVertexAttribArray( 1 );
+            glVertexAttribPointer( 1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
+            glEnableVertexAttribArray( 0 );
+            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
+            break;
+        default:
+            break;
+    }
+
+    GLint otw = glGetUniformLocation( prog, "_ObjectToWorld" );
+    glUniformMatrix4fv( otw, 1, GL_FALSE, cmd->localToWorld.m );
+
+    if( cmd->material )
+    {
+        const zpMaterialPartFloat* fb = cmd->material->floats.begin();
+        const zpMaterialPartFloat* fe = cmd->material->floats.end();
+        for( ; fb != fe; ++fb )
+        {
+            GLint c = glGetUniformLocation( prog, fb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform1f( c, fb->value );
+            }
+        }
+
+        const zpMaterialPartColor* cb = cmd->material->colors.begin();
+        const zpMaterialPartColor* ce = cmd->material->colors.end();
+        for( ; cb != ce; ++cb )
+        {
+            GLint c = glGetUniformLocation( prog, cb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform4fv( c, 1, cb->color.rgba );
+            }
+        }
+
+        const zpMaterialPartVector* vb = cmd->material->vectors.begin();
+        const zpMaterialPartVector* ve = cmd->material->vectors.end();
+        for( ; vb != ve; ++vb )
+        {
+            GLint c = glGetUniformLocation( prog, vb->name.str() );
+            if( c >= 0 )
+            {
+                glUniform4fv( c, 1, vb->vector.m );
+            }
+        }
+
+        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
+        const zpMaterialPartTexture* te = cmd->material->textures.end();
+        for( ; tb != te; ++tb )
+        {
+            GLint c = glGetUniformLocation( prog, tb->name.str() );
+            if( c >= 0 )
+            {
+                GLint i = static_cast<GLint>( te - tb );
+                glActiveTexture( GL_TEXTURE0 + i );
+                glBindTexture( GL_TEXTURE_2D, tb->texture->texture.index );
+                glUniform1i( c, i );
+            }
+        }
+
+        const zpMaterialPartMatrix* mb = cmd->material->matrices.begin();
+        const zpMaterialPartMatrix* me = cmd->material->matrices.end();
+        for( ; mb != me; ++mb )
+        {
+            GLint c = glGetUniformLocation( prog, mb->name.str() );
+            if( c >= 0 )
+            {
+                glUniformMatrix4fv( c, 1, GL_FALSE, mb->matrix.m );
+            }
+        }
+    }
+
+    // TODO: update material to set these
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glDepthFunc( GL_LEQUAL );
+    glDepthMask( GL_TRUE );
+}
+
+static void UnbindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd )
+{
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
+            glDisableVertexAttribArray( 5 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
+            glDisableVertexAttribArray( 4 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
+            glDisableVertexAttribArray( 3 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            glDisableVertexAttribArray( 2 );
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            glDisableVertexAttribArray( 1 );
+            glDisableVertexAttribArray( 0 );
+            break;
+        default:
+            break;
+    }
+
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
+
+    GLuint prog = 0;
+    if( cmd->material && cmd->material->shader.isValid() )
+    {
+        prog = cmd->material->shader->programShader.index;
+    }
+
+    // TODO: remove when testing complete
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+            prog = ( g_shaderVC.programShader.index );
+            break;
+
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+            prog = ( g_shaderVCU.programShader.index );
+            break;
+    }
+
+    if( cmd->material )
+    {
+        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
+        const zpMaterialPartTexture* te = cmd->material->textures.end();
+        for( ; tb != te; ++tb )
+        {
+            GLint c = glGetUniformLocation( prog, tb->name.str() );
+            if( c >= 0 )
+            {
+                GLint i = static_cast<GLint>( te - tb );
+                glActiveTexture( GL_TEXTURE0 + i );
+                glBindTexture( GL_TEXTURE_2D, 0 );
+            }
+        }
+    }
+
+    glUseProgram( 0 );
+}
+
+
 #if 0
 struct glDebugBlockS
 {
@@ -844,7 +1052,7 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
         }
             break;
 
-        case ZP_RENDERING_COMMNAD_DRAW_IMMEDIATE:
+        case ZP_RENDER_COMMNAD_DRAW_MESH:
         {
             glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Draw Immediate" );
             
@@ -861,10 +1069,10 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
         }
             break;
 
-        case ZP_RENDERING_COMMNAD_DRAW_BUFFERED:
+        case ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED:
             break;
 
-        case ZP_RENDERING_COMMNAD_DRAW_INSTANCED:
+        case ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED_INDIRECT:
             break;
 
         default:
@@ -890,6 +1098,22 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             case ZP_RENDER_COMMNAD_NOOP:
             {
                 position += sizeof( zpRenderCommandHeader );
+            } break;
+
+            case ZP_RENDER_COMMNAD_PUSH_MARKER:
+            {
+                const zpRenderCommandPushMarker* cmd = static_cast<const zpRenderCommandPushMarker*>( ptr );
+
+                glPushGroupMarkerEXT( static_cast<GLsizei>( cmd->length ), cmd->marker );
+
+                position += sizeof( zpRenderCommandPushMarker );
+            } break;
+
+            case ZP_RENDER_COMMNAD_POP_MARKER:
+            {
+                glPopGroupMarkerEXT();
+
+                position += sizeof( zpRenderCommandPopMarker );
             } break;
 
             case ZP_RENDER_COMMNAD_SET_VIEWPORT:
@@ -1015,6 +1239,44 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 SwapBuffers( dc );
 
                 position += sizeof( zpRenderCommandPresent );
+            } break;
+
+            case ZP_RENDER_COMMNAD_DRAW_MESH:
+            {
+                const zpRenderCommandDrawMesh* cmd = static_cast<const zpRenderCommandDrawMesh*>( ptr );
+
+                BindVertexFormatForRenderCommand( cmd );
+
+                GLenum indexSize;
+                switch( cmd->indexStride )
+                {
+                    case sizeof( zp_byte ) :
+                        indexSize = GL_UNSIGNED_BYTE;
+                        break;
+
+                    case sizeof( zp_ushort ) :
+                        indexSize = GL_UNSIGNED_SHORT;
+                        break;
+
+                    case sizeof( zp_uint ) :
+                        indexSize = GL_UNSIGNED_INT;
+                        break;
+
+                    default:
+                        ZP_INVALID_CODE_PATH();
+                        break;
+                }
+
+                GLenum mode = _TopologyToMode( cmd->topology );
+                glDrawElements( mode,
+                                static_cast<GLsizei>( cmd->indexCount ),
+                                indexSize,
+                                reinterpret_cast<void*>( cmd->indexOffset ) );
+
+
+                UnbindVertexFormatForRenderCommand( cmd );
+
+                position += sizeof( zpRenderCommandDrawMesh );
             } break;
 
             default:
