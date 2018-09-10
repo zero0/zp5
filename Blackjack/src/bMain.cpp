@@ -35,7 +35,28 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     zpMemoryAllocator< zpHeapMemoryStorage< ZP_MEMORY_MB( 32 ) >, zpTLFSMemoryPolicy > globalAllocator;
     globalAllocator.setup();
     g_globalAllocator = &globalAllocator;
-        
+
+    {
+        zpMap<zp_int, zp_float> mm;
+        mm.set( 0, 0 );
+        mm.set( 1, 1 );
+        mm.set( 2, 2 );
+        mm.set( 3, 3 );
+        mm.remove( 2 );
+        mm.set( 4, 4 );
+        mm.set( 5, 5 );
+        mm.set( 6, 6 );
+        mm.remove( 0 );
+
+        zpMap<zp_int, zp_float>::iterator b = mm.begin();
+        zpMap<zp_int, zp_float>::iterator e = mm.end();
+        for( ; b != e; ++b )
+        {
+            b.value() += 0.5f;
+            zp_printfln( "%d -> %f", b.key(), b.value() );
+        }
+    }
+
     int r = 0;// = zpMain();
     {
         zpBaseApplication app;

@@ -50,45 +50,41 @@ struct zpMaterial
 {
     zpShaderHandle shader;
 
-    zpVector< zpMaterialPartFloat > floats;
-    zpVector< zpMaterialPartColor > colors;
-    zpVector< zpMaterialPartVector > vectors;
-    zpVector< zpMaterialPartTexture > textures;
-    zpVector< zpMaterialPartMatrix > matrices;
+    zpMap< zpShaderProperty, zp_int > ints;
+    zpMap< zpShaderProperty, zp_float > floats;
+    zpMap< zpShaderProperty, zpColorf > colors;
+    zpMap< zpShaderProperty, zpVector4fData > vectors;
+    zpMap< zpShaderProperty, zpTextureHandle > textures;
+    zpMap< zpShaderProperty, zpMatrix4fData > matrices;
 
-    void setFloat( const zp_char* name, const zp_float value )
+    void setInt( zpShaderProperty name, const zp_int value )
     {
-        zpMaterialPartFloat& p = floats.pushBackEmpty();
-        p.name = name;
-        p.value = value;
+        ints.set( name, value );
     }
 
-    void addColor( const zp_char* name, const zpColorf& color )
+    void setFloat( zpShaderProperty name, const zp_float value )
     {
-        zpMaterialPartColor& p = colors.pushBackEmpty();
-        p.name = name;
-        p.color = color;
+        floats.set( name, value );
     }
 
-    void addVector( const zp_char* name, const zpVector4fData& vector )
+    void setColor( zpShaderProperty name, const zpColorf& color )
     {
-        zpMaterialPartVector& p = vectors.pushBackEmpty();
-        p.name = name;
-        p.vector = vector;
+        colors.set( name, color );
     }
 
-    void addTexture( const zp_char* name, const zpTextureHandle& texture )
+    void setVector( zpShaderProperty name, const zpVector4fData& vector )
     {
-        zpMaterialPartTexture& p = textures.pushBackEmpty();
-        p.name = name;
-        p.texture = texture;
+        vectors.set( name, vector );
     }
 
-    void addMatrix( const zp_char* name, const zpMatrix4fData& matrix )
+    void setTexture( zpShaderProperty name, const zpTextureHandle& texture )
     {
-        zpMaterialPartMatrix& p = matrices.pushBackEmpty();
-        p.name = name;
-        p.matrix = matrix;
+        textures.set( name, texture );
+    }
+
+    void setMatrix( zpShaderProperty name, const zpMatrix4fData& matrix )
+    {
+        matrices.set( name, matrix );
     }
 };
 
@@ -112,8 +108,18 @@ public:
     zpMaterialHandle& operator=( const zpMaterialHandle& other );
     zpMaterialHandle& operator=( zpMaterialHandle&& other );
 
-    const zpMaterial* operator->() const;
-    zpMaterial* operator->();
+    ZP_FORCE_INLINE const zpMaterial* operator->() const
+    {
+        return get();
+    }
+    ZP_FORCE_INLINE zpMaterial* operator->()
+    {
+        return get();
+    }
+
+    const zpMaterial* get() const;
+    zpMaterial* get();
+
 
     zp_bool isValid() const;
     void release();

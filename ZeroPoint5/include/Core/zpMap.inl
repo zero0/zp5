@@ -193,6 +193,18 @@ void zpMap< Key, Value, Comparer, Allocator>::set( key_const_reference key, valu
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>
+void zpMap< Key, Value, Comparer, Allocator>::setAll( const zpMap< Key, Value, Comparer, Allocator>& other )
+{
+    zpMap< Key, Value, Comparer, Allocator>::const_iterator b = other.begin();
+    zpMap< Key, Value, Comparer, Allocator>::const_iterator e = other.begin();
+    for( ; b != e; ++b )
+    {
+        set( b.key(), b.value() );
+    }
+}
+
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
 zp_bool zpMap< Key, Value, Comparer, Allocator>::containsKey( key_const_reference key ) const
 {
     const zp_size_t index = findIndex( key );
@@ -284,6 +296,50 @@ void zpMap< Key, Value, Comparer, Allocator>::destroy()
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::iterator zpMap< Key, Value, Comparer, Allocator>::begin()
+{
+    zp_size_t index = 0;
+    while( index < m_count )
+    {
+        if( m_entries[ index ].hash != npos )
+        {
+            break;
+        }
+        ++index;
+    }
+
+    return iterator( this, index );
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::iterator zpMap< Key, Value, Comparer, Allocator>::end()
+{
+    return iterator( this, m_count + 1 );
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::const_iterator zpMap< Key, Value, Comparer, Allocator>::begin() const
+{
+    zp_size_t index = 0;
+    while( index < m_count )
+    {
+        if( m_entries[ index ].hash != npos )
+        {
+            break;
+        }
+        ++index;
+    }
+
+    return const_iterator( this, index );
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::const_iterator zpMap< Key, Value, Comparer, Allocator>::end() const
+{
+    return const_iterator( this, m_count + 1 );
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
 void zpMap< Key, Value, Comparer, Allocator>::ensureCapacity( zp_size_t capacity, zp_bool forceRehash )
 {
     if( capacity > m_capacity )
@@ -361,4 +417,156 @@ zp_size_t zpMap< Key, Value, Comparer, Allocator>::findIndex( key_const_referenc
     }
 
     return index;
+}
+
+//
+//
+//
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::zpMapIterator()
+    : m_map( ZP_NULL )
+    , m_index( 0 )
+    , m_current( 0 )
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::zpMapIterator( const zpMap< Key, Value, Comparer, Allocator>::self* map, zp_size_t index )
+    : m_map( map )
+    , m_index( index + 1 )
+    , m_current( index )
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::~zpMapIterator()
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+void zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator++()
+{
+    while( m_index < m_map->m_count )
+    {
+        if( m_map->m_entries[ m_index ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
+        {
+            m_current = m_index;
+            ++m_index;
+            return;
+        }
+        ++m_index;
+    }
+
+    m_index = m_map->m_count + 1;
+    m_current = m_index;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+void zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator++( zp_int )
+{
+    operator++();
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::key_const_reference zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::key() const
+{
+    return m_map->m_entries[ m_current ].key;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::value_reference zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::value()
+{
+    return m_map->m_entries[ m_current ].value;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::value_const_reference zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::value() const
+{
+    return m_map->m_entries[ m_current ].value;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zp_bool zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator==( const zpMapIterator& other ) const
+{
+    return m_map == other.m_map && m_current == other.m_current;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zp_bool zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator!=( const zpMapIterator& other ) const
+{
+    return !( operator==( other ) );
+}
+
+//
+//
+//
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::zpMapConstIterator()
+    : m_map( ZP_NULL )
+    , m_index( 0 )
+    , m_current( 0 )
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::zpMapConstIterator( const zpMap< Key, Value, Comparer, Allocator>::self* map, zp_size_t index )
+    : m_map( map )
+    , m_index( index + 1 )
+    , m_current( index )
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::~zpMapConstIterator()
+{
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+void zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::operator++()
+{
+    while( m_index < m_map->m_count )
+    {
+        if( m_map->m_entries[ m_index ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
+        {
+            m_current = m_index;
+            ++m_index;
+            return;
+        }
+        ++m_index;
+    }
+
+    m_index = m_map->m_count + 1;
+    m_current = m_index;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+void zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::operator++( zp_int )
+{
+    operator++();
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::key_const_reference zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::key() const
+{
+    return m_map->m_entries[ m_current ].key;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+typename zpMap< Key, Value, Comparer, Allocator>::value_const_reference zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::value() const
+{
+    return m_map->m_entries[ m_current ].value;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zp_bool zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::operator==( const zpMapConstIterator& other ) const
+{
+    return m_map == other.m_map && m_current == other.m_current;
+}
+
+template<typename Key, typename Value, typename Comparer, typename Allocator>
+zp_bool zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::operator!=( const zpMapConstIterator& other ) const
+{
+    return !( operator==( other ) );
 }

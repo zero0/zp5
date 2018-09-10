@@ -36,10 +36,13 @@ struct zpMaterialData
 
     zpString shaderName;
 
-    zpVector< zpMaterialDataPartColor > colors;
-    zpVector< zpMaterialDataPartVector > vectors;
-    zpVector< zpMaterialDataPartTexture > textures;
-    zpVector< zpMaterialDataPartMatrix > matrices;
+    zpMap< zpShaderProperty, zp_int > ints;
+    zpMap< zpShaderProperty, zp_float > floats;
+    zpMap< zpShaderProperty, zpColorf > colors;
+    zpMap< zpShaderProperty, zpVector4fData > vectors;
+    zpMap< zpShaderProperty, zpString > textures;
+    zpMap< zpShaderProperty, zpMatrix4fData > matrices;
+
 };
 
 static zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materialData )
@@ -50,71 +53,45 @@ static zp_int LoadMaterialData( const zp_char* filepath, zpMaterialData& materia
     //    return -1;
     //}
 
-    zpMaterialDataPartColor& color = materialData.colors.pushBackEmpty();
-    color.name = "_Color";
-    color.color = zpColor::White;
-
-    zpMaterialDataPartVector& mainTexSt = materialData.vectors.pushBackEmpty();
-    mainTexSt.name = "_MainTex_ST";
-    mainTexSt.vector = { 1, 1, 0, 0 };
-
-    zpMaterialDataPartTexture& tex = materialData.textures.pushBackEmpty();
-    tex.name = "_MainTex";
-    tex.texture = "Assets/uv_checker_large.bmp";
+    materialData.colors.set( "_Color", zpColor::White );
+    
+    materialData.textures.set( "_MainTex", zpString( "Assets/uv_checker_large.bmp" ) );
+    materialData.vectors.set( "_MainTex_ST", { 1, 1, 0, 0 } );
 
     return 0;
+}
+
+static void ClearMaterial( zpMaterial& material )
+{
+    material.ints.clear();
+    material.floats.clear();
+    material.colors.clear();
+    material.vectors.clear();
+    material.matrices.clear();
+    material.textures.clear();
 }
 
 static void FillMaterial( zpShaderManager* shaderManager, zpTextureManager* textureManager, const zpMaterialData& materialData, zpMaterial& material )
 {
     if( !materialData.shaderName.isEmpty() ) shaderManager->getShader( materialData.shaderName.str(), material.shader );
 
-    const zpMaterialDataPartColor* cb = materialData.colors.begin();
-    const zpMaterialDataPartColor* ce = materialData.colors.end();
-    for( ; cb != ce; ++cb )
-    {
-        zpMaterialPartColor& c = material.colors.pushBackEmpty();
-        c.name = zp_move( cb->name );
-        c.color = cb->color;
-    }
+    ClearMaterial( material );
 
-    const zpMaterialDataPartVector* vb = materialData.vectors.begin();
-    const zpMaterialDataPartVector* ve = materialData.vectors.end();
-    for( ; vb != ve; ++vb )
-    {
-        zpMaterialPartVector& v = material.vectors.pushBackEmpty();
-        v.name = zp_move( vb->name );
-        v.vector = vb->vector;
-    }
+    material.ints.setAll( materialData.ints );
+    material.floats.setAll( materialData.floats );
+    material.colors.setAll( materialData.colors );
+    material.vectors.setAll( materialData.vectors );
+    material.matrices.setAll( materialData.matrices );
 
-    const zpMaterialDataPartTexture* tb = materialData.textures.begin();
-    const zpMaterialDataPartTexture* te = materialData.textures.end();
+    zpMap< zpShaderProperty, zpString >::const_iterator tb = materialData.textures.begin();
+    zpMap< zpShaderProperty, zpString >::const_iterator te = materialData.textures.end();
     for( ; tb != te; ++tb )
     {
-        zpMaterialPartTexture& t = material.textures.pushBackEmpty();
-        t.name = zp_move( tb->name );
-        textureManager->loadTexture( tb->texture.str(), t.texture );
-    }
-
-    const zpMaterialDataPartMatrix* mb = materialData.matrices.begin();
-    const zpMaterialDataPartMatrix* me = materialData.matrices.end();
-    for( ; mb != me; ++mb )
-    {
-        zpMaterialPartMatrix& m = material.matrices.pushBackEmpty();
-        m.name = zp_move( mb->name );
-        m.matrix = mb->matrix;
+        zpTextureHandle tex;
+        textureManager->loadTexture( tb.value().str(), tex );
+        material.textures.set( tb.key(), tex );
     }
 }
-
-static void ClearMaterial( zpMaterial& material )
-{
-    material.shader.release();
-    material.colors.clear();
-    material.vectors.clear();
-    material.textures.clear();
-    material.matrices.clear();
-}
-
 
 //
 //
@@ -161,11 +138,11 @@ zpMaterialHandle& zpMaterialHandle::operator=( zpMaterialHandle&& other )
     return *this;
 }
 
-const zpMaterial* zpMaterialHandle::operator->() const
+const zpMaterial* zpMaterialHandle::get() const
 {
     return isValid() ? &m_materialInstance->material : ZP_NULL;
 }
-zpMaterial* zpMaterialHandle::operator->()
+zpMaterial* zpMaterialHandle::get()
 {
     return isValid() ? &m_materialInstance->material : ZP_NULL;
 }

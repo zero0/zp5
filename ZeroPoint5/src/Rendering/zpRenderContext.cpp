@@ -96,7 +96,21 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
 
         for( ; startSubMesh < endSubMesh; ++startSubMesh )
         {
-            m_commandBuffer.drawMesh( drawRenderable->localToWorld, drawRenderable->mesh.get(), drawRenderable->material.operator->(), startSubMesh, drawRenderable->passIndex );
+            const zpMesh* mesh = drawRenderable->mesh.get();
+            const zpMeshPart& part = mesh->parts[ startSubMesh ];
+
+            zpDrawMeshDesc desc;
+            desc.vertexBuffer = mesh->vertexData;
+            desc.indexBuffer = mesh->indexData;
+            desc.vertexOffset = part.vertexOffset;
+            desc.vertexCount = part.vertexOffset;
+            desc.indexOffset = part.vertexOffset;
+            desc.indexCount = part.vertexOffset;
+            desc.indexStride = sizeof( zp_ushort );
+            desc.vertexFormat = mesh->vertexFormat;
+            desc.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+
+            m_commandBuffer.drawMesh( drawRenderable->localToWorld, desc, drawRenderable->material.operator->(), drawRenderable->passIndex );
         }
     }
 }
@@ -114,7 +128,6 @@ void zpRenderContext::setActiveCamera( const zpCamera* camera )
 
     m_currentCamera = camera;
 
-    // TODO: move to pass
     // set viewport
     m_commandBuffer.setViewport( camera->viewport );
     m_commandBuffer.setScissorRect( camera->clipRect );
@@ -152,6 +165,11 @@ void zpRenderContext::setActiveCamera( const zpCamera* camera )
 const zpCamera* zpRenderContext::getActiveCamera() const
 {
     return m_currentCamera;
+}
+
+zpRenderCommandBuffer* zpRenderContext::getCommandBuffer()
+{
+    return &m_commandBuffer;
 }
 
 void zpRenderContext::submit()

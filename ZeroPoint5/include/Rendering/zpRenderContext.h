@@ -20,6 +20,8 @@ public:
     void setActiveCamera( const zpCamera* camera );
     const zpCamera* getActiveCamera() const;
 
+    zpRenderCommandBuffer* getCommandBuffer();
+
     void submit();
 
 private:

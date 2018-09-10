@@ -325,7 +325,6 @@ class zpRenderingEngine;
 #include "zpMesh.h"
 #include "zpCamera.h"
 
-
 struct zpDrawRendererCommand
 {
     zpRenderSortKey sortKey;

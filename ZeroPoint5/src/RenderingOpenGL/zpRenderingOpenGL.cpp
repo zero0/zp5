@@ -414,7 +414,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 
     GLint otw = glGetUniformLocation( prog, "_ObjectToWorld" );
     glUniformMatrix4fv( otw, 1, GL_FALSE, cmd->transform.m );
-
+    /*
     if( cmd->material.isValid() )
     {
         const zpMaterialPartFloat* fb = cmd->material->floats.begin();
@@ -475,7 +475,7 @@ static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
             }
         }
     }
-
+    */
     // TODO: update material to set these
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glDepthFunc( GL_LEQUAL );
@@ -526,18 +526,18 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
 
     if( cmd->material.isValid() )
     {
-        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
-        const zpMaterialPartTexture* te = cmd->material->textures.end();
-        for( ; tb != te; ++tb )
-        {
-            GLint c = glGetUniformLocation( prog, tb->name.str() );
-            if( c >= 0 )
-            {
-                GLint i = static_cast<GLint>( te - tb );
-                glActiveTexture( GL_TEXTURE0 + i );
-                glBindTexture( GL_TEXTURE_2D, 0 );
-            }
-        }
+        //const zpMaterialPartTexture* tb = cmd->material->textures.begin();
+        //const zpMaterialPartTexture* te = cmd->material->textures.end();
+        //for( ; tb != te; ++tb )
+        //{
+        //    GLint c = glGetUniformLocation( prog, tb->name.str() );
+        //    if( c >= 0 )
+        //    {
+        //        GLint i = static_cast<GLint>( te - tb );
+        //        glActiveTexture( GL_TEXTURE0 + i );
+        //        glBindTexture( GL_TEXTURE_2D, 0 );
+        //    }
+        //}
     }
 
     glUseProgram( 0 );
@@ -624,61 +624,92 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
 
     if( cmd->material )
     {
-        const zpMaterialPartFloat* fb = cmd->material->floats.begin();
-        const zpMaterialPartFloat* fe = cmd->material->floats.end();
-        for( ; fb != fe; ++fb )
+        // set ints
         {
-            GLint c = glGetUniformLocation( prog, fb->name.str() );
-            if( c >= 0 )
+            zpMap< zpShaderProperty, zp_int >::const_iterator b = cmd->material->ints.begin();
+            zpMap< zpShaderProperty, zp_int >::const_iterator e = cmd->material->ints.end();
+            for( ; b != e; ++b )
             {
-                glUniform1f( c, fb->value );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glUniform1i( c, b.value() );
+                }
             }
         }
 
-        const zpMaterialPartColor* cb = cmd->material->colors.begin();
-        const zpMaterialPartColor* ce = cmd->material->colors.end();
-        for( ; cb != ce; ++cb )
+        // set floats
         {
-            GLint c = glGetUniformLocation( prog, cb->name.str() );
-            if( c >= 0 )
+            zpMap< zpShaderProperty, zp_float >::const_iterator b = cmd->material->floats.begin();
+            zpMap< zpShaderProperty, zp_float >::const_iterator e = cmd->material->floats.end();
+            for( ; b != e; ++b )
             {
-                glUniform4fv( c, 1, cb->color.rgba );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glUniform1f( c, b.value() );
+                }
             }
         }
 
-        const zpMaterialPartVector* vb = cmd->material->vectors.begin();
-        const zpMaterialPartVector* ve = cmd->material->vectors.end();
-        for( ; vb != ve; ++vb )
+        // set colors
         {
-            GLint c = glGetUniformLocation( prog, vb->name.str() );
-            if( c >= 0 )
+            zpMap< zpShaderProperty, zpColorf >::const_iterator b = cmd->material->colors.begin();
+            zpMap< zpShaderProperty, zpColorf >::const_iterator e = cmd->material->colors.end();
+            for( ; b != e; ++b )
             {
-                glUniform4fv( c, 1, vb->vector.m );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glUniform4fv( c, 1, b.value().rgba );
+                }
             }
         }
 
-        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
-        const zpMaterialPartTexture* te = cmd->material->textures.end();
-        for( ; tb != te; ++tb )
+        // set vectors
         {
-            GLint c = glGetUniformLocation( prog, tb->name.str() );
-            if( c >= 0 )
+            zpMap< zpShaderProperty, zpVector4fData >::const_iterator b = cmd->material->vectors.begin();
+            zpMap< zpShaderProperty, zpVector4fData >::const_iterator e = cmd->material->vectors.end();
+            for( ; b != e; ++b )
             {
-                GLint i = static_cast<GLint>( te - tb );
-                glActiveTexture( GL_TEXTURE0 + i );
-                glBindTexture( GL_TEXTURE_2D, tb->texture->texture.index );
-                glUniform1i( c, i );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glUniform4fv( c, 1, b.value().m );
+                }
             }
         }
 
-        const zpMaterialPartMatrix* mb = cmd->material->matrices.begin();
-        const zpMaterialPartMatrix* me = cmd->material->matrices.end();
-        for( ; mb != me; ++mb )
+        // set matrices
         {
-            GLint c = glGetUniformLocation( prog, mb->name.str() );
-            if( c >= 0 )
+            zpMap< zpShaderProperty, zpMatrix4fData >::const_iterator b = cmd->material->matrices.begin();
+            zpMap< zpShaderProperty, zpMatrix4fData >::const_iterator e = cmd->material->matrices.end();
+            for( ; b != e; ++b )
             {
-                glUniformMatrix4fv( c, 1, GL_FALSE, mb->matrix.m );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glUniformMatrix4fv( c, 1, GL_FALSE, b.value().m );
+                }
+            }
+        }
+
+        // set textures
+        {
+            zp_int i = 0;
+            zpMap< zpShaderProperty, zpTextureHandle >::const_iterator b = cmd->material->textures.begin();
+            zpMap< zpShaderProperty, zpTextureHandle >::const_iterator e = cmd->material->textures.end();
+            for( ; b != e; ++b )
+            {
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glActiveTexture( GL_TEXTURE0 + i );
+                    glBindTexture( GL_TEXTURE_2D, b.value()->texture.index );
+                    glUniform1i( c, i );
+
+                    ++i;
+                }
             }
         }
     }
@@ -733,16 +764,21 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* c
 
     if( cmd->material )
     {
-        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
-        const zpMaterialPartTexture* te = cmd->material->textures.end();
-        for( ; tb != te; ++tb )
+        // unset textures
         {
-            GLint c = glGetUniformLocation( prog, tb->name.str() );
-            if( c >= 0 )
+            zp_int i = 0;
+            zpMap< zpShaderProperty, zpTextureHandle >::const_iterator b = cmd->material->textures.begin();
+            zpMap< zpShaderProperty, zpTextureHandle >::const_iterator e = cmd->material->textures.end();
+            for( ; b != e; ++b )
             {
-                GLint i = static_cast<GLint>( te - tb );
-                glActiveTexture( GL_TEXTURE0 + i );
-                glBindTexture( GL_TEXTURE_2D, 0 );
+                GLint c = glGetUniformLocation( prog, b.key().name() );
+                if( c >= 0 )
+                {
+                    glActiveTexture( GL_TEXTURE0 + i );
+                    glBindTexture( GL_TEXTURE_2D, 0 );
+
+                    ++i;
+                }
             }
         }
     }

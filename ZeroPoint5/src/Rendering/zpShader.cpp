@@ -133,11 +133,13 @@ zpShaderManager::~zpShaderManager()
 void zpShaderManager::setup( zpRenderingEngine* engine )
 {
     m_engine = engine;
+    zpShaderProperty::s_shaderPropertyToName = &m_shaderPropertyToName;
 }
 
 void zpShaderManager::teardown()
 {
     m_engine = ZP_NULL;
+    zpShaderProperty::s_shaderPropertyToName = ZP_NULL;
 }
 
 zp_bool zpShaderManager::getShader( const zp_char* shaderName, zpShaderHandle& shader )
@@ -200,3 +202,9 @@ void zpShaderManager::garbageCollect()
         }
     }
 }
+
+//
+//
+//
+
+zpMap<zp_hash_t, zpString>* zpShaderProperty::s_shaderPropertyToName = ZP_NULL;

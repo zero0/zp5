@@ -26,6 +26,12 @@ public:
     typedef Comparer comparer_value;
     typedef const Comparer& comparer_const_reference;
 
+    class zpMapIterator;
+    class zpMapConstIterator;
+
+    typedef zpMapIterator iterator;
+    typedef zpMapConstIterator const_iterator;
+
     zpMap();
     explicit zpMap( zp_size_t capacity );
     zpMap( zp_size_t capacity, comparer_const_reference cmp );
@@ -42,6 +48,8 @@ public:
     zp_bool get( key_const_reference key, value_pointer_reference value ) const;
     void set( key_const_reference key, value_const_reference value );
 
+    void setAll( const zpMap< Key, Value, Comparer, Allocator>& other );
+
     zp_bool containsKey( key_const_reference key ) const;
 
     zp_bool remove( key_const_reference key );
@@ -50,6 +58,12 @@ public:
 
     void clear();
     void destroy();
+
+    iterator begin();
+    iterator end();
+
+    const_iterator begin() const;
+    const_iterator end() const;
 
 private:
     void ensureCapacity( zp_size_t capacity, zp_bool forceRehash );
@@ -73,6 +87,64 @@ private:
 
     comparer_value m_cmp;
     allocator_value m_allocator;
+
+    typedef zpMap< Key, Value, Comparer, Allocator> self;
+
+public:
+    class zpMapIterator
+    {
+    private:
+        zpMapIterator();
+        zpMapIterator( const self* map, zp_size_t index );
+
+    public:
+        ~zpMapIterator();
+
+        void operator++();
+        void operator++( zp_int );
+
+        key_const_reference key() const;
+        
+        value_reference value();
+        value_const_reference value() const;
+
+        zp_bool operator==( const zpMapIterator& other ) const;
+        zp_bool operator!=( const zpMapIterator& other ) const;
+
+    private:
+        const self * m_map;
+        zp_size_t m_index;
+        zp_size_t m_current;
+
+        friend class zpMap;
+    };
+
+
+    class zpMapConstIterator
+    {
+    private:
+        zpMapConstIterator();
+        zpMapConstIterator( const self* map, zp_size_t index );
+
+    public:
+        ~zpMapConstIterator();
+
+        void operator++();
+        void operator++( zp_int );
+
+        key_const_reference key() const;
+        value_const_reference value() const;
+
+        zp_bool operator==( const zpMapConstIterator& other ) const;
+        zp_bool operator!=( const zpMapConstIterator& other ) const;
+    
+    private:
+        const self * m_map;
+        zp_size_t m_index;
+        zp_size_t m_current;
+
+        friend class zpMap;
+    };
 };
 
 #include "zpMap.inl"

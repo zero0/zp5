@@ -205,22 +205,22 @@ void zpBaseApplication::setup()
 
     zpTextureHandle tempTex;
     m_materialManager.getMaterial( "tempMaterial", tm );
-    tm->addColor( "_Color", zpColor::White );
-    tm->addVector( "_MainTex_ST", { 1, 1, 0, 0 } );
+    tm->setColor( "_Color", zpColor::White );
+    tm->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
     //tm->color = zpColor::White;
     //tm->mainTexST = { 1, 1, 0, 0 };
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tempTex );
-    tm->addTexture( "_MainTex", tempTex );
+    tm->setTexture( "_MainTex", tempTex );
 
     zpTextureHandle fontTex;
     m_fontManager.getFont( "debug.font", ff );
     m_materialManager.getMaterial( "font.material", ff->fontMaterial );
     //ff->fontMaterial->color = zpColor::White;
     //ff->fontMaterial->mainTexST = { 1, 1, 0, 0 };
-    ff->fontMaterial->addColor( "_Color", zpColor::White );
-    ff->fontMaterial->addVector( "_MainTex_ST", { 1, 1, 0, 0 } );
+    ff->fontMaterial->setColor( "_Color", zpColor::White );
+    ff->fontMaterial->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", fontTex );
-    ff->fontMaterial->addTexture( "_MainTex", fontTex );
+    ff->fontMaterial->setTexture( "_MainTex", fontTex );
 
     m_meshManager.getMesh( "default.mesh", mh );
     m_sceneManager.createScene( sc );
