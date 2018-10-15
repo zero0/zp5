@@ -314,7 +314,7 @@ typename zpMap< Key, Value, Comparer, Allocator>::iterator zpMap< Key, Value, Co
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 typename zpMap< Key, Value, Comparer, Allocator>::iterator zpMap< Key, Value, Comparer, Allocator>::end()
 {
-    return iterator( this, m_count + 1 );
+    return iterator( this, m_count );
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>
@@ -336,7 +336,7 @@ typename zpMap< Key, Value, Comparer, Allocator>::const_iterator zpMap< Key, Val
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 typename zpMap< Key, Value, Comparer, Allocator>::const_iterator zpMap< Key, Value, Comparer, Allocator>::end() const
 {
-    return const_iterator( this, m_count + 1 );
+    return const_iterator( this, m_count );
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>
@@ -426,7 +426,7 @@ zp_size_t zpMap< Key, Value, Comparer, Allocator>::findIndex( key_const_referenc
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::zpMapIterator()
     : m_map( ZP_NULL )
-    , m_index( 0 )
+    , m_next( 0 )
     , m_current( 0 )
 {
 }
@@ -434,7 +434,7 @@ zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::zpMapIterator()
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::zpMapIterator( const zpMap< Key, Value, Comparer, Allocator>::self* map, zp_size_t index )
     : m_map( map )
-    , m_index( index + 1 )
+    , m_next( index + 1 )
     , m_current( index )
 {
 }
@@ -447,19 +447,19 @@ zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::~zpMapIterator()
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 void zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator++()
 {
-    while( m_index < m_map->m_count )
+    while( m_next < m_map->m_count )
     {
-        if( m_map->m_entries[ m_index ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
+        if( m_map->m_entries[ m_next ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
         {
-            m_current = m_index;
-            ++m_index;
+            m_current = m_next;
+            ++m_next;
             return;
         }
-        ++m_index;
+        ++m_next;
     }
 
-    m_index = m_map->m_count + 1;
-    m_current = m_index;
+    m_next = m_map->m_count + 1;
+    m_current = m_map->m_count;
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>
@@ -505,7 +505,7 @@ zp_bool zpMap< Key, Value, Comparer, Allocator>::zpMapIterator::operator!=( cons
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::zpMapConstIterator()
     : m_map( ZP_NULL )
-    , m_index( 0 )
+    , m_next( 0 )
     , m_current( 0 )
 {
 }
@@ -513,7 +513,7 @@ zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::zpMapConstIterator(
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::zpMapConstIterator( const zpMap< Key, Value, Comparer, Allocator>::self* map, zp_size_t index )
     : m_map( map )
-    , m_index( index + 1 )
+    , m_next( index + 1 )
     , m_current( index )
 {
 }
@@ -526,19 +526,19 @@ zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::~zpMapConstIterator
 template<typename Key, typename Value, typename Comparer, typename Allocator>
 void zpMap< Key, Value, Comparer, Allocator>::zpMapConstIterator::operator++()
 {
-    while( m_index < m_map->m_count )
+    while( m_next < m_map->m_count )
     {
-        if( m_map->m_entries[ m_index ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
+        if( m_map->m_entries[ m_next ].hash != zpMap< Key, Value, Comparer, Allocator>::npos )
         {
-            m_current = m_index;
-            ++m_index;
+            m_current = m_next;
+            ++m_next;
             return;
         }
-        ++m_index;
+        ++m_next;
     }
 
-    m_index = m_map->m_count + 1;
-    m_current = m_index;
+    m_next = m_map->m_count + 1;
+    m_current = m_map->m_count;
 }
 
 template<typename Key, typename Value, typename Comparer, typename Allocator>

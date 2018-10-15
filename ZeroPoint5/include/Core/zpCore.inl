@@ -89,3 +89,42 @@ void zp_qsort( T* begin, T* end, Cmp cmp )
     if( begin < pivot ) zp_qsort( begin, pivot, cmp );
     if( pivot < end ) zp_qsort( pivot + 1, end, cmp );
 }
+
+template<typename T, typename Cmp>
+void zp_qsort3( T* begin, T* end, Cmp cmp )
+{
+    if( begin >= end ) return;
+
+    T* i;
+    T* j;
+
+    // partition
+    T* mid = begin;
+    T* pivot = end;
+
+    while( mid <= end )
+    {
+        zp_int c = cmp( *mid, *pivot );
+        if( c < 0 )
+        {
+            zp_move_swap( zp_forward( *begin ), zp_forward( *mid ) );
+            ++begin;
+            ++mid;
+        }
+        else if( c > 0 )
+        {
+            zp_move_swap( zp_forward( *mid ), zp_forward( *end ) );
+            --end;
+        }
+        else
+        {
+            ++mid;
+        }
+    }
+
+    i = begin - 1;
+    j = mid;
+
+    zp_qsort3( begin, i, cmp );
+    zp_qsort3( j, end, cmp );
+}

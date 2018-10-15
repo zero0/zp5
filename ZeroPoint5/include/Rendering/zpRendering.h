@@ -279,7 +279,7 @@ union zpRenderSortKey
     {
         zp_byte viewport : 3;
         zp_byte layer : 4;
-        zp_uint depth : 24;
+        zp_int depth : 24;
         zp_uint material : 30;
         zp_byte pass : 3;
     };

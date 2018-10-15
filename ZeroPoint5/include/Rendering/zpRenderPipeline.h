@@ -10,46 +10,17 @@ public:
 
     void update();
 
-    void executePass( const zpCamera* camera, zpRenderCommandBuffer* cmdBuffer );
+    void executePass( const zpCamera* camera, zpRenderContext* renderContext );
 
 protected:
     virtual void onUpdate()
     {
-    };
+    }
 
-    virtual void onRender( const zpCamera* camera, zpRenderCommandBuffer* cmdBuffer )
-    {
-    };
+    virtual void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext ) = 0;
 
 private:
 };
-
-template<typename Allocator = zpDefaultGlobalAllocator>
-class zpRenderPipelinePassFactory
-{
-    ZP_STATIC_CLASS( zpRenderPipelinePassFactory );
-public:
-    typedef Allocator allocator_value;
-
-    template<typename T>
-    static T* createRenderPipelinePass()
-    {
-        const void* pass = s_allocator.allocate( sizeof( T ) );
-        return static_cast<T>( pass );
-    }
-
-    template<typename T>
-    static void destroyRenderPipelinePass( T* pass )
-    {
-        s_allocator.free( pass );
-    }
-
-private:
-    static allocator_value s_allocator;
-};
-
-//template<typename Allocator>
-//static Allocator zpRenderPipelinePassFactory<Allocator>::s_allocator;
 
 class zpRenderPipeline
 {
@@ -57,11 +28,34 @@ public:
     zpRenderPipeline();
     ~zpRenderPipeline();
 
-    void addPass( zpRenderPipelinePass* pass );
+    void executePipeline( const zpCamera* camera, zpRenderContext* renderContext );
 
-    void executePipeline( const zpCamera* camera, zpRenderCommandBuffer* cmdBuffer );
+    template<typename T, typename Allocator = zpDefaultGlobalAllocator>
+    T* addPass()
+    {
+        Allocator alloc;
+        void* v = alloc.allocate( sizeof( T ) );
+        T* pass = new ( v ) T();
+        zpRenderPipelinePass* p = static_cast<zpRenderPipelinePass*>( pass );
+        m_pipeline.pushBack( p );
+        return pass;
+    }
 
-    void clear();
+    template<typename Allocator = zpDefaultGlobalAllocator>
+    void clear()
+    {
+        Allocator alloc;
+        zpVector< zpRenderPipelinePass* >::iterator b = m_pipeline.begin();
+        zpVector< zpRenderPipelinePass* >::iterator e = m_pipeline.end();
+
+        for( ; b != e; ++b )
+        {
+            zpRenderPipelinePass* pass = *b;
+            alloc.free( pass );
+        }
+
+        m_pipeline.clear();
+    }
 
 private:
     zpVector< zpRenderPipelinePass* > m_pipeline;

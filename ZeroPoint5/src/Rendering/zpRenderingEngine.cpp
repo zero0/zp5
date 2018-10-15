@@ -103,6 +103,65 @@ zpRenderingEngine::~zpRenderingEngine()
 
 }
 
+class zpClearPass : public zpRenderPipelinePass
+{
+protected:
+    void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+        zpRenderCommandBuffer* commandBuffer = renderContext->getCommandBuffer();
+
+        // set viewport
+        commandBuffer->setViewport( camera->viewport );
+        commandBuffer->setScissorRect( camera->clipRect );
+
+        // clear camera
+        if( camera->clearMode )
+        {
+            if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+            {
+                commandBuffer->clearColorDepthStencil( camera->clearColor, camera->clearDepth, camera->clearStencil );
+            }
+            else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH ) )
+            {
+                commandBuffer->clearColorDepth( camera->clearColor, camera->clearDepth );
+            }
+            else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+            {
+                commandBuffer->clearDepthStencil( camera->clearDepth, camera->clearStencil );
+            }
+            else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR ) )
+            {
+                commandBuffer->clearColor( camera->clearColor );
+            }
+            else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH ) )
+            {
+                commandBuffer->clearDepth( camera->clearDepth );
+            }
+            else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_STENCIL ) )
+            {
+                commandBuffer->clearStencil( camera->clearStencil );
+            }
+        }
+    };
+};
+
+class zpForwardOpaquePass : public zpRenderPipelinePass
+{
+protected:
+    void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+        zpDrawRenderersDesc desc;
+        desc.sortOrder = ZP_RENDER_SORT_ORDER_FRONT_TO_BACK;
+        desc.renderRange.minRenderQueue = 0;
+        desc.renderRange.maxRenderQueue = 2000;
+        desc.renderLayers = -1;
+        desc.passIndex = 0;
+        desc.viewPorts = -1;
+
+        renderContext->drawRenderers( desc );
+    };
+};
+
 void zpRenderingEngine::setup( zp_handle hWindow )
 {
     ZP_PROFILER_BLOCK();
@@ -111,12 +170,17 @@ void zpRenderingEngine::setup( zp_handle hWindow )
     SetupRenderingOpenGL( hWindow, m_hDC, m_hContext );
 
     //m_immidiateContext.setup();
+    m_pipeline.addPass<zpClearPass>();
+    m_pipeline.addPass<zpForwardOpaquePass>();
 }
 void zpRenderingEngine::teardown()
 {
     ZP_PROFILER_BLOCK();
     
     //m_immidiateContext.teardown();
+    m_pipeline.clear();
+
+    m_context.clearDrawRenderables();
 
     //m_engine.teardown();
     TeardownRenderingOpenGL( m_hContext );
@@ -138,67 +202,20 @@ void zpRenderingEngine::beginFrame( zp_size_t frameIndex )
 
     BeginFrameOpenGL( m_currentFrame );
 
-    //m_immidiateContext.fillBuffers();
-
-    m_commandBuffer.reset();
-}
-
-void zpRenderingEngine::renderCamera( const zpCamera* camera )
-{
-    ZP_PROFILER_BLOCK();
-
-    //renderingPassForward( m_immidiateContext );
-
-    // TODO: move to pass
-    // set viewport
-    m_commandBuffer.setViewport( camera->viewport );
-    m_commandBuffer.setScissorRect( camera->clipRect );
-   
-    // clear camera
-    if( camera->clearMode )
-    {
-        if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearColorDepthStencil( camera->clearColor, camera->clearDepth, camera->clearStencil );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH ) )
-        {
-            m_commandBuffer.clearColorDepth( camera->clearColor, camera->clearDepth );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearDepthStencil( camera->clearDepth, camera->clearStencil );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR ) )
-        {
-            m_commandBuffer.clearColor( camera->clearColor );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH ) )
-        {
-            m_commandBuffer.clearDepth( camera->clearDepth );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearStencil( camera->clearStencil );
-        }
-    }
-
-
-    //m_pipeline.executePipeline( camera, &m_commandBuffer );
+    m_context.clearDrawRenderables();
+    m_context.getCommandBuffer()->reset();
 }
 
 void zpRenderingEngine::endFrame()
 {
     ZP_PROFILER_BLOCK();
 
-    //m_immidiateContext.flipBuffers();
-
     zpRenderingStat stat;
     EndFrameOpenGL( m_currentFrame, stat );
 
     ZP_PROFILER_GPU( stat.frameTime, stat.primitiveCount );
 
-    submitCommandBuffer( &m_commandBuffer );
+    submitCommandBuffer( m_context.getCommandBuffer() );
 }
 
 void zpRenderingEngine::submit()
@@ -230,6 +247,16 @@ void zpRenderingEngine::setVSync( zp_bool vsync )
 zpRenderingContext* zpRenderingEngine::getImmidiateContext()
 {
     return &m_immidiateContext;
+}
+
+zpRenderContext* zpRenderingEngine::getContext()
+{
+    return &m_context;
+}
+
+zpRenderPipeline* zpRenderingEngine::getPipeline()
+{
+    return &m_pipeline;
 }
 
 void zpRenderingEngine::createRenderBuffer( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer )
@@ -274,20 +301,6 @@ void zpRenderingEngine::destroyShader( zpShader& shader )
     DestroyShaderOpenGL( shader );
 }
 
-void zpRenderingEngine::renderingPassForward( zpRenderingContext& context )
-{
-    ZP_PROFILER_BLOCK();
-
-    const zpVector< zpRenderingCommand >& cmds = context.getCommands();
-
-    SortRenderCommands( cmds, 0, m_sortedCommands );
-
-    for( zpSortRenderCommandData* b = m_sortedCommands.begin(), *e = m_sortedCommands.end(); b != e; ++b )
-    {
-        const zpRenderingCommand* cmd = cmds.begin() + b->index;
-        ProcessRenderingCommandOpenGL( cmd );
-    }
-}
 
 void zpRenderingEngine::submitCommandBuffer( zpRenderCommandBuffer* buffer )
 {

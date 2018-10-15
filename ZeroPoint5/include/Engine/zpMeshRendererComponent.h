@@ -23,7 +23,7 @@ class zpMeshRendererComponentManager : public zpComponentManager< zpMeshRenderer
 public:
     void createMeshRendererComponent( handle_reference handle, zpMeshRendererComponentDesc* desc );
 
-    void render( zpRenderingContext* ctx );
+    void render( zpRenderContext* ctx );
 };
 
 //
@@ -36,7 +36,7 @@ public:
     zpMeshRendererComponent();
     ~zpMeshRendererComponent();
 
-    void render( zpRenderingContext* ctx );
+    void render( zpRenderContext* ctx );
 
     void setMesh( const zpMeshHandle& mesh );
     const zpMeshHandle& getMesh() const;
@@ -48,7 +48,7 @@ protected:
     void onUpdate( zp_float dt, zp_float rt );
 
 private:
-    zp_byte m_renderLayer;
+    zp_flag32 m_renderLayers;
 
     zpMeshHandle m_mesh;
     zpMaterialHandle m_material;

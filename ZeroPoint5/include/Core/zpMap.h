@@ -113,7 +113,7 @@ public:
 
     private:
         const self * m_map;
-        zp_size_t m_index;
+        zp_size_t m_next;
         zp_size_t m_current;
 
         friend class zpMap;
@@ -140,7 +140,7 @@ public:
     
     private:
         const self * m_map;
-        zp_size_t m_index;
+        zp_size_t m_next;
         zp_size_t m_current;
 
         friend class zpMap;

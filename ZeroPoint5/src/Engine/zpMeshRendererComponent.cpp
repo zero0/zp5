@@ -9,13 +9,31 @@ zpMeshRendererComponent::~zpMeshRendererComponent()
 {
 }
 
-void zpMeshRendererComponent::render( zpRenderingContext* ctx )
+void zpMeshRendererComponent::render( zpRenderContext* ctx )
 {
     if( m_mesh.isValid() && m_material.isValid() )
     {
-        const zpMatrix4fData& transform = getParentObject()->getAllComponents()->transform->getWorldMatrix();
+        zpMatrix4fData localToWorld;
+        zpTransformComponentHandle& transform = getParentObject()->getAllComponents()->transform;
+        if( transform.isValid() )
+        {
+            transform->getWorldMatrix();
+        }
+        else
+        {
+            zpMath::MatrixStore4( zpMath::MatrixIdentity(), localToWorld.m );
+        }
 
-        ctx->drawMesh( m_renderLayer, transform, m_mesh, m_material );
+        zpDrawRenderable desc;
+        desc.renderLayers = m_renderLayers;
+        desc.material = m_material;
+        desc.mesh = m_mesh;
+        desc.localToWorld = localToWorld;
+        desc.passIndex = 0;
+        desc.subMeshIndex = -1;
+        desc.bounds = m_mesh->bounds;
+
+        ctx->addDrawRenderable( desc );
     }
 }
 
@@ -46,7 +64,7 @@ void zpMeshRendererComponent::onUpdate( zp_float dt, zp_float rt )
 //
 //
 
-void zpMeshRendererComponentManager::render( zpRenderingContext* ctx )
+void zpMeshRendererComponentManager::render( zpRenderContext* ctx )
 {
     ZP_PROFILER_BLOCK();
     

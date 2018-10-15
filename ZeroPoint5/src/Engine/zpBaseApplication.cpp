@@ -313,6 +313,8 @@ void zpBaseApplication::teardown()
 
     m_renderingEngine.teardown();
 
+    runGarbageCollection();
+
     onPostTeardown();
 }
 
@@ -633,11 +635,13 @@ void zpBaseApplication::handleInput()
 
         m_transformComponentManager.createTransformComponent( ooo->getAllComponents()->transform, ZP_NULL );
         ooo->getAllComponents()->transform->setParentObject( ooo );
+        ooo->getAllComponents()->transform->setEnabled( true );
 
         m_meshRendererComponentManager.createMeshRendererComponent( ooo->getAllComponents()->meshRenderer, ZP_NULL );
         ooo->getAllComponents()->meshRenderer->setParentObject( ooo );
         ooo->getAllComponents()->meshRenderer->setMesh( mh );
         ooo->getAllComponents()->meshRenderer->setMaterial( tm );
+        ooo->getAllComponents()->meshRenderer->setEnabled( true );
 
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_C ) )
@@ -647,6 +651,9 @@ void zpBaseApplication::handleInput()
         cam->flags |= 0xFF;
         cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
         cam->clearColor = zpColor::Blue;
+        cam->fovy = 45.f;
+        cam->zNear = 1.f;
+        cam->zFar = 1000.f;
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_U ) )
     {
@@ -730,7 +737,7 @@ void zpBaseApplication::render()
     zpVector2f uv2 = { 1, 0 };
     zpVector2f uv3 = { 1, 1 };
 
-
+    zpRenderContext* ctx = m_renderingEngine.getContext();
     //zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     //ctx->setViewport( vp );
     //ctx->clear( clearColor, 1, 0 );
@@ -744,15 +751,15 @@ void zpBaseApplication::render()
     //ctx->addQuadIndex( 0, 1, 2, 3 );
     //ctx->endDraw();
 
-    //m_meshRendererComponentManager.render( ctx );
+    m_renderingEngine.beginFrame( zpTime::get().getFrameCount() );
+
+    m_meshRendererComponentManager.render( ctx );
 
     // draw debug when toggled on
     if( m_debugFlags )
     {
         debugDrawGUI();
     }
-
-    m_renderingEngine.beginFrame( zpTime::get().getFrameCount() );
     
     m_cameraManager.render( &m_renderingEngine );
 

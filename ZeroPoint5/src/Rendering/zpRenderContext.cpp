@@ -33,7 +33,8 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
     m_renderableSort.reserve( m_allRenderables.size() );
 
     const zpVector4f cCenter = zpMath::Vector4Load4( m_currentCamera->position.m );
-    const zpScalar invFarDistance = zpMath::ScalarRcp( zpMath::Scalar( m_currentCamera->zFar ) );
+    const zpScalar invFarDistance = zpMath::ScalarPow2( zpMath::ScalarRcp( zpMath::Scalar( m_currentCamera->zFar ) ) );
+    const zpScalar maxDepth = zpMath::Scalar( 65535.f );
 
     // filter draw commands
     zpVector< zpDrawRenderable >::const_iterator b = m_allRenderables.begin();
@@ -48,13 +49,13 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
         const zp_bool isInViewport = true; // TODO: implement viewports
         if( isPassMatch && isRenderLayer && isInRenderRange && isInViewport )
         {
-            zp_uint depth = 0;
+            zp_int depth = 0;
             if( m_currentCamera->projectionType >= ZP_CAMERA_PROJECTION_PERSPECTIVE )
             {
                 const zpVector4f pCenter = zpMath::Vector4Load4( p.bounds.center.m );
                 zpScalar dist = zpMath::Vector4LengthSquared3( zpMath::Vector4Sub( pCenter, cCenter ) );
-                dist = zpMath::ScalarMul( dist, invFarDistance );
-                depth = zp_floor_to_int( zpMath::AsFloat( dist ) * 65535.0f );
+                zpScalar linearDist = zpMath::ScalarMul( dist, invFarDistance );
+                depth = zpMath::ScalarFloorToInt( zpMath::ScalarMul( linearDist, maxDepth ) );
             }
 
             zpDrawRenderableSort& sort = m_renderableSort.pushBackEmpty();
@@ -68,10 +69,34 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
     }
 
     // sort draw commands
-    // TODO: implement full sorting
-    zp_qsort( m_renderableSort.begin(), m_renderableSort.end(), []( const zpDrawRenderableSort& a, const zpDrawRenderableSort& b )
+    zp_qsort3( m_renderableSort.begin(), m_renderableSort.end(), [ &desc ]( const zpDrawRenderableSort& a, const zpDrawRenderableSort& b )
     {
-        return a.sortKey.layer < b.sortKey.layer;
+        zp_int cmp = 0;
+        if( desc.sortOrder == ZP_RENDER_SORT_ORDER_BACK_TO_FRONT )
+        {
+            cmp = b.sortKey.depth - a.sortKey.depth;
+        }
+        else
+        {
+            cmp = a.sortKey.depth - b.sortKey.depth;
+        }
+
+        if( cmp == 0 )
+        {
+            cmp = a.sortKey.layer < b.sortKey.layer ? -1 : a.sortKey.layer > b.sortKey.layer ? 1 : 0;
+        }
+
+        if( cmp == 0 )
+        {
+            cmp = a.sortKey.material < b.sortKey.material ? -1 : a.sortKey.material > b.sortKey.material ? 1 : 0;
+        }
+
+        if( cmp == 0 )
+        {
+            cmp = a.sortKey.pass < b.sortKey.pass ? -1 : a.sortKey.pass > b.sortKey.pass ? 1 : 0;
+        }
+
+        return cmp;
     } );
 
     // add render commands to command buffer in sort order
@@ -94,23 +119,23 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
             endSubMesh = startSubMesh + 1;
         }
 
+        zpDrawMeshDesc desc;
         for( ; startSubMesh < endSubMesh; ++startSubMesh )
         {
             const zpMesh* mesh = drawRenderable->mesh.get();
             const zpMeshPart& part = mesh->parts[ startSubMesh ];
 
-            zpDrawMeshDesc desc;
             desc.vertexBuffer = mesh->vertexData;
             desc.indexBuffer = mesh->indexData;
             desc.vertexOffset = part.vertexOffset;
-            desc.vertexCount = part.vertexOffset;
-            desc.indexOffset = part.vertexOffset;
-            desc.indexCount = part.vertexOffset;
-            desc.indexStride = sizeof( zp_ushort );
+            desc.vertexCount = part.vertexCount;
+            desc.indexOffset = part.indexOffset;
+            desc.indexCount = part.indexCount;
+            desc.indexStride = mesh->indexStride;
             desc.vertexFormat = mesh->vertexFormat;
-            desc.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+            desc.topology = mesh->topology;
 
-            m_commandBuffer.drawMesh( drawRenderable->localToWorld, desc, drawRenderable->material.operator->(), drawRenderable->passIndex );
+            m_commandBuffer.drawMesh( drawRenderable->localToWorld, desc, drawRenderable->material.get(), drawRenderable->passIndex );
         }
     }
 }
@@ -127,39 +152,6 @@ void zpRenderContext::setActiveCamera( const zpCamera* camera )
     ZP_PROFILER_BLOCK();
 
     m_currentCamera = camera;
-
-    // set viewport
-    m_commandBuffer.setViewport( camera->viewport );
-    m_commandBuffer.setScissorRect( camera->clipRect );
-
-    // clear camera
-    if( camera->clearMode )
-    {
-        if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearColorDepthStencil( camera->clearColor, camera->clearDepth, camera->clearStencil );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR | ZP_CAMERA_CLEAR_MODE_DEPTH ) )
-        {
-            m_commandBuffer.clearColorDepth( camera->clearColor, camera->clearDepth );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH | ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearDepthStencil( camera->clearDepth, camera->clearStencil );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_COLOR ) )
-        {
-            m_commandBuffer.clearColor( camera->clearColor );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_DEPTH ) )
-        {
-            m_commandBuffer.clearDepth( camera->clearDepth );
-        }
-        else if( camera->clearMode & ( ZP_CAMERA_CLEAR_MODE_STENCIL ) )
-        {
-            m_commandBuffer.clearStencil( camera->clearStencil );
-        }
-    }
 }
 
 const zpCamera* zpRenderContext::getActiveCamera() const

@@ -281,7 +281,7 @@ void zpRenderCommandBuffer::clear()
 
 void zpRenderCommandBuffer::reset()
 {
-    m_buffer.reset();
+    m_buffer.clear();
     m_uniqueID = 0;
 }
 

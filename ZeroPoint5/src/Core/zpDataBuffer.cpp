@@ -110,7 +110,7 @@ void zpDataBuffer::reserve( zp_size_t capacity )
 zp_size_t zpDataBuffer::write( const void* data, zp_size_t offset, zp_size_t length )
 {
     //ZP_PROFILER_BLOCK();
-    const zp_size_t newLength = length + m_length;
+    const zp_size_t newLength = length + m_position;
     if( m_isFixed )
     {
         ZP_ASSERT( ( m_position + length ) < m_capacity, "" );

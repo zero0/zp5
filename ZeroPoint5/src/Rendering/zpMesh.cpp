@@ -7,11 +7,13 @@ const zp_time_t ZP_MESH_NOT_FILE = static_cast<zp_time_t>( -1 );
 
 struct zpMeshData
 {
-    zp_time_t lastModifiedTime;
+    zpTopology topology;
+    zp_uint indexStride;
     zpVertexFormat vertexFormat;
     zpDataBuffer vertexBuffer;
     zpDataBuffer indexBuffer;
     zp_size_t numMeshParts;
+    zp_time_t lastModifiedTime;
     zpMeshPart parts[ ZP_MESH_MAX_MESH_PARTS ];
 };
 
@@ -54,10 +56,13 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
         { p3, zpColor32::White, uv3 },
     };
 
+    meshData.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
+    meshData.indexStride = sizeof( zp_ushort );
     meshData.numMeshParts = 1;
     meshData.vertexFormat = ZP_VERTEX_FORMAT_VERTEX_COLOR_UV;
     meshData.indexBuffer.write( index, 0, sizeof( index ) );
     meshData.vertexBuffer.write( vert, 0, sizeof( vert ) );
+
     zpMeshPart& part = meshData.parts[ 0 ];
     part.indexCount = 6;
     part.indexOffset = 0;
@@ -69,6 +74,9 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
 
 static zp_int BuildMeshFromData( const zpMeshData& meshData, zpMesh& mesh, zpRenderingEngine* renderingEngine )
 {
+    mesh.topology = meshData.topology;
+    mesh.indexStride = meshData.indexStride;
+
     mesh.vertexFormat = meshData.vertexFormat;
     mesh.numMeshParts = meshData.numMeshParts;
     zp_memset( mesh.parts, 0, sizeof( mesh.parts ) );

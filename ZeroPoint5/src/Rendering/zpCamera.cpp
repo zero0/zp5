@@ -305,12 +305,18 @@ void zpCameraManager::render( zpRenderingEngine* engine )
     zpVector<zpCameraInstance*>::const_iterator b = m_cameraInstances.begin();
     zpVector<zpCameraInstance*>::const_iterator e = m_cameraInstances.end();
 
+    zpRenderPipeline* pipeline = engine->getPipeline();
+    zpRenderContext* context = engine->getContext();
+
     for( ; b != e; ++b )
     {
         zpCameraInstance* c = *b;
         if( c->refCount )
         {
-            engine->renderCamera( &c->camera );
+            const zpCamera* camera = &c->camera;
+
+            context->setActiveCamera( camera);
+            pipeline->executePipeline( camera, context );
         }
     }
 }

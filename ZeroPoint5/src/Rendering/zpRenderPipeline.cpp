@@ -15,9 +15,9 @@ void zpRenderPipelinePass::update()
     onUpdate();
 }
 
-void zpRenderPipelinePass::executePass( const zpCamera* camera, zpRenderCommandBuffer* cmdBuffer )
+void zpRenderPipelinePass::executePass( const zpCamera* camera, zpRenderContext* renderContext )
 {
-    onRender( camera, cmdBuffer );
+    onExecutePipeline( camera, renderContext );
 }
 
 //
@@ -34,12 +34,7 @@ zpRenderPipeline::~zpRenderPipeline()
 
 }
 
-void zpRenderPipeline::addPass( zpRenderPipelinePass* pass )
-{
-
-}
-
-void zpRenderPipeline::executePipeline( const zpCamera* camera, zpRenderCommandBuffer* cmdBuffer )
+void zpRenderPipeline::executePipeline( const zpCamera* camera, zpRenderContext* renderContext )
 {
     zpVector< zpRenderPipelinePass* >::iterator b = m_pipeline.begin();
     zpVector< zpRenderPipelinePass* >::iterator e = m_pipeline.end();
@@ -47,11 +42,7 @@ void zpRenderPipeline::executePipeline( const zpCamera* camera, zpRenderCommandB
     for( ; b != e; ++b )
     {
         zpRenderPipelinePass* pass = *b;
-        pass->executePass( camera, cmdBuffer );
+        pass->executePass( camera, renderContext );
     }
 }
 
-void zpRenderPipeline::clear()
-{
-    m_pipeline.clear();
-}

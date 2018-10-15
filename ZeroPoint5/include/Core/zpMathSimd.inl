@@ -34,6 +34,80 @@ namespace zpMath
         return _mm_cvtss_f32( s );
     }
 
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL AsInt( zpScalarParamF s )
+    {
+        return _mm_cvtss_si32( s );
+    }
+
+    ZP_FORCE_INLINE zp_long ZP_VECTORCALL AsLong( zpScalarParamF s )
+    {
+        return _mm_cvtss_si64( s );
+    }
+
+    //
+    // Rounding
+    //
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarFloor( zpScalarParamF s )
+    {
+        return _mm_floor_ps( s );
+    }
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarCeil( zpScalarParamF s )
+    {
+        return _mm_ceil_ps( s );
+    }
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarRound( zpScalarParamF s )
+    {
+        return _mm_round_ps( s, _MM_FROUND_NINT );
+    }
+
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarFloorToInt( zpScalarParamF s )
+    {
+        return _mm_cvtss_si32( _mm_floor_ps( s ) );
+    }
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarCeilToInt( zpScalarParamF s )
+    {
+        return _mm_cvtss_si32( _mm_ceil_ps( s ) );
+    }
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarRoundToInt( zpScalarParamF s )
+    {
+        return _mm_cvtss_si32( _mm_round_ps( s, _MM_FROUND_NINT ) );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Floor( zpVector4fParamF s )
+    {
+        return _mm_floor_ps( s );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Ceil( zpVector4fParamF s )
+    {
+        return _mm_ceil_ps( s );
+    }
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Round( zpVector4fParamF s )
+    {
+        return _mm_round_ps( s, _MM_FROUND_NINT );
+    }
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow2( zpScalarParamF s )
+    {
+        return ScalarMul( s, s );
+    }
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow3( zpScalarParamF s )
+    {
+        zpScalar ss = ScalarMul( s, s );
+        return ScalarMul( s, ss );
+    }
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow4( zpScalarParamF s )
+    {
+        zpScalar ss = ScalarMul( s, s );
+        return ScalarMul( ss, ss );
+    }
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow5( zpScalarParamF s )
+    {
+        zpScalar ss = ScalarMul( s, s );
+        return ScalarMul( ss, ScalarMul( ss, s ) );
+    }
+
     //
     // Vector getters
     //

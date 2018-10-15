@@ -1094,10 +1094,11 @@ void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
             
             BindVertexFormatForRenderCommand( cmd );
 
+            GLenum indexStride = GL_UNSIGNED_SHORT;
             GLenum mode = _TopologyToMode( cmd->topology );
             glDrawElements( mode,
                             static_cast<GLsizei>( cmd->indexCount ),
-                            GL_UNSIGNED_SHORT,
+                            indexStride,
                             reinterpret_cast<void*>( cmd->indexOffset ) );
 
 
@@ -1283,19 +1284,19 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
 
                 BindVertexFormatForRenderCommand( cmd );
 
-                GLenum indexSize;
+                GLenum indexStride;
                 switch( cmd->indexStride )
                 {
                     case sizeof( zp_byte ) :
-                        indexSize = GL_UNSIGNED_BYTE;
+                        indexStride = GL_UNSIGNED_BYTE;
                         break;
 
                     case sizeof( zp_ushort ) :
-                        indexSize = GL_UNSIGNED_SHORT;
+                        indexStride = GL_UNSIGNED_SHORT;
                         break;
 
                     case sizeof( zp_uint ) :
-                        indexSize = GL_UNSIGNED_INT;
+                        indexStride = GL_UNSIGNED_INT;
                         break;
 
                     default:
@@ -1306,7 +1307,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 GLenum mode = _TopologyToMode( cmd->topology );
                 glDrawElements( mode,
                                 static_cast<GLsizei>( cmd->indexCount ),
-                                indexSize,
+                                indexStride,
                                 reinterpret_cast<void*>( cmd->indexOffset ) );
 
 

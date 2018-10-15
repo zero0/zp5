@@ -194,29 +194,32 @@ ZP_FORCE_INLINE ZP_CONSTEXPR T&& zp_move( T&& a );
 template<typename T, typename Cmp>
 void zp_qsort( T* begin, T* end, Cmp cmp );
 
+template<typename T, typename Cmp>
+void zp_qsort3( T* begin, T* end, Cmp cmp );
+
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_mark( zp_flag64 flag, zp_ulong index )
 {
-    return flag | ( static_cast<zp_ulong>( 1 ) << index );
+    return flag | ( static_cast<zp_flag64>( 1 ) << index );
 }
 
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_clear( zp_flag64 flag, zp_ulong index )
 {
-    return flag & ~( static_cast<zp_ulong>( 1 ) << index );
+    return flag & ~( static_cast<zp_flag64>( 1 ) << index );
 }
 
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_toggle( zp_flag64 flag, zp_ulong index )
 {
-    return flag ^ ( static_cast<zp_ulong>( 1 ) << index );
+    return flag ^ ( static_cast<zp_flag64>( 1 ) << index );
 }
 
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_set( zp_flag64 flag, zp_ulong index, zp_bool set )
 {
-    return ( ( set ? static_cast<zp_ulong>( -1 ) : 0 ) ^ flag ) & ( static_cast<zp_ulong>( 1 ) << index );
+    return ( ( set ? static_cast<zp_flag64>( -1 ) : 0 ) ^ flag ) & ( static_cast<zp_flag64>( 1 ) << index );
 }
 
 ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag_is_set( zp_flag64 flag, zp_ulong index )
 {
-    return ( flag & ( static_cast<zp_ulong>( 1 ) << index ) ) != 0;
+    return ( flag & ( static_cast<zp_flag64>( 1 ) << index ) ) != 0;
 }
 
 //

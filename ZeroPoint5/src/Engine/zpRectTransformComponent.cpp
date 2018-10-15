@@ -96,6 +96,10 @@ void zpRectTransformComponent::setAlpha( zp_float alpha )
 
 void zpRectTransformComponent::setParentRectTransform( const zpRectTransformComponentHandle& parent )
 {
+    if( m_parent.isValid() )
+    {
+    }
+
     m_parent = parent;
     markFlag( ZP_COMPONENT_FLAG_DIRTY );
 }

@@ -29,7 +29,6 @@ public:
     void setWindowSize( const zpVector2i& size );
 
     void beginFrame( zp_size_t frameIndex );
-    void renderCamera( const zpCamera* camera );
     void endFrame();
     void submit();
 
@@ -37,6 +36,8 @@ public:
     void setVSync( zp_bool vsync );
 
     zpRenderingContext* getImmidiateContext();
+    zpRenderContext* getContext();
+    zpRenderPipeline* getPipeline();
 
     void createRenderBuffer( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer );
     void destoryRenderBuffer( zpRenderBuffer& buffer );
@@ -48,8 +49,6 @@ public:
     void destroyShader( zpShader& shader );
 
 private:
-    void renderingPassForward( zpRenderingContext& context );
-
     void submitCommandBuffer( zpRenderCommandBuffer* buffer );
     void submitRawCommand( const void* cmd, zp_size_t size );
 
@@ -57,7 +56,6 @@ private:
 
     zpRenderContext m_context;
     zpRenderPipeline m_pipeline;
-    zpRenderCommandBuffer m_commandBuffer;
 
     zpVector< zpSortRenderCommandData > m_sortedCommands;
 

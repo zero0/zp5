@@ -383,10 +383,29 @@ namespace zpMath
 {
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Scalar( zp_float s );
     ZP_FORCE_INLINE zp_float ZP_VECTORCALL AsFloat( zpScalarParamF s );
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL AsInt( zpScalarParamF s );
+    ZP_FORCE_INLINE zp_long ZP_VECTORCALL AsLong( zpScalarParamF s );
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4( zp_float x, zp_float y, zp_float z, zp_float w );
     ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4( zpScalarParamF x, zpScalarParamF y, zpScalarParamF z, zpScalarParamG w );
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL Quaternion( zp_float x, zp_float y, zp_float z, zp_float w );
     ZP_FORCE_INLINE zpQuaternion4f ZP_VECTORCALL Quaternion( zpScalarParamF x, zpScalarParamF y, zpScalarParamF z, zpScalarParamG w );
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarFloor( zpScalarParamF s );
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarCeil( zpScalarParamF s );
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarRound( zpScalarParamF s );
+
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarFloorToInt( zpScalarParamF s );
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarCeilToInt( zpScalarParamF s );
+    ZP_FORCE_INLINE zp_int ZP_VECTORCALL ScalarRoundToInt( zpScalarParamF s );
+
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Floor( zpVector4fParamF s );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Ceil( zpVector4fParamF s );
+    ZP_FORCE_INLINE zpVector4f ZP_VECTORCALL Vector4Round( zpVector4fParamF s );
+
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow2( zpScalarParamF s );
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow3( zpScalarParamF s );
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow4( zpScalarParamF s );
+    ZP_FORCE_INLINE zpScalar ZP_VECTORCALL ScalarPow5( zpScalarParamF s );
 
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4GetX( zpVector4fParamF s );
     ZP_FORCE_INLINE zpScalar ZP_VECTORCALL Vector4GetY( zpVector4fParamF s );

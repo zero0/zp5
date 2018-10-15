@@ -13,15 +13,18 @@ struct zpMeshPart
     zp_size_t indexCount;
     zp_size_t vertexOffset;
     zp_size_t vertexCount;
-    zpBoundingAABB boundingBox;
+    zpBoundingAABB bounds;
 };
 
 struct zpMesh
 {
+    zpTopology topology;
+    zp_uint indexStride;
     zpVertexFormat vertexFormat;
     zpRenderBuffer vertexData;
     zpRenderBuffer indexData;
     zp_size_t numMeshParts;
+    zpBoundingAABB bounds;
     zpMeshPart parts[ ZP_MESH_MAX_MESH_PARTS ];
 };
 

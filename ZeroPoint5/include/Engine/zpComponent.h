@@ -44,7 +44,7 @@ public:
         {
             onStart();
 
-            zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_STARTED );
+            m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_STARTED );
         }
 
         onUpdate( dt, rt );
@@ -68,7 +68,7 @@ public:
     void setEnabled( zp_bool enabled )
     {
         const zp_bool wasEnabled = zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
-        zp_flag_set( m_flags, ZP_COMPONENT_FLAG_ENABLE, enabled );
+        m_flags = zp_flag_set( m_flags, ZP_COMPONENT_FLAG_ENABLE, enabled );
         const zp_bool nowEnabled = zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
 
         if( !wasEnabled && nowEnabled )
