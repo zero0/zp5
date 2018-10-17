@@ -197,29 +197,58 @@ void zp_qsort( T* begin, T* end, Cmp cmp );
 template<typename T, typename Cmp>
 void zp_qsort3( T* begin, T* end, Cmp cmp );
 
-ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_mark( zp_flag64 flag, zp_ulong index )
+//
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag64_mark( zp_flag64 flag, zp_uint index )
 {
     return flag | ( static_cast<zp_flag64>( 1 ) << index );
 }
 
-ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_clear( zp_flag64 flag, zp_ulong index )
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag64_clear( zp_flag64 flag, zp_uint index )
 {
     return flag & ~( static_cast<zp_flag64>( 1 ) << index );
 }
 
-ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_toggle( zp_flag64 flag, zp_ulong index )
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag64_toggle( zp_flag64 flag, zp_uint index )
 {
     return flag ^ ( static_cast<zp_flag64>( 1 ) << index );
 }
 
-ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag_set( zp_flag64 flag, zp_ulong index, zp_bool set )
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag64 zp_flag64_set( zp_flag64 flag, zp_uint index, zp_bool set )
 {
     return ( ( set ? static_cast<zp_flag64>( -1 ) : 0 ) ^ flag ) & ( static_cast<zp_flag64>( 1 ) << index );
 }
 
-ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag_is_set( zp_flag64 flag, zp_ulong index )
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag64_is_set( zp_flag64 flag, zp_uint index )
 {
     return ( flag & ( static_cast<zp_flag64>( 1 ) << index ) ) != 0;
+}
+
+//
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag32 zp_flag32_mark( zp_flag32 flag, zp_uint index )
+{
+    return flag | ( static_cast<zp_flag32>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag32 zp_flag32_clear( zp_flag32 flag, zp_uint index )
+{
+    return flag & ~( static_cast<zp_flag32>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag32 zp_flag32_toggle( zp_flag32 flag, zp_uint index )
+{
+    return flag ^ ( static_cast<zp_flag32>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_flag32 zp_flag32_set( zp_flag32 flag, zp_uint index, zp_bool set )
+{
+    return ( ( set ? static_cast<zp_flag32>( -1 ) : 0 ) ^ flag ) & ( static_cast<zp_flag32>( 1 ) << index );
+}
+
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag32_is_set( zp_flag32 flag, zp_uint index )
+{
+    return ( flag & ( static_cast<zp_flag32>( 1 ) << index ) ) != 0;
 }
 
 //
@@ -276,6 +305,10 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 
 #include "zpCore.inl"
 
+//
+// Global allocator pointers
+//
+
 #if ZP_DEBUG
 extern zpIMemoryAllocator* g_globalDebugAllocator;
 #endif
@@ -283,7 +316,7 @@ extern zpIMemoryAllocator* g_globalDebugAllocator;
 extern zpIMemoryAllocator* g_globalAllocator;
 
 //
-//
+// Default Comparer
 //
 
 template<typename T>
@@ -303,7 +336,7 @@ struct zpDefaultEqualityComparer
 };
 
 //
-//
+// Default global allocator
 //
 
 struct zpDefaultGlobalAllocator

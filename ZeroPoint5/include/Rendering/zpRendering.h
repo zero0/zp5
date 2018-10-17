@@ -202,7 +202,11 @@ enum zpTextureDimension : zp_uint
 {
     ZP_TEXTURE_DIMENSION_UNKNOWN = 0,
     ZP_TEXTURE_DIMENSION_1D,
+    ZP_TEXTURE_DIMENSION_1D_ARRAY,
     ZP_TEXTURE_DIMENSION_2D,
+    ZP_TEXTURE_DIMENSION_2D_ARRAY,
+    ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE,
+    ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE_ARRAY,
     ZP_TEXTURE_DIMENSION_3D,
     ZP_TEXTURE_DIMENSION_CUBE_MAP,
 
@@ -313,6 +317,20 @@ struct zpRenderingStat
     zp_ulong frameTime;
     zp_ulong primitiveCount;
     zp_ulong samplesPassed;
+};
+
+struct zpTextureDesc
+{
+    zp_uint width;
+    zp_uint height;
+    zp_uint depth;
+    zp_int mipMapCount;
+    zp_int minMipMap;
+    zp_int multisampleCount;
+    zp_float lodBias;
+    zpDisplayFormat format;
+    zpTextureDimension textureDimension;
+    zpTextureType type;
 };
 
 class zpRenderingEngine;
@@ -618,6 +636,7 @@ struct zpDrawRenderableSort
 #include "zpRenderCommandBuffer.h"
 #include "zpRenderContext.h"
 
+#include "zpRenderResource.h"
 #include "zpRenderPipeline.h"
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"

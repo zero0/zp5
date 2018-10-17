@@ -2,7 +2,7 @@
 #ifndef ZP_COMPONENT_H
 #define ZP_COMPONENT_H
 
-enum zpComponentFlags : zp_ulong
+enum zpComponentFlags : zp_flag32
 {
     ZP_COMPONENT_FLAG_CREATED = 0,
     ZP_COMPONENT_FLAG_STARTED,
@@ -40,11 +40,11 @@ public:
 
     void update( zp_float dt, zp_float rt )
     {
-        if( !zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_STARTED ) )
+        if( !zp_flag32_is_set( m_flags, ZP_COMPONENT_FLAG_STARTED ) )
         {
             onStart();
 
-            m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_STARTED );
+            m_flags = zp_flag32_mark( m_flags, ZP_COMPONENT_FLAG_STARTED );
         }
 
         onUpdate( dt, rt );
@@ -62,14 +62,14 @@ public:
 
     zp_bool isEnabled() const
     {
-        return zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
+        return zp_flag32_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
     }
 
     void setEnabled( zp_bool enabled )
     {
-        const zp_bool wasEnabled = zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
-        m_flags = zp_flag_set( m_flags, ZP_COMPONENT_FLAG_ENABLE, enabled );
-        const zp_bool nowEnabled = zp_flag_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
+        const zp_bool wasEnabled = zp_flag32_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
+        m_flags = zp_flag32_set( m_flags, ZP_COMPONENT_FLAG_ENABLE, enabled );
+        const zp_bool nowEnabled = zp_flag32_is_set( m_flags, ZP_COMPONENT_FLAG_ENABLE );
 
         if( !wasEnabled && nowEnabled )
         {
@@ -85,18 +85,18 @@ public:
     {
         onCreated();
 
-        m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_CREATED );
+        m_flags = zp_flag32_mark( m_flags, ZP_COMPONENT_FLAG_CREATED );
     }
 
     void destroy()
     {
-        m_flags = zp_flag_clear( m_flags, ZP_COMPONENT_FLAG_ENABLE );
+        m_flags = zp_flag32_clear( m_flags, ZP_COMPONENT_FLAG_ENABLE );
 
         onDisabled();
 
         onDestroyed();
 
-        m_flags = zp_flag_mark( m_flags, ZP_COMPONENT_FLAG_SHOULD_DESTROY );
+        m_flags = zp_flag32_mark( m_flags, ZP_COMPONENT_FLAG_SHOULD_DESTROY );
     }
 
     void setParentObject( const zpObjectHandle& parentObject )
@@ -119,9 +119,9 @@ public:
         m_instanceId = instanceId;
     }
 
-    ZP_INLINE zp_bool isFlagSet( zp_ulong index ) const
+    ZP_INLINE zp_bool isFlagSet( zp_uint index ) const
     {
-        return zp_flag_is_set( m_flags, index );
+        return zp_flag32_is_set( m_flags, index );
     }
 
 protected:
@@ -137,24 +137,24 @@ protected:
     virtual void onLateUpdate( zp_float dt, zp_float rt ) {}
     virtual void onFixedUpdate( zp_float ft, zp_float rt ) {}
 
-    ZP_INLINE void markFlag( zp_ulong index )
+    ZP_INLINE void markFlag( zp_uint index )
     {
-        m_flags = zp_flag_mark( m_flags, index );
+        m_flags = zp_flag32_mark( m_flags, index );
     }
 
-    ZP_INLINE void clearFlag( zp_ulong index )
+    ZP_INLINE void clearFlag( zp_uint index )
     {
-        m_flags = zp_flag_clear( m_flags, index );
+        m_flags = zp_flag32_clear( m_flags, index );
     }
 
-    ZP_INLINE void toggleFlag( zp_ulong index )
+    ZP_INLINE void toggleFlag( zp_uint index )
     {
-        m_flags = zp_flag_toggle( m_flags, index );
+        m_flags = zp_flag32_toggle( m_flags, index );
     }
 
-    ZP_INLINE void setFlag( zp_ulong index, zp_bool set )
+    ZP_INLINE void setFlag( zp_uint index, zp_bool set )
     {
-        m_flags = zp_flag_set( m_flags, index, set );
+        m_flags = zp_flag32_set( m_flags, index, set );
     }
 
 private:
@@ -162,7 +162,7 @@ private:
     zpObjectHandle m_parentObject;
 
     zp_hash64 m_instanceId;
-    zp_flag64 m_flags;
+    zp_flag32 m_flags;
 };
 
 //

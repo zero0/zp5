@@ -2,25 +2,57 @@
 #ifndef ZP_RENDER_PIPELINE_H
 #define ZP_RENDER_PIPELINE_H
 
+enum zpRenderPipelinePassFlags : zp_flag32
+{
+    ZP_RENDER_PIPELINE_PASS_FLAG_IS_ENABLED,
+    ZP_RENDER_PIPELINE_PASS_FLAG_IS_DIRTY,
+
+    zpRenderPipelinePass_Count,
+    zpRenderPipelinePass_UserStart,
+
+    zpRenderPipelinePass_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpRenderPipelinePassResolveResult : zp_uint
+{
+    ZP_RENDER_PIPELINE_PASS_RESOLVE_FAILED,
+    ZP_RENDER_PIPELINE_PASS_RESOLVE_SUCCESS,
+
+};
+
 ZP_ABSTRACT_CLASS zpRenderPipelinePass
 {
 public:
     zpRenderPipelinePass();
     virtual ~zpRenderPipelinePass();
 
-    void update();
+    zp_bool isEnabled() const;
+    void setEnabled( zp_bool enabled );
 
-    void executePass( const zpCamera* camera, zpRenderContext* renderContext );
+    zp_bool isDirty() const;
 
-protected:
-    virtual void onUpdate()
+public:
+    virtual zpRenderPipelinePassResolveResult resolve() = 0;
+
+    virtual void update( const zpCamera* camera, zpRenderContext* renderContext )
     {
     }
 
-    virtual void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext ) = 0;
+    virtual void executePass( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+    }
+
+protected:
+    void markAsDirty();
+    void markAsClean();
 
 private:
+    zp_flag32 m_flags;
 };
+
+//
+//
+//
 
 class zpRenderPipeline
 {
@@ -28,7 +60,10 @@ public:
     zpRenderPipeline();
     ~zpRenderPipeline();
 
+    void update( const zpCamera* camera, zpRenderContext* renderContext );
     void executePipeline( const zpCamera* camera, zpRenderContext* renderContext );
+
+    void rebuild();
 
     template<typename T, typename Allocator = zpDefaultGlobalAllocator>
     T* addPass()
@@ -37,16 +72,18 @@ public:
         void* v = alloc.allocate( sizeof( T ) );
         T* pass = new ( v ) T();
         zpRenderPipelinePass* p = static_cast<zpRenderPipelinePass*>( pass );
-        m_pipeline.pushBack( p );
+        m_allPasses.pushBack( p );
         return pass;
     }
 
     template<typename Allocator = zpDefaultGlobalAllocator>
-    void clear()
+    void clearAllPasses()
     {
+        m_pipeline.clear();
+
         Allocator alloc;
-        zpVector< zpRenderPipelinePass* >::iterator b = m_pipeline.begin();
-        zpVector< zpRenderPipelinePass* >::iterator e = m_pipeline.end();
+        zpVector< zpRenderPipelinePass* >::iterator b = m_allPasses.begin();
+        zpVector< zpRenderPipelinePass* >::iterator e = m_allPasses.end();
 
         for( ; b != e; ++b )
         {
@@ -54,11 +91,14 @@ public:
             alloc.free( pass );
         }
 
-        m_pipeline.clear();
+        m_allPasses.clear();
     }
+protected:
+    void buildPipeline();
 
 private:
     zpVector< zpRenderPipelinePass* > m_pipeline;
+    zpVector< zpRenderPipelinePass* > m_allPasses;
 };
 
 #endif // !ZP_RENDER_PIPELINE_H

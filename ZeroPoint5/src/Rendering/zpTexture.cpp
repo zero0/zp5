@@ -7,11 +7,7 @@ const zp_time_t ZP_TEXTURE_NOT_FILE = static_cast<zp_time_t>( -1 );
 
 struct zpTextureData
 {
-    zp_uint width;
-    zp_uint height;
-    zpTextureDimension textureDimension;
-    zpTextureType type;
-    zpDisplayFormat format;
+    zpTextureDesc desc;
     zp_time_t lastModifiedTime;
 
     zpDataBuffer data;
@@ -56,11 +52,14 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData* textureData )
         dataPos = 54;
     }
 
-    textureData->width = width;
-    textureData->height = height;
-    textureData->textureDimension = ZP_TEXTURE_DIMENSION_2D;
-    textureData->type = ZP_TEXTURE_TYPE_TEXTURE;
-    textureData->format = ZP_DISPLAY_FORMAT_RGB8_UINT;
+    zpTextureDesc desc = {};
+    desc.width = width;
+    desc.height = height;
+    desc.format = ZP_DISPLAY_FORMAT_RGB8_UINT;
+    desc.textureDimension = ZP_TEXTURE_DIMENSION_2D;
+    desc.type = ZP_TEXTURE_TYPE_TEXTURE;
+
+    textureData->desc = desc;
     textureData->data.reserve( imageSize );
 
     zp_size_t len;
@@ -122,26 +121,29 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     tgaFile.read( &header.bitsPerPixel, 0, sizeof( zp_byte ) );
     tgaFile.read( &header.imageDescriptor, 0, sizeof( zp_byte ) );
 
-    textureData.width = header.width;
-    textureData.height = header.height;
-    textureData.textureDimension = ZP_TEXTURE_DIMENSION_2D;
-    textureData.type = ZP_TEXTURE_TYPE_TEXTURE;
-
-    textureData.lastModifiedTime = zpFile::lastModifiedTime( filepath );
+    zpTextureDesc desc = {};
+    desc.width = header.width;
+    desc.height = header.height;
+    desc.textureDimension = ZP_TEXTURE_DIMENSION_2D;
+    desc.type = ZP_TEXTURE_TYPE_TEXTURE;
 
     switch( header.bitsPerPixel )
     {
         case 24:
-            textureData.format = ZP_DISPLAY_FORMAT_RGB8_UINT;
+            desc.format = ZP_DISPLAY_FORMAT_RGB8_UINT;
             break;
 
         case 32:
-            textureData.format = ZP_DISPLAY_FORMAT_RGBA8_UNORM;
+            desc.format = ZP_DISPLAY_FORMAT_RGBA8_UNORM;
             break;
 
         default:
             return 1;
     }
+
+    textureData.desc = desc;
+
+    textureData.lastModifiedTime = zpFile::lastModifiedTime( filepath );
 
     const zp_size_t pixelCount = header.width * header.height;
     const zp_size_t bytesPerPixel = header.bitsPerPixel / 8;
@@ -393,7 +395,8 @@ zp_bool zpTextureManager::loadTexture( const zp_char* textureFile, zpTextureHand
     }
 
     zp_int r = 0;
-    zpTextureData textureData;
+    zpTextureData textureData = {};
+
     zp_size_t len = zp_strlen( textureFile );
     if( zp_stricmp( textureFile + ( len - 4 ), ".tga" ) == 0 )
     {
@@ -419,15 +422,12 @@ zp_bool zpTextureManager::loadTexture( const zp_char* textureFile, zpTextureHand
         m_textureInstances.pushBack( foundTextureInstance );
     }
 
-    m_engine->createTexture( textureFile,
-                             textureData.width,
-                             textureData.height,
-                             0, 
-                             textureData.format, 
-                             textureData.textureDimension, 
-                             textureData.type, 
-                             textureData.data.getBuffer(), 
-                             foundTextureInstance->texture );
+    zpCreateTextureDesc desc = {};
+    desc.textureName = textureFile;
+    desc.pixels = textureData.data.getBuffer();
+    desc.desc = textureData.desc;
+
+    m_engine->createTexture( &desc, foundTextureInstance->texture );
 
     foundTextureInstance->lastModifiedTime = textureData.lastModifiedTime;
     foundTextureInstance->refCount = 0;
@@ -473,7 +473,7 @@ void zpTextureManager::reloadChangedTextures()
             if( t->lastModifiedTime != lastModTime )
             {
                 zp_int r = 0;
-                zpTextureData textureData;
+                zpTextureData textureData = {};
                 zp_size_t len = zp_strlen( textureName );
                 if( zp_stricmp( textureName + ( len - 4 ), ".tga" ) == 0 )
                 {
@@ -495,16 +495,13 @@ void zpTextureManager::reloadChangedTextures()
 
                 t->lastModifiedTime = lastModTime;
 
+                zpCreateTextureDesc desc = {};
+                desc.textureName = textureName;
+                desc.pixels = textureData.data.getBuffer();
+                desc.desc = textureData.desc;
+
                 zpTexture tex = t->texture;
-                m_engine->createTexture( textureName,
-                                         textureData.width,
-                                         textureData.height,
-                                         0,
-                                         textureData.format,
-                                         textureData.textureDimension,
-                                         textureData.type,
-                                         textureData.data.getBuffer(),
-                                         t->texture );
+                m_engine->createTexture( &desc, t->texture );
 
                 m_engine->destroyTexture( tex );
             }

@@ -1,23 +1,42 @@
 #include "Rendering\zpRendering.h"
 
 zpRenderPipelinePass::zpRenderPipelinePass()
+    : m_flags( zp_flag32_mark( 0, ZP_RENDER_PIPELINE_PASS_FLAG_IS_ENABLED ) )
 {
-
 }
 
 zpRenderPipelinePass::~zpRenderPipelinePass()
 {
-
 }
 
-void zpRenderPipelinePass::update()
+zp_bool zpRenderPipelinePass::isEnabled() const
 {
-    onUpdate();
+    return zp_flag32_is_set( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_ENABLED );
 }
 
-void zpRenderPipelinePass::executePass( const zpCamera* camera, zpRenderContext* renderContext )
+void zpRenderPipelinePass::setEnabled( zp_bool enabled )
 {
-    onExecutePipeline( camera, renderContext );
+    const zp_bool wasEnabled = zp_flag32_is_set( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_ENABLED );
+    m_flags = zp_flag32_set( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_ENABLED, enabled );
+    if( wasEnabled != enabled )
+    {
+        markAsDirty();
+    }
+}
+
+zp_bool zpRenderPipelinePass::isDirty() const
+{
+    return zp_flag32_is_set( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_DIRTY );
+}
+
+void zpRenderPipelinePass::markAsDirty()
+{
+    m_flags = zp_flag32_mark( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_DIRTY );
+}
+
+void zpRenderPipelinePass::markAsClean()
+{
+    m_flags = zp_flag32_clear( m_flags, ZP_RENDER_PIPELINE_PASS_FLAG_IS_DIRTY );
 }
 
 //

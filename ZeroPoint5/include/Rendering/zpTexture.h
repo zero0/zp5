@@ -4,11 +4,7 @@
 
 struct zpTexture
 {
-    zp_uint width;
-    zp_uint height;
-    zpTextureDimension textureDimension;
-    zpTextureType type;
-    zpDisplayFormat format;
+    zpTextureDesc desc;
 
     zpRenderHandle texture;
 };

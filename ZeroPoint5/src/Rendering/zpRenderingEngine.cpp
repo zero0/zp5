@@ -105,8 +105,18 @@ zpRenderingEngine::~zpRenderingEngine()
 
 class zpClearPass : public zpRenderPipelinePass
 {
-protected:
-    void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext )
+public:
+    zpRenderPipelinePassResolveResult resolve()
+    {
+        markAsClean();
+        return ZP_RENDER_PIPELINE_PASS_RESOLVE_SUCCESS;
+    }
+
+    void update( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+    }
+
+    void executePass( const zpCamera* camera, zpRenderContext* renderContext )
     {
         zpRenderCommandBuffer* commandBuffer = renderContext->getCommandBuffer();
 
@@ -147,8 +157,18 @@ protected:
 
 class zpForwardOpaquePass : public zpRenderPipelinePass
 {
-protected:
-    void onExecutePipeline( const zpCamera* camera, zpRenderContext* renderContext )
+public:
+    zpRenderPipelinePassResolveResult resolve()
+    {
+        markAsClean();
+        return ZP_RENDER_PIPELINE_PASS_RESOLVE_SUCCESS;
+    }
+
+    void update( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+    }
+
+    void executePass( const zpCamera* camera, zpRenderContext* renderContext )
     {
         zpDrawRenderersDesc desc;
         desc.sortOrder = ZP_RENDER_SORT_ORDER_FRONT_TO_BACK;
@@ -178,7 +198,7 @@ void zpRenderingEngine::teardown()
     ZP_PROFILER_BLOCK();
     
     //m_immidiateContext.teardown();
-    m_pipeline.clear();
+    m_pipeline.clearAllPasses();
 
     m_context.clearDrawRenderables();
 
@@ -273,11 +293,13 @@ void zpRenderingEngine::destoryRenderBuffer( zpRenderBuffer& buffer )
     DestroyRenderBufferOpenGL( buffer );
 }
 
-void zpRenderingEngine::createTexture( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+void zpRenderingEngine::createTexture( zpCreateTextureDesc* desc, zpTexture& texture )
 {
     ZP_PROFILER_BLOCK();
-
-    CreateTextureOpenGL( textureName, width, height, mipMapCount, displayFormat, textureDimension, textureType, pixels, texture );
+    if( desc )
+    {
+        CreateTextureOpenGL( desc, texture );
+    }
 }
 
 void zpRenderingEngine::destroyTexture( zpTexture& texture )

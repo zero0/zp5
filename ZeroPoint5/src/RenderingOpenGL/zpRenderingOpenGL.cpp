@@ -68,7 +68,11 @@ static ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension text
     {
         0,
         GL_TEXTURE_1D,
+        GL_TEXTURE_1D_ARRAY,
         GL_TEXTURE_2D,
+        GL_TEXTURE_2D_ARRAY,
+        GL_TEXTURE_2D_MULTISAMPLE,
+        GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
         GL_TEXTURE_3D,
         GL_TEXTURE_CUBE_MAP,
     };
@@ -316,6 +320,12 @@ static ZP_FORCE_INLINE zp_bool _IsCompressedDisplayFormat( zpDisplayFormat displ
     }
 
     return false;
+}
+
+static ZP_FORCE_INLINE GLsizei _GetCompressedImageSize( zp_uint width, zp_uint height, zp_uint depth, zp_uint blockSize )
+{
+    GLsizei imageSize = ( ( width + 3 ) / 4 ) * ( ( height + 3 ) / 4 ) * ( ( depth + 3 ) / 4 ) * blockSize;
+    return imageSize;
 }
 
 union glQuery
@@ -1375,51 +1385,68 @@ void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, 
     glBindBuffer( target, 0 );
 }
 
-void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint height, zp_int mipMapCount, zpDisplayFormat displayFormat, zpTextureDimension textureDimension, zpTextureType textureType, const void* pixels, zpTexture& texture )
+void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Texture" );
 
-    GLenum target = _TextureDimensionToTarget( textureDimension );
-    GLint internalFormat = _DisplayFormatToInternalFormat( displayFormat );
-    GLenum format = _DisplayFormatToFormat( displayFormat );
-    GLenum type = _DisplayFormatToDataType( displayFormat );
+    GLenum target = _TextureDimensionToTarget( desc->desc.textureDimension );
+    GLint internalFormat = _DisplayFormatToInternalFormat( desc->desc.format );
+    GLenum format = _DisplayFormatToFormat( desc->desc.format );
+    GLenum type = _DisplayFormatToDataType( desc->desc.format );
 
-    texture.width = width;
-    texture.height = height;
-    texture.textureDimension = textureDimension;
-    texture.type = textureType;
-    texture.format = displayFormat;
+    texture.desc = desc->desc;
 
     glGenTextures( 1, &texture.texture.index );
     glBindTexture( target, texture.texture.index );
+
     glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+
+    glTexParameteri( target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+    glTexParameterf( target, GL_TEXTURE_LOD_BIAS, desc->desc.lodBias );
+    glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->desc.minMipMap );
 
 #if ZP_DEBUG
-    GLsizei len = static_cast<GLsizei>( zp_strlen( textureName ) );
-    glObjectLabel( GL_TEXTURE, texture.texture.index, len, textureName );
+    GLsizei len = static_cast<GLsizei>( zp_strlen( desc->textureName ) );
+    glObjectLabel( GL_TEXTURE, texture.texture.index, len, desc->textureName );
 #endif
 
-    zp_bool isCompressedFormat = _IsCompressedDisplayFormat( displayFormat );
+    zp_bool isCompressedFormat = _IsCompressedDisplayFormat( desc->desc.format );
     if( isCompressedFormat )
     {
+        ZP_ASSERT( desc->desc.multisampleCount == 0, "Multisample compressed textures are unsupported" );
+
         zp_uint blockSize = ( format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ) ? 8 : 16;
         zp_uint offset = 0;
         GLsizei imageSize = 0;
 
-        switch( textureDimension )
+        switch( desc->desc.textureDimension )
         {
             case ZP_TEXTURE_DIMENSION_1D:
-                imageSize = ( ( width + 3 ) / 4 ) * blockSize;
-                glCompressedTexImage1D( target, 0, internalFormat, width, 0, imageSize, pixels );
+                imageSize = _GetCompressedImageSize( desc->desc.width, 1, 1, blockSize );
+                glCompressedTexImage1D( target, 0, internalFormat, desc->desc.width, 0, imageSize, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_1D_ARRAY:
+                imageSize = _GetCompressedImageSize( desc->desc.width, desc->desc.height, 1, blockSize );
+                glCompressedTexImage2D( target, 0, internalFormat, desc->desc.width, desc->desc.depth, 0, imageSize, desc->pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_2D:
-                imageSize = ( ( width + 3 ) / 4 ) * ( ( height + 3 ) / 4 ) * blockSize;
-                glCompressedTexImage2D( target, 0, internalFormat, width, height, 0, imageSize, pixels );
+                imageSize = _GetCompressedImageSize( desc->desc.width, desc->desc.height, 1, blockSize );
+                glCompressedTexImage2D( target, 0, internalFormat, desc->desc.width, desc->desc.height, 0, imageSize, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D_ARRAY:
+                imageSize = _GetCompressedImageSize( desc->desc.width, desc->desc.height, desc->desc.depth, blockSize );
+                glCompressedTexImage3D( target, 0, internalFormat, desc->desc.width, desc->desc.height, desc->desc.depth, 0, imageSize, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE:
+            case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE_ARRAY:
+                ZP_INVALID_CODE_PATH();
                 break;
             case ZP_TEXTURE_DIMENSION_3D:
-                ZP_INVALID_CODE_PATH();
-                glCompressedTexImage3D( target, 0, internalFormat, width, height, 0, 0, imageSize, pixels );
+                imageSize = _GetCompressedImageSize( desc->desc.width, desc->desc.height, desc->desc.depth, blockSize );
+                glCompressedTexImage3D( target, 0, internalFormat, desc->desc.width, desc->desc.height, desc->desc.depth, 0, imageSize, desc->pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_CUBE_MAP:
                 ZP_INVALID_CODE_PATH();
@@ -1431,17 +1458,28 @@ void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint hei
     }
     else
     {
-        switch( textureDimension )
+        switch( desc->desc.textureDimension )
         {
             case ZP_TEXTURE_DIMENSION_1D:
-                glTexImage1D( target, 0, internalFormat, width, 0, format, type, pixels );
+                glTexImage1D( target, 0, internalFormat, desc->desc.width, 0, format, type, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_1D_ARRAY:
+                glTexImage2D( target, 0, internalFormat, desc->desc.width, desc->desc.depth, 0, format, type, desc->pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_2D:
-                glTexImage2D( target, 0, internalFormat, width, height, 0, format, type, pixels );
+                glTexImage2D( target, 0, internalFormat, desc->desc.width, desc->desc.height, 0, format, type, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D_ARRAY:
+                glTexImage3D( target, 0, internalFormat, desc->desc.width, desc->desc.height, desc->desc.depth, 0, format, type, desc->pixels );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE:
+                glTexImage2DMultisample( target, desc->desc.multisampleCount, internalFormat, desc->desc.width, desc->desc.height, GL_TRUE );
+                break;
+            case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE_ARRAY:
+                glTexImage3DMultisample( target, desc->desc.multisampleCount, internalFormat, desc->desc.width, desc->desc.height, desc->desc.depth, GL_TRUE );
                 break;
             case ZP_TEXTURE_DIMENSION_3D:
-                ZP_INVALID_CODE_PATH();
-                glTexImage3D( target, 0, internalFormat, width, height, 0, 0, format, type, pixels );
+                glTexImage3D( target, 0, internalFormat, desc->desc.width, desc->desc.height, desc->desc.depth, 0, format, type, desc->pixels );
                 break;
             case ZP_TEXTURE_DIMENSION_CUBE_MAP:
                 ZP_INVALID_CODE_PATH();
@@ -1452,7 +1490,7 @@ void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint hei
         }
     }
 
-    if( mipMapCount < 0 )
+    if( desc->desc.mipMapCount < 0 )
     {
         glGenerateMipmap( target );
     }
@@ -1462,7 +1500,7 @@ void CreateTextureOpenGL( const zp_char* textureName, zp_uint width, zp_uint hei
 
 void DestroyTextureOpenGL( zpTexture& texture )
 {
-    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Destroy Buffer" );
+    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Destroy Texture" );
     
     glDeleteTextures( 1, &texture.texture.index );
     texture.texture.index = 0;

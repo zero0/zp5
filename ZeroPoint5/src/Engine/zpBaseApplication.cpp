@@ -230,8 +230,8 @@ void zpBaseApplication::setup()
     // TODO: remove when done debugging
     const zp_size_t fixedWidth = 12;
     const zp_size_t fixedHeight = 12;
-    zp_uint tw = fontTex->width;
-    zp_uint th = fontTex->height;
+    zp_uint tw = fontTex->desc.width;
+    zp_uint th = fontTex->desc.height;
 
     float invW = 1.f / static_cast<zp_float>( tw );
     float invH = 1.f / static_cast<zp_float>( th );
