@@ -16,7 +16,15 @@ struct zpCreateTextureDesc
 
 struct zpCreateShaderDesc
 {
+    const zp_char* shaderName;
 
+    const void* vertexShaderSrc;
+    zp_size_t vertexShaderOffset;
+    zp_size_t vertexShaderLength;
+
+    const void* fragmentShaderSrc;
+    zp_size_t fragmentShaderOffset;
+    zp_size_t fragmentShaderLength;
 };
 
 class zpRenderingEngine
@@ -47,7 +55,7 @@ public:
     void createTexture( zpCreateTextureDesc* desc, zpTexture& texture );
     void destroyTexture( zpTexture& texture );
 
-    void createShader( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
+    void createShader( zpCreateShaderDesc* desc, zpShader& shader );
     void destroyShader( zpShader& shader );
 
 private:

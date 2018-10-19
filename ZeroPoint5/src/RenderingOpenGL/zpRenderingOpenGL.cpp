@@ -1037,8 +1037,22 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         }                                                      
         )GLSL";
 
-    CreateShaderOpenGL( "fragVC", vertVC, fragVC, g_shaderVC );
-    CreateShaderOpenGL( "fragVCU", vertVCU, fragVCU, g_shaderVCU );
+    zpCreateShaderDesc vc = {};
+    vc.shaderName = "fragVC";
+    vc.vertexShaderSrc = vertVC;
+    vc.vertexShaderLength = zp_strlen( vertVC );
+    vc.fragmentShaderSrc = fragVC;
+    vc.fragmentShaderLength = zp_strlen( fragVC );
+
+    zpCreateShaderDesc vcu = {};
+    vcu.shaderName = "fragVCU";
+    vcu.vertexShaderSrc = vertVCU;
+    vcu.vertexShaderLength = zp_strlen( vertVCU );
+    vcu.fragmentShaderSrc = fragVCU;
+    vcu.fragmentShaderLength = zp_strlen( fragVCU );
+
+    CreateShaderOpenGL( &vc, g_shaderVC );
+    CreateShaderOpenGL( &vcu, g_shaderVCU );
 }
 
 void TeardownRenderingOpenGL( zp_handle hContext )
@@ -1151,14 +1165,28 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandPushMarker* cmd = static_cast<const zpRenderCommandPushMarker*>( ptr );
 
-                glPushGroupMarkerEXT( static_cast<GLsizei>( cmd->length ), cmd->marker );
+                if( GLEW_EXT_debug_marker )
+                {
+                    glPushGroupMarkerEXT( static_cast<GLsizei>( cmd->length ), cmd->marker );
+                }
+                else
+                {
+                    glPushDebugGroup( GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>( cmd->length ), cmd->marker );
+                }
 
                 position += sizeof( zpRenderCommandPushMarker );
             } break;
 
             case ZP_RENDER_COMMNAD_POP_MARKER:
             {
-                glPopGroupMarkerEXT();
+                if( GLEW_EXT_debug_marker )
+                {
+                    glPopGroupMarkerEXT();
+                }
+                else
+                {
+                    glPopDebugGroup();
+                }
 
                 position += sizeof( zpRenderCommandPopMarker );
             } break;
@@ -1506,7 +1534,7 @@ void DestroyTextureOpenGL( zpTexture& texture )
     texture.texture.index = 0;
 }
 
-void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Shader" );
 
@@ -1576,17 +1604,17 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
 
     GLint result;
     GLint infoLength;
-    zp_char buffer[ 512 ];
+    zp_char buffer[ 1024 ];
 
     // vertex shader
-    if( vertexShaderSource )
+    if( desc->vertexShaderSrc )
     {
         const zp_char* vs[] =
         {
             versionHeader,
             commonHeader,
             vsHeader,
-            vertexShaderSource
+            static_cast<const zp_char*>( desc->vertexShaderSrc ) + desc->vertexShaderOffset
         };
 
         shader.vertexShader.index = glCreateShader( GL_VERTEX_SHADER );
@@ -1595,23 +1623,27 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
         glCompileShader( shader.vertexShader.index );
 
         glGetShaderiv( shader.vertexShader.index, GL_COMPILE_STATUS, &result );
-        glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-        if( infoLength )
+        if( result != GL_TRUE )
         {
-            glGetShaderInfoLog( shader.vertexShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
-            zp_printfln( "Vertex Shader Error: %s", buffer );
+            glGetShaderiv( shader.vertexShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+            if( infoLength )
+            {
+                glGetShaderInfoLog( shader.vertexShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+                zp_printfln( "Vertex Shader Error: %s", buffer );
+            }
         }
     }
 
     // fragment shader
-    if( fragmentShaderSource )
+    if( desc->fragmentShaderSrc )
     {
         const zp_char* ps[] =
         {
             versionHeader,
             commonHeader,
             psHeader,
-            fragmentShaderSource
+            static_cast<const zp_char*>( desc->fragmentShaderSrc ) + desc->fragmentShaderOffset
+
         };
 
         shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
@@ -1620,11 +1652,14 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
         glCompileShader( shader.fragmentShader.index );
 
         glGetShaderiv( shader.fragmentShader.index, GL_COMPILE_STATUS, &result );
-        glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-        if( infoLength )
+        if( result != GL_TRUE )
         {
-            glGetShaderInfoLog( shader.fragmentShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
-            zp_printfln( "Fragment Shader Error: %s", buffer );
+            glGetShaderiv( shader.fragmentShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+            if( infoLength )
+            {
+                glGetShaderInfoLog( shader.fragmentShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+                zp_printfln( "Fragment Shader Error: %s", buffer );
+            }
         }
     }
 
@@ -1645,16 +1680,20 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
         glCompileShader( shader.geometryShader.index );
 
         glGetShaderiv( shader.geometryShader.index, GL_COMPILE_STATUS, &result );
-        glGetShaderiv( shader.geometryShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-        if( infoLength )
+        if( result != GL_TRUE )
         {
-            glGetShaderInfoLog( shader.geometryShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
-            zp_printfln( "Geometry Shader Error: %s", buffer );
+            glGetShaderiv( shader.geometryShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+            if( infoLength )
+            {
+                glGetShaderInfoLog( shader.geometryShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+                zp_printfln( "Geometry Shader Error: %s", buffer );
+            }
         }
     }
 
     // link program
     shader.programShader.index = glCreateProgram();
+
     if( shader.vertexShader.index )   glAttachShader( shader.programShader.index, shader.vertexShader.index );
     if( shader.fragmentShader.index ) glAttachShader( shader.programShader.index, shader.fragmentShader.index );
     if( shader.geometryShader.index ) glAttachShader( shader.programShader.index, shader.geometryShader.index );
@@ -1662,11 +1701,14 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
     glLinkProgram( shader.programShader.index );
 
     glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
-    glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
-    if( infoLength )
+    if( result != GL_TRUE )
     {
-        glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
-        zp_printfln( "Program Link Error: %s", buffer );
+        glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+        if( infoLength )
+        {
+            glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+            zp_printfln( "Program Link Error: %s", buffer );
+        }
     }
 
     // clean-up shaders
@@ -1689,8 +1731,8 @@ void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderS
     }
 
 #if ZP_DEBUG
-    GLsizei len = static_cast<GLsizei>( zp_strlen( shaderName ) );
-    glObjectLabel( GL_PROGRAM, shader.programShader.index, len, shaderName );
+    GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
+    glObjectLabel( GL_PROGRAM, shader.programShader.index, len, desc->shaderName );
 #endif
 
     shader.vertexShader.index = 0;

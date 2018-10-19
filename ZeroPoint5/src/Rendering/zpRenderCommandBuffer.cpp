@@ -25,7 +25,7 @@ void zpRenderCommandBuffer::pushMarker( const zp_char* marker )
     cmd.header.id = ++m_uniqueID;
 
     const zp_size_t len = zp_strlen( marker );
-    cmd.length = ZP_MIN( len, ZP_MAX_MARKER_NAME_SIZE );
+    cmd.length = ZP_MIN( len + 1, ZP_MAX_MARKER_NAME_SIZE );
 
     zp_strcpy( cmd.marker, cmd.length, marker );
 

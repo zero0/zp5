@@ -53,6 +53,29 @@ zpRenderPipeline::~zpRenderPipeline()
 
 }
 
+void zpRenderPipeline::update( const zpCamera* camera, zpRenderContext* renderContext )
+{
+    zp_bool needsRebuild = false;
+
+    zpVector< zpRenderPipelinePass* >::iterator b = m_allPasses.begin();
+    zpVector< zpRenderPipelinePass* >::iterator e = m_allPasses.end();
+
+    for( ; b != e; ++b )
+    {
+        zpRenderPipelinePass* pass = *b;
+        if( pass->isDirty() )
+        {
+            needsRebuild = true;
+            break;
+        }
+    }
+
+    if( needsRebuild )
+    {
+        buildPipeline();
+    }
+}
+
 void zpRenderPipeline::executePipeline( const zpCamera* camera, zpRenderContext* renderContext )
 {
     zpVector< zpRenderPipelinePass* >::iterator b = m_pipeline.begin();
@@ -65,3 +88,40 @@ void zpRenderPipeline::executePipeline( const zpCamera* camera, zpRenderContext*
     }
 }
 
+void zpRenderPipeline::rebuild()
+{
+    zpVector< zpRenderPipelinePass* >::iterator b = m_allPasses.begin();
+    zpVector< zpRenderPipelinePass* >::iterator e = m_allPasses.end();
+
+    for( ; b != e; ++b )
+    {
+        zpRenderPipelinePass* pass = *b;
+        pass->markAsDirty();
+    }
+}
+
+void zpRenderPipeline::buildPipeline()
+{
+    // clear pipeline
+    m_pipeline.reset();
+
+    // resolve passes
+    zpVector< zpRenderPipelinePass* >::iterator b = m_allPasses.begin();
+    zpVector< zpRenderPipelinePass* >::iterator e = m_allPasses.end();
+
+    for( ; b != e; ++b )
+    {
+        zpRenderPipelinePass* pass = *b;
+        if( pass->isEnabled() )
+        {
+            const zpRenderPipelinePassResolveResult r = pass->resolve();
+            if( r == ZP_RENDER_PIPELINE_PASS_RESOLVE_SUCCESS )
+            {
+                m_pipeline.pushBack( pass );
+            }
+        }
+    }
+
+    // sort passes in pipline
+    // TODO: implement sort for passes
+}

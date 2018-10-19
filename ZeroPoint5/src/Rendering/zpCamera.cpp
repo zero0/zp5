@@ -316,7 +316,13 @@ void zpCameraManager::render( zpRenderingEngine* engine )
             const zpCamera* camera = &c->camera;
 
             context->setActiveCamera( camera);
+            
+            pipeline->update( camera, context );
+
             pipeline->executePipeline( camera, context );
+
         }
     }
+
+    context->setActiveCamera( ZP_NULL );
 }

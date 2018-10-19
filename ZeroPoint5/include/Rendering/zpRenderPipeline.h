@@ -30,6 +30,7 @@ public:
     void setEnabled( zp_bool enabled );
 
     zp_bool isDirty() const;
+    void markAsDirty();
 
 public:
     virtual zpRenderPipelinePassResolveResult resolve() = 0;
@@ -43,7 +44,6 @@ public:
     }
 
 protected:
-    void markAsDirty();
     void markAsClean();
 
 private:

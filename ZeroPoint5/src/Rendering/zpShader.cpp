@@ -172,7 +172,10 @@ zp_bool zpShaderManager::getShader( const zp_char* shaderName, zpShaderHandle& s
     zpShaderData shaderData;
     LoadShaderData( shaderName, shaderData );
 
-    m_engine->createShader( "", 0, 0, foundShaderInstance->shader );
+    zpCreateShaderDesc shaderDesc = {};
+    shaderDesc.shaderName = shaderName;
+
+    m_engine->createShader( &shaderDesc, foundShaderInstance->shader );
 
     foundShaderInstance->refCount = 0;
     foundShaderInstance->instanceId = ++m_newShaderInstanceId;

@@ -4,96 +4,6 @@
 #include "RenderingOpenGL\zpRenderingOpenGL.h"
 #endif
 
-static ZP_FORCE_INLINE void SkipAnchors( zpSortRenderCommandData* &start, zpSortRenderCommandData* end )
-{
-    //for( ; start != end && start->key.anchor; ++start )
-    {
-    }
-}
-
-static ZP_FORCE_INLINE void SkipToNextAnchor( zpSortRenderCommandData* &start, zpSortRenderCommandData* end )
-{
-    //for( ; start != end && !start->key.anchor; ++start )
-    {
-    }
-}
-
-static void SortRenderCommands( const zpVector<zpRenderingCommand>& commands, zp_byte viewport, zpVector<zpSortRenderCommandData>& sort )
-{
-    ZP_PROFILER_BLOCK();
-
-    sort.clear();
-    sort.reserve( commands.size() );
-
-    for( zp_size_t i = 0, imax = commands.size(); i < imax; ++i )
-    {
-        const zpRenderingCommand& cmd = commands[ i ];
-        if( cmd.sortKey.viewport == viewport )
-        {
-            zpSortRenderCommandData& data = sort.pushBackEmpty();
-            data.key = cmd.sortKey;
-            data.index = i;
-        }
-    }
-
-    zpSortRenderCommandData* begin = sort.begin();
-    zpSortRenderCommandData* end = sort.end();
-
-    zpSortRenderCommandData* sortStart = begin;
-    zpSortRenderCommandData* sortEnd = begin;
-
-    do
-    {
-        sortStart = sortEnd;
-
-        SkipAnchors( sortStart, end );
-
-        sortEnd = sortStart;
-
-        SkipToNextAnchor( sortEnd, end );
-
-        if( sortStart == sortEnd )
-        {
-            break;
-        }
-
-        // sort by layers
-        zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
-        {
-            return a.key.layer < b.key.layer;
-        } );
-        
-        // sort depth of each layer, reversing sort for transparent layers
-        zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
-        {
-            if( a.key.layer == b.key.layer )
-            {
-                if( a.key.layer & 0x7 )
-                {
-                    return a.key.depth > b.key.depth;
-                }
-                else
-                {
-                    return a.key.depth < b.key.depth;
-                }
-            }
-            return a.key.layer < b.key.layer;
-        } );
-
-        // sort materials
-        zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
-        {
-            return a.key.material < b.key.material;
-        } );
-
-        // sort passes
-        zp_qsort( sortStart, sortEnd, []( zpSortRenderCommandData& a, zpSortRenderCommandData& b )
-        {
-            return a.key.pass < b.key.pass;
-        } );
-    } while( sortStart != sortEnd );
-}
-
 zpRenderingEngine::zpRenderingEngine()
 {
 
@@ -119,6 +29,8 @@ public:
     void executePass( const zpCamera* camera, zpRenderContext* renderContext )
     {
         zpRenderCommandBuffer* commandBuffer = renderContext->getCommandBuffer();
+
+        commandBuffer->pushMarker( "Clear" );
 
         // set viewport
         commandBuffer->setViewport( camera->viewport );
@@ -152,6 +64,8 @@ public:
                 commandBuffer->clearStencil( camera->clearStencil );
             }
         }
+
+        commandBuffer->popMarker();
     };
 };
 
@@ -192,6 +106,8 @@ void zpRenderingEngine::setup( zp_handle hWindow )
     //m_immidiateContext.setup();
     m_pipeline.addPass<zpClearPass>();
     m_pipeline.addPass<zpForwardOpaquePass>();
+
+    m_pipeline.rebuild();
 }
 void zpRenderingEngine::teardown()
 {
@@ -309,11 +225,13 @@ void zpRenderingEngine::destroyTexture( zpTexture& texture )
     DestroyTextureOpenGL( texture );
 }
 
-void zpRenderingEngine::createShader( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader )
+void zpRenderingEngine::createShader( zpCreateShaderDesc* desc, zpShader& shader )
 {
     ZP_PROFILER_BLOCK();
-
-    CreateShaderOpenGL( shaderName, vertexShaderSource, fragmentShaderSource, shader );
+    if( desc )
+    {
+        CreateShaderOpenGL( desc, shader );
+    }
 }
 
 void zpRenderingEngine::destroyShader( zpShader& shader )

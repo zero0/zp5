@@ -18,7 +18,7 @@ void SetRenderBufferDataOpenGL( const zpRenderBuffer& buffer, const void* data, 
 void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture );
 void DestroyTextureOpenGL( zpTexture& texture );
 
-void CreateShaderOpenGL( const zp_char* shaderName, const zp_char* vertexShaderSource, const zp_char* fragmentShaderSource, zpShader& shader );
+void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader );
 void DestroyShaderOpenGL( zpShader& shader );
 
 void BeginFrameOpenGL( zp_size_t frameIndex );
