@@ -45,7 +45,7 @@ public:
     zp_bool isVSync() const;
     void setVSync( zp_bool vsync );
 
-    zpRenderingContext* getImmidiateContext();
+    zpRenderImmediate* getImmediate();
     zpRenderContext* getContext();
     zpRenderPipeline* getPipeline();
 
@@ -62,8 +62,7 @@ private:
     void submitCommandBuffer( zpRenderCommandBuffer* buffer );
     void submitRawCommand( const void* cmd, zp_size_t size );
 
-    zpRenderingContext m_immidiateContext;
-
+    zpRenderImmediate m_immediate;
     zpRenderContext m_context;
     zpRenderPipeline m_pipeline;
 

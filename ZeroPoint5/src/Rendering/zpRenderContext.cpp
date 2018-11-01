@@ -55,7 +55,7 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
                 const zpVector4f pCenter = zpMath::Vector4Load4( p.bounds.center.m );
                 zpScalar dist = zpMath::Vector4LengthSquared3( zpMath::Vector4Sub( pCenter, cCenter ) );
                 zpScalar linearDist = zpMath::ScalarMul( dist, invFarDistance );
-                depth = zpMath::ScalarFloorToInt( zpMath::ScalarMul( linearDist, maxDepth ) );
+                //depth = zpMath::ScalarFloorToInt( zpMath::ScalarMul( linearDist, maxDepth ) );
             }
 
             zpDrawRenderableSort& sort = m_renderableSort.pushBackEmpty();
@@ -105,35 +105,54 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
     for( ; sb != se; ++sb )
     {
         const zpDrawRenderable* drawRenderable = sb->drawRenderable;
+        if( drawRenderable == ZP_NULL ) continue;
 
-        zp_size_t startSubMesh;
-        zp_size_t endSubMesh;
-        if( drawRenderable->subMeshIndex < 0 )
+        if( drawRenderable->mesh.isValid() )
         {
-            startSubMesh = 0;
-            endSubMesh = drawRenderable->mesh->numMeshParts;
+            zp_size_t startSubMesh;
+            zp_size_t endSubMesh;
+            if( drawRenderable->subMeshIndex < 0 )
+            {
+                startSubMesh = 0;
+                endSubMesh = drawRenderable->mesh->numMeshParts;
+            }
+            else
+            {
+                startSubMesh = drawRenderable->subMeshIndex;
+                endSubMesh = startSubMesh + 1;
+            }
+
+            zpDrawMeshDesc desc;
+            for( ; startSubMesh < endSubMesh; ++startSubMesh )
+            {
+                const zpMesh* mesh = drawRenderable->mesh.get();
+                const zpMeshPart& part = mesh->parts[ startSubMesh ];
+
+                desc.vertexBuffer = mesh->vertexData;
+                desc.indexBuffer = mesh->indexData;
+                desc.vertexOffset = part.vertexOffset;
+                desc.vertexCount = part.vertexCount;
+                desc.indexOffset = part.indexOffset;
+                desc.indexCount = part.indexCount;
+                desc.indexStride = mesh->indexStride;
+                desc.vertexFormat = mesh->vertexFormat;
+                desc.topology = mesh->topology;
+
+                m_commandBuffer.drawMesh( drawRenderable->localToWorld, desc, drawRenderable->material.get(), drawRenderable->passIndex );
+            }
         }
         else
         {
-            startSubMesh = drawRenderable->subMeshIndex;
-            endSubMesh = startSubMesh + 1;
-        }
-
-        zpDrawMeshDesc desc;
-        for( ; startSubMesh < endSubMesh; ++startSubMesh )
-        {
-            const zpMesh* mesh = drawRenderable->mesh.get();
-            const zpMeshPart& part = mesh->parts[ startSubMesh ];
-
-            desc.vertexBuffer = mesh->vertexData;
-            desc.indexBuffer = mesh->indexData;
-            desc.vertexOffset = part.vertexOffset;
-            desc.vertexCount = part.vertexCount;
-            desc.indexOffset = part.indexOffset;
-            desc.indexCount = part.indexCount;
-            desc.indexStride = mesh->indexStride;
-            desc.vertexFormat = mesh->vertexFormat;
-            desc.topology = mesh->topology;
+            zpDrawMeshDesc desc;
+            desc.vertexBuffer = drawRenderable->vertexBuffer;
+            desc.indexBuffer = drawRenderable->indexBuffer;
+            desc.vertexOffset = drawRenderable->vertexOffset;
+            desc.vertexCount = drawRenderable->vertexCount;
+            desc.indexOffset = drawRenderable->indexOffset;
+            desc.indexCount = drawRenderable->indexCount;
+            desc.indexStride = drawRenderable->indexStride;
+            desc.vertexFormat = drawRenderable->vertexFormat;
+            desc.topology = drawRenderable->topology;
 
             m_commandBuffer.drawMesh( drawRenderable->localToWorld, desc, drawRenderable->material.get(), drawRenderable->passIndex );
         }

@@ -499,7 +499,7 @@ struct zpRenderCommandSetRenderTargetColors
 struct zpRenderCommandSetRenderTargetColorsDepth
 {
     zpRenderCommandHeader header;
-    zpRenderTargetIdentifier rtColors[8];
+    zpRenderTargetIdentifier rtColors[ 8 ];
     zpRenderTargetIdentifier rtDepth;
     zp_size_t rtCount;
 };
@@ -610,31 +610,12 @@ struct zpRenderCommandDrawMesh
 };
 
 //
+// Includes
 //
-//
-
-struct zpDrawRenderable
-{
-    zp_flag32 renderLayers;
-    zp_int passIndex;
-    zp_int subMeshIndex;
-
-    zpMeshHandle mesh;
-    zpMaterialHandle material;
-
-    zpMatrix4fData localToWorld;
-    zpBoundingAABB bounds;
-};
-
-struct zpDrawRenderableSort
-{
-    zpRenderSortKey sortKey;
-    const zpDrawRenderable* drawRenderable;
-};
-
 
 #include "zpRenderCommandBuffer.h"
 #include "zpRenderContext.h"
+#include "zpRenderImmediate.h"
 
 #include "zpRenderResource.h"
 #include "zpRenderPipeline.h"

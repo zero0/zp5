@@ -1576,7 +1576,7 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
         EndCBuffer()
 
         BeginCBuffer( Camera )
-            uniform float4x4 _ViewPorjection;
+            uniform float4x4 _ViewProjection;
             uniform float4x4 _InvViewPorjection;
             uniform float4 _CameraUp;
             uniform float4 _CameraLookTo;
@@ -1586,7 +1586,7 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
 
         float4 ObjectToClipSpace( in float4 vertex )
         {
-          return mul( _ViewPorjection, mul( _ObjectToWorld, vertex ) );
+          return mul( _ViewProjection, mul( _ObjectToWorld, vertex ) );
         }
         )GLSL";
 

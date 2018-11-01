@@ -24,7 +24,7 @@ void zpMeshRendererComponent::render( zpRenderContext* ctx )
             zpMath::MatrixStore4( zpMath::MatrixIdentity(), localToWorld.m );
         }
 
-        zpDrawRenderable desc;
+        zpDrawRenderable desc = {};
         desc.renderLayers = m_renderLayers;
         desc.material = m_material;
         desc.mesh = m_mesh;

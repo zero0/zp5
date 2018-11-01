@@ -80,13 +80,12 @@ void zpDebugGUI::update( zp_float dt, zp_float rt )
     updateWidget( 0 );
 }
 
-void zpDebugGUI::render( zpRenderingContext* ctx )
+void zpDebugGUI::render( zpRenderImmediate *ctx )
 {
     ZP_PROFILER_BLOCK();
 
     zp_bool isRenderingText = false;
 
-    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
 
     zpRecti orthoRect = { 0, 0, m_screenSize.x, m_screenSize.y };
     zp_float l = static_cast<zp_float>( orthoRect.x );
@@ -97,11 +96,18 @@ void zpDebugGUI::render( zpRenderingContext* ctx )
     zp_float f = static_cast<zp_float>( 10 );
 
     zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
-    ctx->setTransform( ortho );
+    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
 
     renderWidget( ctx, 0, isRenderingText );
-
-    ctx->endDraw();
+    
+    if( isRenderingText )
+    {
+        ctx->endDrawText();
+    }
+    else
+    {
+        ctx->endDrawImmediate();
+    }
 }
 
 void zpDebugGUI::endGUI()
@@ -347,7 +353,7 @@ void zpDebugGUI::updateWidget( zp_size_t widgetIndex )
     }
 }
 
-void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, zp_bool& isRenderingText )
+void zpDebugGUI::renderWidget( zpRenderImmediate *ctx, zp_size_t widgetIndex, zp_bool& isRenderingText )
 {
 
     zpDebugGUIWidget& widget = m_widgets[ widgetIndex ];
@@ -363,8 +369,7 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 {
                     isRenderingText = false;
 
-                    ctx->endDraw();
-                    ctx->beginDrawImmediate( 0, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+                    ctx->endDrawText();
 
                     zpRecti orthoRect = { 0, 0, m_screenSize.x, m_screenSize.y };
                     zp_float l = static_cast<zp_float>( orthoRect.x );
@@ -375,7 +380,7 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                     zp_float f = static_cast<zp_float>( 10 );
 
                     zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
-                    ctx->setTransform( ortho );
+                    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
                 }
 
                 zpRecti& rect = widget.layout.rect;
@@ -386,10 +391,10 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 
                 zp_ushort vertexCount = static_cast<zp_ushort>( ctx->getVertexCount() );
 
-                ctx->addVertexData( v0, m_style.backgroundColor );
-                ctx->addVertexData( v1, m_style.backgroundColor );
-                ctx->addVertexData( v2, m_style.backgroundColor );
-                ctx->addVertexData( v3, m_style.backgroundColor );
+                ctx->addVertex( v0, m_style.backgroundColor );
+                ctx->addVertex( v1, m_style.backgroundColor );
+                ctx->addVertex( v2, m_style.backgroundColor );
+                ctx->addVertex( v3, m_style.backgroundColor );
 
                 //v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
                 //v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
@@ -412,8 +417,8 @@ void zpDebugGUI::renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, z
                 {
                     isRenderingText = true;
 
-                    ctx->endDraw();
-                    ctx->beginDrawText( 0, m_debugFont );
+                    ctx->endDrawImmediate();
+                    ctx->beginDrawText( m_debugFont );
 
                     zpRecti orthoRect = { 0, 0, m_screenSize.x, m_screenSize.y };
                     zp_float l = static_cast<zp_float>( orthoRect.x );

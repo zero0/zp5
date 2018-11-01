@@ -84,6 +84,8 @@ public:
 
     void executePass( const zpCamera* camera, zpRenderContext* renderContext )
     {
+        renderContext->getCommandBuffer()->pushMarker( "Forward Opaque" );
+
         zpDrawRenderersDesc desc;
         desc.sortOrder = ZP_RENDER_SORT_ORDER_FRONT_TO_BACK;
         desc.renderRange.minRenderQueue = 0;
@@ -93,6 +95,8 @@ public:
         desc.viewPorts = -1;
 
         renderContext->drawRenderers( desc );
+
+        renderContext->getCommandBuffer()->popMarker();
     };
 };
 
@@ -103,7 +107,8 @@ void zpRenderingEngine::setup( zp_handle hWindow )
     //m_engine.setup( hWindow );
     SetupRenderingOpenGL( hWindow, m_hDC, m_hContext );
 
-    //m_immidiateContext.setup();
+    m_immediate.setup( this, &m_context );
+
     m_pipeline.addPass<zpClearPass>();
     m_pipeline.addPass<zpForwardOpaquePass>();
 
@@ -113,7 +118,8 @@ void zpRenderingEngine::teardown()
 {
     ZP_PROFILER_BLOCK();
     
-    //m_immidiateContext.teardown();
+    m_immediate.teardown();
+
     m_pipeline.clearAllPasses();
 
     m_context.clearDrawRenderables();
@@ -152,6 +158,8 @@ void zpRenderingEngine::endFrame()
     ZP_PROFILER_GPU( stat.frameTime, stat.primitiveCount );
 
     submitCommandBuffer( m_context.getCommandBuffer() );
+
+    m_immediate.flipBuffers();
 }
 
 void zpRenderingEngine::submit()
@@ -180,9 +188,9 @@ void zpRenderingEngine::setVSync( zp_bool vsync )
     m_isVSync = vsync;
 }
 
-zpRenderingContext* zpRenderingEngine::getImmidiateContext()
+zpRenderImmediate* zpRenderingEngine::getImmediate()
 {
-    return &m_immidiateContext;
+    return &m_immediate;
 }
 
 zpRenderContext* zpRenderingEngine::getContext()

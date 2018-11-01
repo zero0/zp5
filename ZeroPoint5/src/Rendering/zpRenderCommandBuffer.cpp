@@ -228,7 +228,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4fData& transform, const zpM
     cmd.vertexCount = mesh->parts[ subMeshIndex ].vertexCount;
     cmd.indexOffset = mesh->parts[ subMeshIndex ].indexOffset;
     cmd.indexCount = mesh->parts[ subMeshIndex ].indexCount;
-    cmd.indexStride = sizeof( zp_ushort );
+    cmd.indexStride = mesh->indexStride;
     cmd.vertexFormat = mesh->vertexFormat;
     cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
 

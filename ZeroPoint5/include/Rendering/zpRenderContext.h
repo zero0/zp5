@@ -2,7 +2,38 @@
 #ifndef ZP_RENDER_CONTEXT_H
 #define ZP_RENDER_CONTEXT_H
 
-#include "Rendering\zpRendering.h"
+//
+//
+//
+
+struct zpDrawRenderable
+{
+    zp_flag32 renderLayers;
+    zp_int passIndex;
+    zp_int subMeshIndex;
+
+    zpMeshHandle mesh;
+    zpMaterialHandle material;
+
+    zpRenderBuffer vertexBuffer;
+    zpRenderBuffer indexBuffer;
+    zp_size_t vertexOffset;
+    zp_size_t vertexCount;
+    zp_size_t indexOffset;
+    zp_size_t indexCount;
+    zp_uint indexStride;
+    zpVertexFormat vertexFormat;
+    zpTopology topology;
+
+    zpMatrix4fData localToWorld;
+    zpBoundingAABB bounds;
+};
+
+struct zpDrawRenderableSort
+{
+    zpRenderSortKey sortKey;
+    const zpDrawRenderable* drawRenderable;
+};
 
 class zpRenderContext
 {

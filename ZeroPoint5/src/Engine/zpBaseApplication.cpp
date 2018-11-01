@@ -772,7 +772,6 @@ void zpBaseApplication::debugDrawGUI()
 {
     ZP_PROFILER_BLOCK();
 
-    zpRenderingContext *ctx = m_renderingEngine.getImmidiateContext();
     zp_char buff[ 512 ];
 
     m_debugGUI.startGUI();
@@ -957,5 +956,6 @@ void zpBaseApplication::debugDrawGUI()
 
     m_debugGUI.update( 0, 0 );
 
+    zpRenderImmediate *ctx = m_renderingEngine.getImmediate();
     m_debugGUI.render( ctx );
 }

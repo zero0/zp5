@@ -69,7 +69,7 @@ public:
 
     void startGUI();
     void update( zp_float dt, zp_float rt );
-    void render( zpRenderingContext* ctx );
+    void render( zpRenderImmediate *ctx );
     void endGUI();
 
     void beginWindow( zpRecti& area );
@@ -92,7 +92,7 @@ private:
     const zp_size_t npos = static_cast<zp_size_t>( -1 );
 
     void updateWidget( zp_size_t widgetIndex );
-    void renderWidget( zpRenderingContext* ctx, zp_size_t widgetIndex, zp_bool& isRenderingText );
+    void renderWidget( zpRenderImmediate *ctx, zp_size_t widgetIndex, zp_bool& isRenderingText );
 
     zpInput* m_input;
 
