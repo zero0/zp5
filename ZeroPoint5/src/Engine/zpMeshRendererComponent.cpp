@@ -13,7 +13,7 @@ void zpMeshRendererComponent::render( zpRenderContext* ctx )
 {
     if( m_mesh.isValid() && m_material.isValid() )
     {
-        zpMatrix4fData localToWorld;
+        zpMatrix4f localToWorld;
         zpTransformComponentHandle& transform = getParentObject()->getAllComponents()->transform;
         if( transform.isValid() )
         {

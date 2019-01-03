@@ -65,12 +65,12 @@ enum zpParticleEffectFlag
 
 struct zpParticle
 {
-    zpVector4fData position;
-    zpVector4fData velocity;
-    zpVector4fData rotation;
-    zpVector4fData angularVelocity;
-    zpVector4fData scale;
-    zpVector4fData normal;
+    zpVector4f position;
+    zpVector4f velocity;
+    zpVector4f rotation;
+    zpVector4f angularVelocity;
+    zpVector4f scale;
+    zpVector4f normal;
     zpColorf color;
     zp_float life;
     zp_float progress;
@@ -78,7 +78,7 @@ struct zpParticle
 
 struct zpParticleEffectPart
 {
-    zpVector4fData scale;
+    zpVector4f scale;
     zpColorf color;
 
     zp_float speed;
@@ -100,8 +100,8 @@ struct zpParticleEffect
     zp_uint flipbookY;
     zpParticleEffectShape shape;
 
-    zpVector4fData gravity;
-    zpVector4fData shapeSize;
+    zpVector4f gravity;
+    zpVector4f shapeSize;
 
     zpParticleEffectRange scaleRange;
     zpParticleEffectRange colorRange;

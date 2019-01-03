@@ -192,7 +192,7 @@ void zpRenderCommandBuffer::setScissorRect( const zpRecti& scissorRect )
     m_buffer.write( cmd );
 }
 
-void zpRenderCommandBuffer::drawMesh( const zpMatrix4fData& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex )
+void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex )
 {
     zpRenderCommandDrawMesh cmd;
     cmd.header.type = ZP_RENDER_COMMNAD_DRAW_MESH;
@@ -216,7 +216,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4fData& transform, const zpD
     m_buffer.write( cmd );
 }
 
-void zpRenderCommandBuffer::drawMesh( const zpMatrix4fData& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex )
+void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex )
 {
     zpRenderCommandDrawMesh cmd;
     cmd.header.type = ZP_RENDER_COMMNAD_DRAW_MESH;

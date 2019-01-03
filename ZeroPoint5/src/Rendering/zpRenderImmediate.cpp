@@ -67,7 +67,7 @@ void zpRenderImmediate::beginDrawImmediate( zpMatrix4fParamF transform, zpTopolo
     zpMath::MatrixStore4( transform, m_currentTransform.m );
 }
 
-void zpRenderImmediate::beginDrawImmediate( const zpMatrix4fData& transform, zpTopology topology, zpVertexFormat vertexFormat )
+void zpRenderImmediate::beginDrawImmediate( const zpMatrix4f& transform, zpTopology topology, zpVertexFormat vertexFormat )
 {
     m_currentTopology = topology;
     m_currentVertexFormat = vertexFormat;
@@ -93,7 +93,7 @@ void zpRenderImmediate::beginDrawImmediate( zpMatrix4fParamF transform, zpTopolo
     zpMath::MatrixStore4( transform, m_currentTransform.m );
 }
 
-void zpRenderImmediate::beginDrawImmediate( const zpMatrix4fData& transform, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material )
+void zpRenderImmediate::beginDrawImmediate( const zpMatrix4f& transform, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material )
 {
     m_currentTopology = topology;
     m_currentVertexFormat = vertexFormat;
@@ -111,12 +111,12 @@ void zpRenderImmediate::addVertex( zpVector4fParamF pos, const zpColor32i& color
 {
     ZP_ASSERT( m_currentVertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
     
-    ZP_ALIGN16 zpVector4fData v;
+    ZP_ALIGN16 zpVector4f v;
     zpMath::Vector4Store4( pos, v.m );
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
     } buff = {
         v,
@@ -131,12 +131,12 @@ void zpRenderImmediate::addVertex( zpVector4fParamF pos, const zpColor32i& color
 {
     ZP_ASSERT( m_currentVertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, "" );
 
-    ZP_ALIGN16 zpVector4fData v;
+    ZP_ALIGN16 zpVector4f v;
     zpMath::Vector4Store4( pos, v.m );
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
         zpVector2f u;
     } buff = {
@@ -149,13 +149,13 @@ void zpRenderImmediate::addVertex( zpVector4fParamF pos, const zpColor32i& color
     m_currentVertexCount += 1;
 }
 
-void zpRenderImmediate::addVertex( const zpVector4fData& pos, const zpColor32i& color )
+void zpRenderImmediate::addVertex( const zpVector4f& pos, const zpColor32i& color )
 {
     ZP_ASSERT( m_currentVertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
     } buff = {
         pos,
@@ -166,13 +166,13 @@ void zpRenderImmediate::addVertex( const zpVector4fData& pos, const zpColor32i& 
     m_currentVertexCount += 1;
 }
 
-void zpRenderImmediate::addVertex( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv )
+void zpRenderImmediate::addVertex( const zpVector4f& pos, const zpColor32i& color, const zpVector2f& uv )
 {
     ZP_ASSERT( m_currentVertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR_UV, "" );
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
         zpVector2f u;
     } buff = {
@@ -234,7 +234,7 @@ void zpRenderImmediate::setTransform( zpMatrix4fParamF transform )
     zpMath::MatrixStore4( transform, m_currentTransform.m );
 }
 
-void zpRenderImmediate::setTransform( const zpMatrix4fData& transform )
+void zpRenderImmediate::setTransform( const zpMatrix4f& transform )
 {
     m_currentTransform = transform;
 }
@@ -281,12 +281,12 @@ void zpRenderImmediate::beginDrawText( const zpFontHandle& font )
 
 }
 
-zp_uint zpRenderImmediate::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
+zp_uint zpRenderImmediate::addText( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
 {
     return 0;
 }
 
-zp_uint zpRenderImmediate::addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor )
+zp_uint zpRenderImmediate::addTextShadow( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4f& shadowOffset, const zpColor32i& shadowColor )
 {
     return 0;
 }

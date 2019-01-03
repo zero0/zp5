@@ -17,17 +17,19 @@ zpDebugGUI::~zpDebugGUI()
 {
 }
 
-void zpDebugGUI::setup( zpInput* input, const zpFontHandle& debugFont )
+void zpDebugGUI::setup( zpInput* input, const zpFontHandle& debugFont, const zpMaterialHandle& debugMaterial )
 {
     m_input = input;
+
     m_debugFont = debugFont;
+    m_debugMaterial = debugMaterial;
 
     m_style.backgroundColor = zpColor32::Grey75;
     m_style.foregroundColor = zpColor32::Grey25;
     m_style.contentColor = zpColor32::White;
     m_style.fontSize = 12;
 
-    m_layout.rect = { 0, 0, m_screenSize.x, m_screenSize.y };
+    m_layout.rect = { 0, m_screenSize.y, m_screenSize.x, m_screenSize.y };
     m_layout.offset = { 0, 0 };
     m_layout.padding = { 2, 2 };
     m_layout.margin = { 2, 2 };
@@ -40,7 +42,9 @@ void zpDebugGUI::setup( zpInput* input, const zpFontHandle& debugFont )
 void zpDebugGUI::teardown()
 {
     m_input = ZP_NULL;
+
     m_debugFont.release();
+    m_debugMaterial.release();
 
     m_widgets.clear();
     m_widgetStack.clear();
@@ -95,8 +99,8 @@ void zpDebugGUI::render( zpRenderImmediate *ctx )
     zp_float n = static_cast<zp_float>( -10 );
     zp_float f = static_cast<zp_float>( 10 );
 
-    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
-    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    zpMatrix4fSimd ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR, m_debugMaterial );
 
     renderWidget( ctx, 0, isRenderingText );
     
@@ -169,8 +173,7 @@ void zpDebugGUI::beginVertical()
     box.layout.rect.position = parentWidget.layout.cursor;
     box.layout.rect.width = box.layout.rect.width;
     box.layout.rect.height = box.layout.rect.height;
-    box.layout.direction.x = 0;
-    box.layout.direction.y = 1;
+    box.layout.direction = { 0, 1 };
 
     parentWidget.layout.cursor.x += parentWidget.layout.direction.x * ( box.layout.rect.width + parentWidget.layout.margin.x );
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
@@ -208,8 +211,7 @@ void zpDebugGUI::beginHorizontal( zp_int width )
     box.layout.rect.position = parentWidget.layout.cursor;
     box.layout.rect.width = width < 0 ? box.layout.rect.width : width;
     box.layout.rect.height = box.layout.rect.height + box.layout.margin.y * 2;
-    box.layout.direction.x = 1;
-    box.layout.direction.y = 0;
+    box.layout.direction = { 1, 0 };
 
     parentWidget.layout.cursor.x += parentWidget.layout.direction.x * ( box.layout.rect.width + parentWidget.layout.margin.x );
     parentWidget.layout.cursor.y += parentWidget.layout.direction.y * ( box.layout.rect.height + parentWidget.layout.margin.y );
@@ -379,15 +381,15 @@ void zpDebugGUI::renderWidget( zpRenderImmediate *ctx, zp_size_t widgetIndex, zp
                     zp_float n = static_cast<zp_float>( -10 );
                     zp_float f = static_cast<zp_float>( 10 );
 
-                    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
-                    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+                    zpMatrix4fSimd ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+                    ctx->beginDrawImmediate( ortho, ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR, m_debugMaterial );
                 }
 
                 zpRecti& rect = widget.layout.rect;
-                zpVector4fData v0 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
-                zpVector4fData v1 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
-                zpVector4fData v2 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
-                zpVector4fData v3 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
+                zpVector4f v0 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
+                zpVector4f v1 = { static_cast<zp_float>(rect.x             ), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
+                zpVector4f v2 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y + rect.height), 0.f, 1.f };
+                zpVector4f v3 = { static_cast<zp_float>(rect.x + rect.width), static_cast<zp_float>(rect.y              ), 0.f, 1.f };
                 
                 zp_ushort vertexCount = static_cast<zp_ushort>( ctx->getVertexCount() );
 
@@ -428,11 +430,11 @@ void zpDebugGUI::renderWidget( zpRenderImmediate *ctx, zp_size_t widgetIndex, zp
                     zp_float n = static_cast<zp_float>( -10 );
                     zp_float f = static_cast<zp_float>( 10 );
 
-                    zpMatrix4f ortho = zpMath::OrthoLH( l, r, t, b, n, f );
+                    zpMatrix4fSimd ortho = zpMath::OrthoLH( l, r, t, b, n, f );
                     ctx->setTransform( ortho );
                 }
 
-                zpVector4fData pos = { static_cast<zp_float>(widget.layout.rect.x), static_cast<zp_float>(widget.layout.rect.y), 0.f, 1.f };
+                zpVector4f pos = { static_cast<zp_float>(widget.layout.rect.x), static_cast<zp_float>(widget.layout.rect.y), 0.f, 1.f };
                 ctx->addTextShadow( pos, widget.text, m_style.fontSize, 2, m_style.contentColor, m_style.contentColor, { 1, 1, 0, 0 }, zpColor32::Black );
             } break;
 

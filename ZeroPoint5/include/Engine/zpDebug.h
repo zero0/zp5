@@ -64,7 +64,7 @@ public:
     zpDebugGUI();
     ~zpDebugGUI();
 
-    void setup( zpInput* input, const zpFontHandle& debugFont );
+    void setup( zpInput* input, const zpFontHandle& debugFont, const zpMaterialHandle& debugMaterial );
     void teardown();
 
     void startGUI();

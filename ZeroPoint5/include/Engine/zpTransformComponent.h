@@ -4,9 +4,9 @@
 
 struct zpTransformComponentDesc
 {
-    zpVector4fData localPosition;
-    zpQuaternion4fData localRotation;
-    zpVector4fData localScale;
+    zpVector4f localPosition;
+    zpQuaternion4f localRotation;
+    zpVector4f localScale;
 
     zpObjectHandle parentObject;
 };
@@ -43,22 +43,22 @@ public:
     zpTransformComponent();
     ~zpTransformComponent();
 
-    void setLocalPosition( const zpVector4fData& position );
-    void setLocalRotation( const zpQuaternion4fData& rotation );
-    void setLocalScale( const zpVector4fData& scale );
+    void setLocalPosition( const zpVector4f& position );
+    void setLocalRotation( const zpQuaternion4f& rotation );
+    void setLocalScale( const zpVector4f& scale );
 
-    void setLocalPositionRotation( const zpVector4fData& position, const zpQuaternion4fData& rotation );
-    void setLocalPositionRotationScale( const zpVector4fData& position, const zpQuaternion4fData& rotation, const zpVector4fData& scale );
+    void setLocalPositionRotation( const zpVector4f& position, const zpQuaternion4f& rotation );
+    void setLocalPositionRotationScale( const zpVector4f& position, const zpQuaternion4f& rotation, const zpVector4f& scale );
 
-    const zpVector4fData& getLocalPosition() const;
-    const zpQuaternion4fData& getLocalRotation() const;
-    const zpVector4fData& getLocalScale() const;
+    const zpVector4f& getLocalPosition() const;
+    const zpQuaternion4f& getLocalRotation() const;
+    const zpVector4f& getLocalScale() const;
 
-    const zpMatrix4fData& getLocalMatrix() const;
-    const zpMatrix4fData& getWorldMatrix() const;
+    const zpMatrix4f& getLocalMatrix() const;
+    const zpMatrix4f& getWorldMatrix() const;
 
-    const zpVector4fData getWorldPosition() const;
-    const zpQuaternion4fData getWorldRotation() const;
+    const zpVector4f getWorldPosition() const;
+    const zpQuaternion4f getWorldRotation() const;
 
     const zpTransformComponentHandle& getParentTransform() const;
     zpTransformComponentHandle& getParentTransform();
@@ -73,12 +73,12 @@ private:
 
     zpTransformComponentHandle m_parentTransfrom;
 
-    zpVector4fData m_localPosition;
-    zpQuaternion4fData m_localRotation;
-    zpVector4fData m_localScale;
+    zpVector4f m_localPosition;
+    zpQuaternion4f m_localRotation;
+    zpVector4f m_localScale;
 
-    zpMatrix4fData m_localMatrix;
-    zpMatrix4fData m_worldMatrix;
+    zpMatrix4f m_localMatrix;
+    zpMatrix4f m_worldMatrix;
 };
 
 #endif // !ZP_TRANSFORM_COMPONENT_H

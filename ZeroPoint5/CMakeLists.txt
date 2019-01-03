@@ -90,6 +90,7 @@ source_group( Source FILES
 set( ZP_ENGINE_SOURCE
     "src/Engine/zpBaseApplication.cpp"
     "src/Engine/zpDebug.cpp"
+    "src/Engine/zpEntity.cpp"
     "src/Engine/zpInput.cpp"
     "src/Engine/zpMain.cpp"
     "src/Engine/zpMeshRendererComponent.cpp"
@@ -105,6 +106,7 @@ set( ZP_ENGINE_HEADER
     "include/Engine/zpComponent.h"
     "include/Engine/zpDebug.h"
     "include/Engine/zpEngine.h"
+    "include/Engine/zpEntity.h"
     "include/Engine/zpHandle.h"
     "include/Engine/zpInput.h"
     "include/Engine/zpMain.h"

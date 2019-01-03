@@ -15,7 +15,7 @@ struct zpDrawTextDesc
     zp_uint size;
     zp_uint lineSpacing;
     
-    zpVector4fData position;
+    zpVector4f position;
     zpColorf topColor;
 };
 
@@ -31,16 +31,16 @@ public:
     void beginDrawImmediate( zpTopology topology, zpVertexFormat vertexFormat );
     
     void beginDrawImmediate( zpMatrix4fParamF transform, zpTopology topology, zpVertexFormat vertexFormat );
-    void beginDrawImmediate( const zpMatrix4fData& transform, zpTopology topology, zpVertexFormat vertexFormat );
+    void beginDrawImmediate( const zpMatrix4f& transform, zpTopology topology, zpVertexFormat vertexFormat );
     
     void beginDrawImmediate( zpMatrix4fParamF transform, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material );
-    void beginDrawImmediate( const zpMatrix4fData& transform, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material );
+    void beginDrawImmediate( const zpMatrix4f& transform, zpTopology topology, zpVertexFormat vertexFormat, const zpMaterialHandle& material );
 
     void addVertex( zpVector4fParamF pos, const zpColor32i& color );
     void addVertex( zpVector4fParamF pos, const zpColor32i& color, const zpVector2f& uv );
 
-    void addVertex( const zpVector4fData& pos, const zpColor32i& color );
-    void addVertex( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv );
+    void addVertex( const zpVector4f& pos, const zpColor32i& color );
+    void addVertex( const zpVector4f& pos, const zpColor32i& color, const zpVector2f& uv );
 
     void addLineIndex( zp_ushort index0, zp_ushort index1 );
     void addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 );
@@ -48,14 +48,14 @@ public:
 
     void setMaterial( const zpMaterialHandle& material );
     void setTransform( zpMatrix4fParamF transform );
-    void setTransform( const zpMatrix4fData& transform );
+    void setTransform( const zpMatrix4f& transform );
 
     void endDrawImmediate();
 
     void beginDrawText( const zpFontHandle& font );
 
-    zp_uint addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor );
-    zp_uint addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor );
+    zp_uint addText( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor );
+    zp_uint addTextShadow( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4f& shadowOffset, const zpColor32i& shadowColor );
 
     void endDrawText();
 
@@ -75,7 +75,7 @@ private:
     zpRenderBuffer m_immidateVertexBuffers[ 2 ];
     zpRenderBuffer m_immidateIndexBuffers[ 2 ];
 
-    zpMatrix4fData m_currentTransform;
+    zpMatrix4f m_currentTransform;
     zpTopology m_currentTopology;
     zpVertexFormat m_currentVertexFormat;
     zp_size_t m_currentVertexCount;

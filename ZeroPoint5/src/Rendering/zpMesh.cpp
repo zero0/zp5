@@ -34,15 +34,15 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
 
     struct Vertex
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
         zpVector2f u;
     };
 
-    zpVector4fData p0 = { rect.x,               rect.y + rect.height, 0, 1 };
-    zpVector4fData p1 = { rect.x,               rect.y, 0, 1 };
-    zpVector4fData p2 = { rect.x + rect.height, rect.y, 0, 1 };
-    zpVector4fData p3 = { rect.x + rect.height, rect.y + rect.height, 0, 1 };
+    zpVector4f p0 = { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4f p1 = { rect.x,               rect.y, 0, 1 };
+    zpVector4f p2 = { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4f p3 = { rect.x + rect.height, rect.y + rect.height, 0, 1 };
 
     zpVector2f uv0 = { 0, 1 };
     zpVector2f uv1 = { 0, 0 };

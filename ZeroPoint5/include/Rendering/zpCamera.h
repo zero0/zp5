@@ -30,10 +30,10 @@ enum zpCameraClearMode
 
 struct zpCamera
 {
-    zpVector4fData position;
-    zpVector4fData up;
-    zpVector4fData forward;
-    zpVector4fData lookAt;
+    zpVector4f position;
+    zpVector4f up;
+    zpVector4f forward;
+    zpVector4f lookAt;
 
     zp_uint viewportIndex;
     zp_uint layerMask;
@@ -59,10 +59,10 @@ struct zpCamera
     zp_float fovy;
     zp_float aspectRatio;
 
-    zpMatrix4fData viewMatrix;
-    zpMatrix4fData projectionMatrix;
-    zpMatrix4fData viewProjectionMatrix;
-    zpMatrix4fData invViewProjectionMatrix;
+    zpMatrix4f viewMatrix;
+    zpMatrix4f projectionMatrix;
+    zpMatrix4f viewProjectionMatrix;
+    zpMatrix4f invViewProjectionMatrix;
 };
 
 struct zpCameraInstance

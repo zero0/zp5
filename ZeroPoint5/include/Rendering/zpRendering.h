@@ -347,8 +347,8 @@ struct zpDrawRendererCommand
 {
     zpRenderSortKey sortKey;
 
-    zpMatrix4fData localToWorld;
-    zpMatrix4fData worldToLocal;
+    zpMatrix4f localToWorld;
+    zpMatrix4f worldToLocal;
 
     zpBoundingAABB bounds;
 
@@ -374,7 +374,7 @@ struct zpRenderingCommand
     zpRenderSortKey sortKey;
 
     // draw command data
-    zpMatrix4fData transform;
+    zpMatrix4f transform;
 
     zpVertexFormat vertexFormat;
     zpTopology topology;
@@ -551,14 +551,14 @@ struct zpRenderCommandSetGlobalVector
 {
     zpRenderCommandHeader header;
     zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
-    zpVector4fData value;
+    zpVector4f value;
 };
 
 struct zpRenderCommandSetGlobalMatrix
 {
     zpRenderCommandHeader header;
     zp_char globalName[ ZP_MAX_GLOBAL_NAME_SIZE ];
-    zpMatrix4fData value;
+    zpMatrix4f value;
 };
 
 struct zpRenderCommandSetGlobalTexture
@@ -606,7 +606,7 @@ struct zpRenderCommandDrawMesh
     const zpMaterial* material;
     zp_int passIndex;
 
-    zpMatrix4fData localToWorld;
+    zpMatrix4f localToWorld;
 };
 
 //

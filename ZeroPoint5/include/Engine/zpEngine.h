@@ -18,6 +18,8 @@ struct zpPlatform
 #include "zpDebug.h"
 #include "zpHandle.h"
 
+#include "zpEntity.h"
+
 #include "zpObjectManager.h"
 
 #include "zpComponent.h"

@@ -678,8 +678,8 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
 
         // set vectors
         {
-            zpMap< zpShaderProperty, zpVector4fData >::const_iterator b = cmd->material->vectors.begin();
-            zpMap< zpShaderProperty, zpVector4fData >::const_iterator e = cmd->material->vectors.end();
+            zpMap< zpShaderProperty, zpVector4f >::const_iterator b = cmd->material->vectors.begin();
+            zpMap< zpShaderProperty, zpVector4f >::const_iterator e = cmd->material->vectors.end();
             for( ; b != e; ++b )
             {
                 GLint c = glGetUniformLocation( prog, b.key().name() );
@@ -692,8 +692,8 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
 
         // set matrices
         {
-            zpMap< zpShaderProperty, zpMatrix4fData >::const_iterator b = cmd->material->matrices.begin();
-            zpMap< zpShaderProperty, zpMatrix4fData >::const_iterator e = cmd->material->matrices.end();
+            zpMap< zpShaderProperty, zpMatrix4f >::const_iterator b = cmd->material->matrices.begin();
+            zpMap< zpShaderProperty, zpMatrix4f >::const_iterator e = cmd->material->matrices.end();
             for( ; b != e; ++b )
             {
                 GLint c = glGetUniformLocation( prog, b.key().name() );
@@ -999,7 +999,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         void main()                                
         {                                          
            gl_Position = mul( _ObjectToWorld, vertex );  
-           fragmentColor = color;                  
+           fragmentColor = color * _Color;                  
         }                                          
         )GLSL";
     const zp_char* fragVC = R"GLSL(
@@ -1072,74 +1072,6 @@ void TeardownRenderingOpenGL( zp_handle hContext )
 void SetupCameraOpenGL( zpCamera* camera )
 {
 
-}
-
-void ProcessRenderingCommandOpenGL( const zpRenderingCommand* cmd )
-{
-    switch( cmd->type )
-    {
-        case ZP_RENDER_COMMNAD_SET_SCISSOR_RECT:
-        {
-            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
-            glScissor( cmd->scissorRect.x,
-                       cmd->scissorRect.y,
-                       cmd->scissorRect.width,
-                       cmd->scissorRect.height );
-        }
-            break;
-
-        case ZP_RENDER_COMMNAD_SET_VIEWPORT:
-        {
-            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Viewport" );
-            glViewport( cmd->viewport.topX,
-                        cmd->viewport.topY,
-                        cmd->viewport.width,
-                        cmd->viewport.height );
-            glDepthRange( cmd->viewport.minDepth, cmd->viewport.maxDepth );
-        }
-            break;
-
-        case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL:
-        {
-            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear" );
-            glClearColor( cmd->clearColor.r,
-                          cmd->clearColor.g,
-                          cmd->clearColor.b,
-                          cmd->clearColor.a );
-            glClearDepth( cmd->clearDepth );
-            glClearStencil( cmd->clearStencil );
-            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-        }
-            break;
-
-        case ZP_RENDER_COMMNAD_DRAW_MESH:
-        {
-            glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Draw Immediate" );
-            
-            BindVertexFormatForRenderCommand( cmd );
-
-            GLenum indexStride = GL_UNSIGNED_SHORT;
-            GLenum mode = _TopologyToMode( cmd->topology );
-            glDrawElements( mode,
-                            static_cast<GLsizei>( cmd->indexCount ),
-                            indexStride,
-                            reinterpret_cast<void*>( cmd->indexOffset ) );
-
-
-            UnbindVertexFormatForRenderCommand( cmd );
-        }
-            break;
-
-        case ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED:
-            break;
-
-        case ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED_INDIRECT:
-            break;
-
-        default:
-            ZP_INVALID_CODE_PATH();
-            break;
-    }
 }
 
 void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )

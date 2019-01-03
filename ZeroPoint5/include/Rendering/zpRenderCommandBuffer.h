@@ -41,8 +41,8 @@ public:
     void setViewport( const zpViewport& viewport );
     void setScissorRect( const zpRecti& scissorRect );
 
-    void drawMesh( const zpMatrix4fData& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex );
-    void drawMesh( const zpMatrix4fData& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex );
+    void drawMesh( const zpMatrix4f& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex );
+    void drawMesh( const zpMatrix4f& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex );
 
     void blit( const zpRenderTargetIdentifier& src, const zpRenderTargetIdentifier& dest );
     void blit( const zpTexture& src, const zpRenderTargetIdentifier& dest );

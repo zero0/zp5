@@ -25,7 +25,7 @@ struct zpDrawRenderable
     zpVertexFormat vertexFormat;
     zpTopology topology;
 
-    zpMatrix4fData localToWorld;
+    zpMatrix4f localToWorld;
     zpBoundingAABB bounds;
 };
 

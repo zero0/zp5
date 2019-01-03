@@ -101,7 +101,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.font = zpFontHandle();
     cmd.mesh = zpMeshHandle();
 
-    ZP_ALIGN16 zpMatrix4fData transformData;
+    ZP_ALIGN16 zpMatrix4f transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
     cmd.transform = transformData;
 }
@@ -127,7 +127,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     cmd.font = zpFontHandle();
     cmd.mesh = zpMeshHandle();
 
-    ZP_ALIGN16 zpMatrix4fData transformData;
+    ZP_ALIGN16 zpMatrix4f transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
     cmd.transform = transformData;
 }
@@ -154,12 +154,12 @@ void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font 
     cmd.font = font;
     cmd.mesh = zpMeshHandle();
 
-    ZP_ALIGN16 zpMatrix4fData transformData;
+    ZP_ALIGN16 zpMatrix4f transformData;
     zpMath::MatrixStore4( zpMath::MatrixIdentity(), transformData.m );
     cmd.transform = transformData;
 }
 
-zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
+zp_uint zpRenderingContext::addText( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -172,15 +172,15 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
     const zp_float scale = static_cast<zp_float>( size ) / static_cast<zp_float>( font->baseFontSize );
     const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f );
 
-    zpScalar sScale = zpMath::Scalar( scale );
+    zpScalarSimd sScale = zpMath::Scalar( scale );
 
-    ZP_ALIGN16 zpVector4fData p = pos;
-    zpVector4f cursor = zpMath::Vector4Load4( p.m );
-    zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight + lineSpacing ), 0, 0 );
+    ZP_ALIGN16 zpVector4f p = pos;
+    zpVector4fSimd cursor = zpMath::Vector4Load4( p.m );
+    zpVector4fSimd origin = cursor;
+    zpVector4fSimd newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight + lineSpacing ), 0, 0 );
     zp_uint finalLineHeight = lineHeight;
 
-    ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
+    ZP_ALIGN16 zpVector4f p0, p1, p2, p3;
 
     zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
 
@@ -200,7 +200,7 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
 
         zpGlyph* g = font->fontGlyphs + curr;
 
-        zpVector4f tl, tr, br, bl;
+        zpVector4fSimd tl, tr, br, bl;
 
         zp_float minX = static_cast<zp_float>( g->bearing.x );
         zp_float maxX = static_cast<zp_float>( g->bearing.x + g->size.x );
@@ -249,7 +249,7 @@ zp_uint zpRenderingContext::addText( const zpVector4fData& pos, const zp_char* t
     return finalLineHeight;
 }
 
-zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor )
+zp_uint zpRenderingContext::addTextShadow( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4f& shadowOffset, const zpColor32i& shadowColor )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -262,18 +262,18 @@ zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_c
     const zp_float scale = static_cast<zp_float>( size ) / static_cast<zp_float>( font->baseFontSize );
     const zp_uint lineHeight = static_cast<zp_uint>( ( static_cast<zp_float>( size ) * scale ) + 1.f ) + lineSpacing;
 
-    zpScalar sScale = zpMath::Scalar( scale );
+    zpScalarSimd sScale = zpMath::Scalar( scale );
 
-    ZP_ALIGN16 zpVector4fData p = pos;
-    zpVector4f cursor = zpMath::Vector4Load4( p.m );
-    zpVector4f origin = cursor;
-    zpVector4f newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight ), 0, 0 );
+    ZP_ALIGN16 zpVector4f p = pos;
+    zpVector4fSimd cursor = zpMath::Vector4Load4( p.m );
+    zpVector4fSimd origin = cursor;
+    zpVector4fSimd newLine = zpMath::Vector4( 0, static_cast<zp_float>( lineHeight ), 0, 0 );
     zp_uint finalLineHeight = lineHeight;
 
     p = shadowOffset;
-    zpVector4f shadow = zpMath::Vector4Load4( p.m );
+    zpVector4fSimd shadow = zpMath::Vector4Load4( p.m );
 
-    ZP_ALIGN16 zpVector4fData p0, p1, p2, p3;
+    ZP_ALIGN16 zpVector4f p0, p1, p2, p3;
 
     zp_ushort baseIndexOffset = static_cast<zp_ushort>( cmd->vertexCount );
 
@@ -293,8 +293,8 @@ zp_uint zpRenderingContext::addTextShadow( const zpVector4fData& pos, const zp_c
 
         zpGlyph* g = font->fontGlyphs + curr;
 
-        zpVector4f tl, tr, br, bl;
-        zpVector4f stl, str, sbr, sbl;
+        zpVector4fSimd tl, tr, br, bl;
+        zpVector4fSimd stl, str, sbr, sbl;
 
         zp_float minX = static_cast<zp_float>( g->bearing.x );
         zp_float maxX = static_cast<zp_float>( g->bearing.x + g->size.x );
@@ -383,7 +383,7 @@ void zpRenderingContext::endDraw()
     m_currentCommnad = npos;
 }
 
-void zpRenderingContext::drawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material )
+void zpRenderingContext::drawMesh( zp_byte layer, const zpMatrix4f& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material )
 {
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
@@ -416,12 +416,12 @@ void zpRenderingContext::setTransform( zpMatrix4fParamF transform )
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
 
-    ZP_ALIGN16 zpMatrix4fData transformData;
+    ZP_ALIGN16 zpMatrix4f transformData;
     zpMath::MatrixStore4( transform, transformData.m );
     cmd->transform = transformData;
 }
 
-void zpRenderingContext::setTransform( const zpMatrix4fData& transform )
+void zpRenderingContext::setTransform( const zpMatrix4f& transform )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -435,12 +435,12 @@ void zpRenderingContext::setTransform( zp_size_t cmdOffset, zpMatrix4fParamF tra
     ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad + cmdOffset;
 
-    ZP_ALIGN16 zpMatrix4fData transformData;
+    ZP_ALIGN16 zpMatrix4f transformData;
     zpMath::MatrixStore4( transform, transformData.m );
     cmd->transform = transformData;
 }
 
-void zpRenderingContext::setTransform( zp_size_t cmdOffset, const zpMatrix4fData& transform )
+void zpRenderingContext::setTransform( zp_size_t cmdOffset, const zpMatrix4f& transform )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     ZP_ASSERT( ( m_currentCommnad + cmdOffset ) < m_commands.size(), "" );
@@ -489,12 +489,12 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& colo
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
     ZP_ASSERT( cmd->vertexFormat == ZP_VERTEX_FORMAT_VERTEX_COLOR, "" );
 
-    ZP_ALIGN16 zpVector4fData v;
+    ZP_ALIGN16 zpVector4f v;
     zpMath::Vector4Store4( pos, v.m );
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
     } buff = {
         v,
@@ -505,7 +505,7 @@ void zpRenderingContext::addVertex( zpVector4fParamF pos, const zpColor32i& colo
     cmd->vertexCount += 1;
 }
 
-void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor32i& color )
+void zpRenderingContext::addVertexData( const zpVector4f& pos, const zpColor32i& color )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -513,7 +513,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
     } buff = {
         pos,
@@ -524,7 +524,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
     cmd->vertexCount += 1;
 }
 
-void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv )
+void zpRenderingContext::addVertexData( const zpVector4f& pos, const zpColor32i& color, const zpVector2f& uv )
 {
     ZP_ASSERT( m_currentCommnad != npos, "" );
     zpRenderingCommand* cmd = m_commands.begin() + m_currentCommnad;
@@ -532,7 +532,7 @@ void zpRenderingContext::addVertexData( const zpVector4fData& pos, const zpColor
 
     struct
     {
-        zpVector4fData p;
+        zpVector4f p;
         zpColor32i c;
         zpVector2f u;
     } buff = {

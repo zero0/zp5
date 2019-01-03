@@ -181,6 +181,7 @@ void zpBaseApplication::initialize()
 }
 
 zpMaterialHandle tm;
+zpMaterialHandle dm;
 zpFontHandle ff;
 zpMeshHandle mh;
 zpCameraHandle cam;
@@ -203,14 +204,17 @@ void zpBaseApplication::setup()
     m_meshManager.setup();
     m_cameraManager.setup();
 
-    zpTextureHandle tempTex;
     m_materialManager.getMaterial( "tempMaterial", tm );
     tm->setColor( "_Color", zpColor::White );
     tm->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
     //tm->color = zpColor::White;
     //tm->mainTexST = { 1, 1, 0, 0 };
+    zpTextureHandle tempTex;
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tempTex );
     tm->setTexture( "_MainTex", tempTex );
+
+    m_materialManager.getMaterial( "debug_material", dm );
+    dm->setColor( "_Color", zpColor::White );
 
     zpTextureHandle fontTex;
     m_fontManager.getFont( "debug.font", ff );
@@ -225,7 +229,7 @@ void zpBaseApplication::setup()
     m_meshManager.getMesh( "default.mesh", mh );
     m_sceneManager.createScene( sc );
 
-    m_debugGUI.setup( &m_input, ff );
+    m_debugGUI.setup( &m_input, ff, dm );
 
     // TODO: remove when done debugging
     const zp_size_t fixedWidth = 12;
@@ -292,6 +296,7 @@ void zpBaseApplication::teardown()
     m_debugGUI.teardown();
 
     tm.release();
+    dm.release();
     ff.release();
     cam.release();
     mh.release();
@@ -648,12 +653,18 @@ void zpBaseApplication::handleInput()
     {
         m_cameraManager.createCamera( cam );
         cam->projectionType = ZP_CAMERA_PROJECTION_PERSPECTIVE;
+        cam->position = { 0, 0, 10, 1 };
+        cam->forward = { 0, 0, -1, 0 };
+        cam->up = { 0, 1, 0, 0 };
         cam->flags |= 0xFF;
         cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
         cam->clearColor = zpColor::Blue;
         cam->fovy = 45.f;
+        cam->aspectRatio = m_screenSize.x / m_screenSize.y;
         cam->zNear = 1.f;
-        cam->zFar = 1000.f;
+        cam->zFar = 100.f;
+        cam->viewport = { 0, 0, m_screenSize.x, m_screenSize.y, 1, 100 };
+        cam->clipRect = { 0, 0, m_screenSize.x, m_screenSize.y };
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_U ) )
     {
@@ -713,24 +724,24 @@ void zpBaseApplication::render()
     zp_float zn =    ( 1 );
     zp_float zf =    ( 100 );
 
-    zpVector4f cen = zpMath::Vector4( 0, 0, 0, 1 );
-    zpVector4f eye = zpMath::Vector4( 20, 10, -30, 1 );
-    zpVector4f dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
-    zpVector4f up = zpMath::Vector4( 0, 1, 0, 0 );
+    zpVector4fSimd cen = zpMath::Vector4( 0, 0, 0, 1 );
+    zpVector4fSimd eye = zpMath::Vector4( 20, 10, -30, 1 );
+    zpVector4fSimd dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
+    zpVector4fSimd up = zpMath::Vector4( 0, 1, 0, 0 );
 
-    zpMatrix4f proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
-    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
-    zpMatrix4f viewProj = zpMath::MatrixMul( view, proj );
+    zpMatrix4fSimd proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
+    zpMatrix4fSimd view = zpMath::LookAtLH( eye, dir, up );
+    zpMatrix4fSimd viewProj = zpMath::MatrixMul( view, proj );
 
     zpViewport vp = { 0, 0, m_screenSize.x, m_screenSize.y, zn, zf };
 
     zpColorf clearColor = { 0.2058f, 0.3066f, 0.4877f, 1.0f };
 
     zpRectf rect = { -10, -10, 30, 30 };
-    zpVector4fData v0 =  { rect.x,               rect.y + rect.height, 0, 1 };
-    zpVector4fData v1 =  { rect.x,               rect.y, 0, 1 };
-    zpVector4fData v2 =  { rect.x + rect.height, rect.y, 0, 1 };
-    zpVector4fData v3 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
+    zpVector4f v0 =  { rect.x,               rect.y + rect.height, 0, 1 };
+    zpVector4f v1 =  { rect.x,               rect.y, 0, 1 };
+    zpVector4f v2 =  { rect.x + rect.height, rect.y, 0, 1 };
+    zpVector4f v3 =  { rect.x + rect.height, rect.y + rect.height, 0, 1 };
 
     zpVector2f uv0 = { 0, 1 };
     zpVector2f uv1 = { 0, 0 };
@@ -915,9 +926,9 @@ void zpBaseApplication::debugDrawGUI()
             const zpTransformComponent* txn = obj->getAllComponents()->transform.get();
             if( txn )
             {
-                const zpVector4fData& localPos = txn->getLocalPosition();
-                const zpQuaternion4fData& localRot = txn->getLocalRotation();
-                const zpVector4fData& localScale = txn->getLocalScale();
+                const zpVector4f& localPos = txn->getLocalPosition();
+                const zpQuaternion4f& localRot = txn->getLocalRotation();
+                const zpVector4f& localScale = txn->getLocalScale();
 
                 zp_snprintf( buff, sizeof( buff ), sizeof( buff ), "--- Transform@%lu", txn->getInstanceId() );
                 m_debugGUI.label( buff );

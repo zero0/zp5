@@ -60,7 +60,7 @@ void zpRenderResource::setVector2( const zpVector2f& value )
 }
 
 
-void zpRenderResource::setVector4( const zpVector4fData& value )
+void zpRenderResource::setVector4( const zpVector4f& value )
 {
     reset();
 
@@ -69,7 +69,7 @@ void zpRenderResource::setVector4( const zpVector4fData& value )
 }
 
 
-void zpRenderResource::setMatrix( const zpMatrix4fData& value )
+void zpRenderResource::setMatrix( const zpMatrix4f& value )
 {
     reset();
 
@@ -111,13 +111,13 @@ const zpVector2f& zpRenderResource::getVector2() const
     return m_vector2;
 }
 
-const zpVector4fData& zpRenderResource::getVector4() const
+const zpVector4f& zpRenderResource::getVector4() const
 {
     ZP_ASSERT( m_type == ZP_RENDER_RESOURCE_TYPE_VECTOR4, "" );
     return m_vector4;
 }
 
-const zpMatrix4fData& zpRenderResource::getMatrix() const
+const zpMatrix4f& zpRenderResource::getMatrix() const
 {
     ZP_ASSERT( m_type == ZP_RENDER_RESOURCE_TYPE_MATRIX, "" );
     return m_matrix;
@@ -225,9 +225,9 @@ zpVector2f zpRenderResource::asVector2() const
     return value;
 }
 
-zpVector4fData zpRenderResource::asVector4() const
+zpVector4f zpRenderResource::asVector4() const
 {
-    zpVector4fData value;
+    zpVector4f value;
     switch( m_type )
     {
         case ZP_RENDER_RESOURCE_TYPE_INT:
@@ -255,9 +255,9 @@ zpVector4fData zpRenderResource::asVector4() const
     return value;
 }
 
-zpMatrix4fData zpRenderResource::asMatrix() const
+zpMatrix4f zpRenderResource::asMatrix() const
 {
-    zpMatrix4fData value;
+    zpMatrix4f value;
     switch( m_type )
     {
         case ZP_RENDER_RESOURCE_TYPE_INT:

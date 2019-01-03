@@ -32,9 +32,9 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
 
     m_renderableSort.reserve( m_allRenderables.size() );
 
-    const zpVector4f cCenter = zpMath::Vector4Load4( m_currentCamera->position.m );
-    const zpScalar invFarDistance = zpMath::ScalarPow2( zpMath::ScalarRcp( zpMath::Scalar( m_currentCamera->zFar ) ) );
-    const zpScalar maxDepth = zpMath::Scalar( 65535.f );
+    const zpVector4fSimd cCenter = zpMath::Vector4Load4( m_currentCamera->position.m );
+    const zpScalarSimd invFarDistance = zpMath::ScalarPow2( zpMath::ScalarRcp( zpMath::Scalar( m_currentCamera->zFar ) ) );
+    const zpScalarSimd maxDepth = zpMath::Scalar( 65535.f );
 
     // filter draw commands
     zpVector< zpDrawRenderable >::const_iterator b = m_allRenderables.begin();
@@ -52,9 +52,9 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
             zp_int depth = 0;
             if( m_currentCamera->projectionType >= ZP_CAMERA_PROJECTION_PERSPECTIVE )
             {
-                const zpVector4f pCenter = zpMath::Vector4Load4( p.bounds.center.m );
-                zpScalar dist = zpMath::Vector4LengthSquared3( zpMath::Vector4Sub( pCenter, cCenter ) );
-                zpScalar linearDist = zpMath::ScalarMul( dist, invFarDistance );
+                const zpVector4fSimd pCenter = zpMath::Vector4Load4( p.bounds.center.m );
+                zpScalarSimd dist = zpMath::Vector4LengthSquared3( zpMath::Vector4Sub( pCenter, cCenter ) );
+                zpScalarSimd linearDist = zpMath::ScalarMul( dist, invFarDistance );
                 //depth = zpMath::ScalarFloorToInt( zpMath::ScalarMul( linearDist, maxDepth ) );
             }
 

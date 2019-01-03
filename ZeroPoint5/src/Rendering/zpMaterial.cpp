@@ -14,7 +14,7 @@ struct zpMaterialDataPartColor
 struct zpMaterialDataPartVector
 {
     zpString name;
-    zpVector4fData vector;
+    zpVector4f vector;
 };
 
 struct zpMaterialDataPartTexture
@@ -26,7 +26,7 @@ struct zpMaterialDataPartTexture
 struct zpMaterialDataPartMatrix
 {
     zpString name;
-    zpMatrix4fData matrix;
+    zpMatrix4f matrix;
 };
 
 
@@ -39,9 +39,9 @@ struct zpMaterialData
     zpMap< zpShaderProperty, zp_int > ints;
     zpMap< zpShaderProperty, zp_float > floats;
     zpMap< zpShaderProperty, zpColorf > colors;
-    zpMap< zpShaderProperty, zpVector4fData > vectors;
+    zpMap< zpShaderProperty, zpVector4f > vectors;
     zpMap< zpShaderProperty, zpString > textures;
-    zpMap< zpShaderProperty, zpMatrix4fData > matrices;
+    zpMap< zpShaderProperty, zpMatrix4f > matrices;
 
 };
 

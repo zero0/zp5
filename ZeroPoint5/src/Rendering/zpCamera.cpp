@@ -148,17 +148,17 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
 
                 if( cam->flags & ZP_CAMERA_FLAG_VIEW_DIRTY )
                 {
-                    ZP_ALIGN16 zpVector4fData p = cam->position;
-                    ZP_ALIGN16 zpVector4fData f = cam->forward;
-                    ZP_ALIGN16 zpVector4fData u = cam->up;
+                    ZP_ALIGN16 zpVector4f p = cam->position;
+                    ZP_ALIGN16 zpVector4f f = cam->forward;
+                    ZP_ALIGN16 zpVector4f u = cam->up;
 
-                    zpVector4f eye = zpMath::Vector4Load4( p.m );
-                    zpVector4f dir = zpMath::Vector4Load4( f.m );
-                    zpVector4f up  = zpMath::Vector4Load4( u.m );
+                    zpVector4fSimd eye = zpMath::Vector4Load4( p.m );
+                    zpVector4fSimd dir = zpMath::Vector4Load4( f.m );
+                    zpVector4fSimd up  = zpMath::Vector4Load4( u.m );
 
-                    zpMatrix4f view = zpMath::LookAtLH( eye, dir, up );
+                    zpMatrix4fSimd view = zpMath::LookAtLH( eye, dir, up );
                     
-                    ZP_ALIGN16 zpMatrix4fData mat;
+                    ZP_ALIGN16 zpMatrix4f mat;
                     zpMath::MatrixStore4( view, mat.m );
                     cam->viewMatrix = mat;
 
@@ -170,7 +170,7 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
 
                 if( cam->flags & ZP_CAMERA_FLAG_PROJECTION_DIRTY )
                 {
-                    zpMatrix4f projection;
+                    zpMatrix4fSimd projection;
 
                     switch( cam->projectionType )
                     {
@@ -213,7 +213,7 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
                         break;
                     }
 
-                    ZP_ALIGN16 zpMatrix4fData mat;
+                    ZP_ALIGN16 zpMatrix4f mat;
                     zpMath::MatrixStore4( projection, mat.m );
                     cam->projectionMatrix = mat;
 
@@ -223,15 +223,15 @@ void zpCameraManager::update( zp_float dt, zp_float rt )
 
                 if( isViewProjectionDirty )
                 {
-                    ZP_ALIGN16 zpMatrix4fData vMat = cam->viewMatrix;
-                    ZP_ALIGN16 zpMatrix4fData pMat = cam->projectionMatrix;
-                    ZP_ALIGN16 zpMatrix4fData vpMat;
+                    ZP_ALIGN16 zpMatrix4f vMat = cam->viewMatrix;
+                    ZP_ALIGN16 zpMatrix4f pMat = cam->projectionMatrix;
+                    ZP_ALIGN16 zpMatrix4f vpMat;
 
-                    zpMatrix4f view = zpMath::MatrixLoad4( vMat.m );
-                    zpMatrix4f projection = zpMath::MatrixLoad4( pMat.m );
+                    zpMatrix4fSimd view = zpMath::MatrixLoad4( vMat.m );
+                    zpMatrix4fSimd projection = zpMath::MatrixLoad4( pMat.m );
 
-                    zpMatrix4f viewProjection = zpMath::MatrixMul( view, projection );
-                    zpMatrix4f invViewProjection = zpMath::MatrixIdentity();
+                    zpMatrix4fSimd viewProjection = zpMath::MatrixMul( view, projection );
+                    zpMatrix4fSimd invViewProjection = zpMath::MatrixIdentity();
 
                     zpMath::MatrixStore4( viewProjection, vpMat.m );
                     cam->viewProjectionMatrix = vpMat;
@@ -315,7 +315,7 @@ void zpCameraManager::render( zpRenderingEngine* engine )
         {
             const zpCamera* camera = &c->camera;
 
-            context->setActiveCamera( camera);
+            context->setActiveCamera( camera );
             
             pipeline->update( camera, context );
 

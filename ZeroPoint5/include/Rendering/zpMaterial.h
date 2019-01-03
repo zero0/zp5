@@ -17,7 +17,7 @@ struct zpMaterialPartColor
 struct zpMaterialPartVector
 {
     zpString name;
-    zpVector4fData vector;
+    zpVector4f vector;
 };
 
 struct zpMaterialPartTexture
@@ -29,16 +29,16 @@ struct zpMaterialPartTexture
 struct zpMaterialPartMatrix
 {
     zpString name;
-    zpMatrix4fData matrix;
+    zpMatrix4f matrix;
 };
 
 struct zpMaterialOld
 {
     zpColorf color;
 
-    zpVector4fData mainTexST;
-    zpVector4fData specTexST;
-    zpVector4fData normTexST;
+    zpVector4f mainTexST;
+    zpVector4f specTexST;
+    zpVector4f normTexST;
 
     zpShaderHandle shader;
     zpTextureHandle mainTex;
@@ -53,9 +53,9 @@ struct zpMaterial
     zpMap< zpShaderProperty, zp_int > ints;
     zpMap< zpShaderProperty, zp_float > floats;
     zpMap< zpShaderProperty, zpColorf > colors;
-    zpMap< zpShaderProperty, zpVector4fData > vectors;
+    zpMap< zpShaderProperty, zpVector4f > vectors;
     zpMap< zpShaderProperty, zpTextureHandle > textures;
-    zpMap< zpShaderProperty, zpMatrix4fData > matrices;
+    zpMap< zpShaderProperty, zpMatrix4f > matrices;
 
     void setInt( zpShaderProperty name, const zp_int value )
     {
@@ -72,7 +72,7 @@ struct zpMaterial
         colors.set( name, color );
     }
 
-    void setVector( zpShaderProperty name, const zpVector4fData& vector )
+    void setVector( zpShaderProperty name, const zpVector4f& vector )
     {
         vectors.set( name, vector );
     }
@@ -82,7 +82,7 @@ struct zpMaterial
         textures.set( name, texture );
     }
 
-    void setMatrix( zpShaderProperty name, const zpMatrix4fData& matrix )
+    void setMatrix( zpShaderProperty name, const zpMatrix4f& matrix )
     {
         matrices.set( name, matrix );
     }

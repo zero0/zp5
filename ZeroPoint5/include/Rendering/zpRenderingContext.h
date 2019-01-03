@@ -26,12 +26,12 @@ public:
     void beginDrawText( zp_byte layer, const zpFontHandle& font );
     void endDraw();
 
-    void drawMesh( zp_byte layer, const zpMatrix4fData& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material );
+    void drawMesh( zp_byte layer, const zpMatrix4f& transformData, const zpMeshHandle& mesh, const zpMaterialHandle& material );
 
     void setTransform( zpMatrix4fParamF transform );
-    void setTransform( const zpMatrix4fData& transform );
+    void setTransform( const zpMatrix4f& transform );
     void setTransform( zp_size_t cmdOffset, zpMatrix4fParamF transform );
-    void setTransform( zp_size_t cmdOffset, const zpMatrix4fData& transform );
+    void setTransform( zp_size_t cmdOffset, const zpMatrix4f& transform );
 
     void setMaterial( const zpMaterialHandle& material );
     void setMaterial( zp_size_t cmdOffset, const zpMaterialHandle& material );
@@ -39,13 +39,13 @@ public:
     zp_size_t getVertexCount() const;
     zp_size_t getVertexCount( zp_size_t cmdOffset ) const;
 
-    zp_uint addText( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor );
-    zp_uint addTextShadow( const zpVector4fData& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4fData& shadowOffset, const zpColor32i& shadowColor );
+    zp_uint addText( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor );
+    zp_uint addTextShadow( const zpVector4f& pos, const zp_char* text, zp_uint size, zp_uint lineSpacing, const zpColor32i& topColor, const zpColor32i& bottomColor, const zpVector4f& shadowOffset, const zpColor32i& shadowColor );
     
     void addVertex( zpVector4fParamF pos, const zpColor32i& color );
 
-    void addVertexData( const zpVector4fData& pos, const zpColor32i& color );
-    void addVertexData( const zpVector4fData& pos, const zpColor32i& color, const zpVector2f& uv );
+    void addVertexData( const zpVector4f& pos, const zpColor32i& color );
+    void addVertexData( const zpVector4f& pos, const zpColor32i& color, const zpVector2f& uv );
 
     void addLineIndex( zp_ushort index0, zp_ushort index1 );
     void addTriangleIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2 );
