@@ -29,7 +29,7 @@ void zpDebugGUI::setup( zpInput* input, const zpFontHandle& debugFont, const zpM
     m_style.contentColor = zpColor32::White;
     m_style.fontSize = 12;
 
-    m_layout.rect = { 0, m_screenSize.y, m_screenSize.x, m_screenSize.y };
+    m_layout.rect = { 0, 0, m_screenSize.x, m_screenSize.y };
     m_layout.offset = { 0, 0 };
     m_layout.padding = { 2, 2 };
     m_layout.margin = { 2, 2 };
@@ -52,6 +52,8 @@ void zpDebugGUI::teardown()
 
 void zpDebugGUI::startGUI()
 {
+    ZP_PROFILER_BLOCK();
+
     m_widgets.reset();
     m_widgetStack.reset();
 
@@ -398,18 +400,18 @@ void zpDebugGUI::renderWidget( zpRenderImmediate *ctx, zp_size_t widgetIndex, zp
                 ctx->addVertex( v2, m_style.backgroundColor );
                 ctx->addVertex( v3, m_style.backgroundColor );
 
-                //v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
-                //v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
-                //v2 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
-                //v3 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
-                //
-                //ctx->addVertexData( v0, m_style.foregroundColor );
-                //ctx->addVertexData( v1, m_style.foregroundColor );
-                //ctx->addVertexData( v2, m_style.foregroundColor );
-                //ctx->addVertexData( v3, m_style.foregroundColor );
+                v0 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
+                v1 = { static_cast<zp_float>( rect.x              + 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
+                v2 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y + rect.height - 2 ), 0.f, 1.f };
+                v3 = { static_cast<zp_float>( rect.x + rect.width - 2 ), static_cast<zp_float>( rect.y               + 2 ), 0.f, 1.f };
+                
+                ctx->addVertex( v0, m_style.foregroundColor );
+                ctx->addVertex( v1, m_style.foregroundColor );
+                ctx->addVertex( v2, m_style.foregroundColor );
+                ctx->addVertex( v3, m_style.foregroundColor );
 
                 ctx->addQuadIndex( vertexCount + 0, vertexCount + 1, vertexCount + 2, vertexCount + 3 );
-                //ctx->addQuadIndex( vertexCount + 4, vertexCount + 5, vertexCount + 6, vertexCount + 7 );
+                ctx->addQuadIndex( vertexCount + 4, vertexCount + 5, vertexCount + 6, vertexCount + 7 );
 
             } break;
 

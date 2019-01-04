@@ -11,6 +11,8 @@ zpMeshRendererComponent::~zpMeshRendererComponent()
 
 void zpMeshRendererComponent::render( zpRenderContext* ctx )
 {
+    ZP_PROFILER_BLOCK();
+
     if( m_mesh.isValid() && m_material.isValid() )
     {
         zpMatrix4f localToWorld;

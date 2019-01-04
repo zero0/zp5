@@ -882,9 +882,9 @@ namespace zpMath
 
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveLH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar )
     {
-        zp_float yScale, xScale, z, fn, r22, r32, o;
-        z = ( 0.f );
-        o = ( 1.f );
+        zp_float yScale, xScale, fn, r22, r32;
+        const zp_float z = ( 0.f );
+        const zp_float o = ( 1.f );
 
         yScale = ZP_DEG_TO_RAD( fovy );
         yScale = ( yScale * ( 0.5f ) );
@@ -911,9 +911,9 @@ namespace zpMath
 
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveRH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar )
     {
-        zp_float yScale, xScale, z, nf, r22, r32, no;
-        z = ( 0.f );
-        no = ( -1.f );
+        zp_float yScale, xScale, nf, r22, r32;
+        const zp_float z = ( 0.f );
+        const zp_float no = ( -1.f );
 
         yScale = ZP_DEG_TO_RAD( fovy );
         yScale = ( yScale * ( 0.5f ) );
@@ -933,6 +933,36 @@ namespace zpMath
         s.m_m2 = Vector4( z, yScale, z, z );
         s.m_m3 = Vector4( z, z, r22, no );
         s.m_m4 = Vector4( z, z, r32, z );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveReverseZRH( zp_float fovy, zp_float aspectRatio, zp_float zNear )
+    {
+        zp_float f = 1.f / zp_tan( ZP_DEG_TO_RAD( fovy ) * 0.5f );
+        const zp_float z = 0;
+        const zp_float no = -1;
+
+        zpMatrix4fSimd s;
+        s.m_m1 = Vector4( f / aspectRatio, z, z, z );
+        s.m_m2 = Vector4( z, f, z, z );
+        s.m_m3 = Vector4( z, z, z, no );
+        s.m_m4 = Vector4( z, z, zNear, z );
+
+        return s;
+    }
+
+    ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveReverseZLH( zp_float fovy, zp_float aspectRatio, zp_float zNear )
+    {
+        zp_float f = 1.f / zp_tan( ZP_DEG_TO_RAD( fovy ) * 0.5f );
+        const zp_float z = 0;
+        const zp_float o = 1;
+
+        zpMatrix4fSimd s;
+        s.m_m1 = Vector4( f / aspectRatio, z, z, z );
+        s.m_m2 = Vector4( z, f, z, z );
+        s.m_m3 = Vector4( z, z, z, o );
+        s.m_m4 = Vector4( z, z, zNear, z );
 
         return s;
     }

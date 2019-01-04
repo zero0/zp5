@@ -211,7 +211,7 @@ void zpRenderImmediate::addTriangleIndex( zp_ushort index0, zp_ushort index1, zp
 void zpRenderImmediate::addQuadIndex( zp_ushort index0, zp_ushort index1, zp_ushort index2, zp_ushort index3 )
 {
     const zp_ushort buff[] = {
-    index0,
+        index0,
         index1,
         index2,
 

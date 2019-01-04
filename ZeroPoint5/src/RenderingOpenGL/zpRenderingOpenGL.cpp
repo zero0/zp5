@@ -343,215 +343,9 @@ static GLuint g_vaos[ zpVertexFormat_Count ];
 static zpShader g_shaderVC;
 static zpShader g_shaderVCU;
 #ifdef ZP_USE_PROFILER
-static glQuery g_queries[ 2 ];
+ZP_CONSTEXPR zp_uint NUM_QUERIES = 2;
+static glQuery g_queries[ NUM_QUERIES ];
 #endif
-
-static void BindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
-{
-    constexpr zp_int strides[] =
-    {
-        sizeof( zp_float ) * 0,
-        sizeof( zp_float ) * ( 4 + 1 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 + 2 )
-    };
-    constexpr zp_size_t offsets[] =
-    {
-        sizeof( zp_float ) * 0,
-        sizeof( zp_float ) * ( 4 ),
-        sizeof( zp_float ) * ( 4 + 1 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 ),
-        sizeof( zp_float ) * ( 4 + 1 + 2 + 4 + 4 )
-    };
-    ZP_STATIC_ASSERT( ( sizeof( strides ) / sizeof( strides[ 0 ] ) ) == zpVertexFormat_Count );
-    ZP_STATIC_ASSERT( ( sizeof( offsets ) / sizeof( offsets[ 0 ] ) ) == zpVertexFormat_Count );
-
-    GLuint prog = 0;
-    if( cmd->material.isValid() && cmd->material->shader.isValid() )
-    {
-        prog = cmd->material->shader->programShader.index;
-    }
-
-    // TODO: remove when testing complete
-    switch( cmd->vertexFormat )
-    {
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            prog = ( g_shaderVC.programShader.index );
-            break;
-    
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            prog = ( g_shaderVCU.programShader.index );
-            break;
-    }
-
-    glUseProgram( prog );
-
-    zp_int stride = strides[ cmd->vertexFormat ];
-    
-    GLuint vao = g_vaos[ cmd->vertexFormat ];
-    glBindVertexArray( vao );
-    glBindBuffer( GL_ARRAY_BUFFER, cmd->vertexBuffer.buffer.index );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cmd->indexBuffer.buffer.index );
-
-    zp_size_t vertexOffset = cmd->vertexOffset;
-
-    switch( cmd->vertexFormat )
-    {
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
-            glEnableVertexAttribArray( 5 );
-            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
-            glEnableVertexAttribArray( 4 );
-            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
-            glEnableVertexAttribArray( 3 );
-            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            glEnableVertexAttribArray( 2 );
-            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            glEnableVertexAttribArray( 1 );
-            glVertexAttribPointer( 1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
-            glEnableVertexAttribArray( 0 );
-            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
-            break;
-        default:
-            break;
-    }
-
-    GLint otw = glGetUniformLocation( prog, "_ObjectToWorld" );
-    glUniformMatrix4fv( otw, 1, GL_FALSE, cmd->transform.m );
-    /*
-    if( cmd->material.isValid() )
-    {
-        const zpMaterialPartFloat* fb = cmd->material->floats.begin();
-        const zpMaterialPartFloat* fe = cmd->material->floats.end();
-        for( ; fb != fe; ++fb )
-        {
-            GLint c = glGetUniformLocation( prog, fb->name.str() );
-            if( c >= 0 )
-            {
-                glUniform1f( c, fb->value );
-            }
-        }
-
-        const zpMaterialPartColor* cb = cmd->material->colors.begin();
-        const zpMaterialPartColor* ce = cmd->material->colors.end();
-        for( ; cb != ce; ++cb )
-        {
-            GLint c = glGetUniformLocation( prog, cb->name.str() );
-            if( c >= 0 )
-            {
-                glUniform4fv( c, 1, cb->color.rgba );
-            }
-        }
-
-        const zpMaterialPartVector* vb = cmd->material->vectors.begin();
-        const zpMaterialPartVector* ve = cmd->material->vectors.end();
-        for( ; vb != ve; ++vb )
-        {
-            GLint c = glGetUniformLocation( prog, vb->name.str() );
-            if( c >= 0 )
-            {
-                glUniform4fv( c, 1, vb->vector.m );
-            }
-        }
-
-        const zpMaterialPartTexture* tb = cmd->material->textures.begin();
-        const zpMaterialPartTexture* te = cmd->material->textures.end();
-        for( ; tb != te; ++tb )
-        {
-            GLint c = glGetUniformLocation( prog, tb->name.str() );
-            if( c >= 0 )
-            {
-                GLint i = static_cast<GLint>( te - tb );
-                glActiveTexture( GL_TEXTURE0 + i );
-                glBindTexture( GL_TEXTURE_2D, tb->texture->texture.index );
-                glUniform1i( c, i );
-            }
-        }
-
-        const zpMaterialPartMatrix* mb = cmd->material->matrices.begin();
-        const zpMaterialPartMatrix* me = cmd->material->matrices.end();
-        for( ; mb != me; ++mb )
-        {
-            GLint c = glGetUniformLocation( prog, mb->name.str() );
-            if( c >= 0 )
-            {
-                glUniformMatrix4fv( c, 1, GL_FALSE, mb->matrix.m );
-            }
-        }
-    }
-    */
-    // TODO: update material to set these
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glDepthFunc( GL_LEQUAL );
-    glDepthMask( GL_TRUE );
-}
-
-static void UnbindVertexFormatForRenderCommand( const zpRenderingCommand* cmd )
-{
-    switch( cmd->vertexFormat )
-    {
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
-            glDisableVertexAttribArray( 5 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
-            glDisableVertexAttribArray( 4 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
-            glDisableVertexAttribArray( 3 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            glDisableVertexAttribArray( 2 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            glDisableVertexAttribArray( 1 );
-            glDisableVertexAttribArray( 0 );
-            break;
-        default:
-            break;
-    }
-
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-    glBindVertexArray( 0 );
-
-    GLuint prog = 0;
-    if( cmd->material.isValid() && cmd->material->shader.isValid() )
-    {
-        prog = cmd->material->shader->programShader.index;
-    }
-
-    // TODO: remove when testing complete
-    switch( cmd->vertexFormat )
-    {
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            prog = ( g_shaderVC.programShader.index );
-            break;
-
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            prog = ( g_shaderVCU.programShader.index );
-            break;
-    }
-
-    if( cmd->material.isValid() )
-    {
-        //const zpMaterialPartTexture* tb = cmd->material->textures.begin();
-        //const zpMaterialPartTexture* te = cmd->material->textures.end();
-        //for( ; tb != te; ++tb )
-        //{
-        //    GLint c = glGetUniformLocation( prog, tb->name.str() );
-        //    if( c >= 0 )
-        //    {
-        //        GLint i = static_cast<GLint>( te - tb );
-        //        glActiveTexture( GL_TEXTURE0 + i );
-        //        glBindTexture( GL_TEXTURE_2D, 0 );
-        //    }
-        //}
-    }
-
-    glUseProgram( 0 );
-}
 
 static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd )
 {
@@ -608,22 +402,22 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
     switch( cmd->vertexFormat )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
-            glEnableVertexAttribArray( 5 );
             glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
+            glEnableVertexAttribArray( 5 );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
-            glEnableVertexAttribArray( 4 );
             glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
+            glEnableVertexAttribArray( 4 );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
-            glEnableVertexAttribArray( 3 );
             glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
+            glEnableVertexAttribArray( 3 );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            glEnableVertexAttribArray( 2 );
             glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
+            glEnableVertexAttribArray( 2 );
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            glEnableVertexAttribArray( 1 );
             glVertexAttribPointer( 1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
-            glEnableVertexAttribArray( 0 );
+            glEnableVertexAttribArray( 1 );
             glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
+            glEnableVertexAttribArray( 0 );
             break;
         default:
             break;
@@ -725,9 +519,9 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
     }
 
     // TODO: update material to set these
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glDepthFunc( GL_LEQUAL );
-    glDepthMask( GL_TRUE );
+    //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    //glDepthFunc( GL_LEQUAL );
+    //glDepthMask( GL_TRUE );
 }
 
 static void UnbindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd )
@@ -971,71 +765,83 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
 
 #ifdef ZP_USE_PROFILER
-    glGenQueries( ZP_ARRAY_SIZE( g_queries[ 0 ].q ), g_queries[ 0 ].q );
-    glGenQueries( ZP_ARRAY_SIZE( g_queries[ 1 ].q ), g_queries[ 1 ].q );
+    for( zp_uint i = 0; i < NUM_QUERIES; ++i )
+    {
+        glGenQueries( ZP_ARRAY_SIZE( g_queries[ i ].q ), g_queries[ i ].q );
 
-    // perform dummy sample for next frame to remove GL errors
-    glBeginQuery( GL_TIME_ELAPSED, g_queries[ 1 ].timeElapsed );
-    glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ 1 ].primitivesGenerated );
-    glBeginQuery( GL_SAMPLES_PASSED, g_queries[ 1 ].samplesPassed );
+        // perform dummy sample for next frame to remove GL errors
+        glBeginQuery( GL_TIME_ELAPSED, g_queries[ i ].timeElapsed );
+        glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ i ].primitivesGenerated );
+        glBeginQuery( GL_SAMPLES_PASSED, g_queries[ i ].samplesPassed );
 
-    glEndQuery( GL_TIME_ELAPSED );
-    glEndQuery( GL_PRIMITIVES_GENERATED );
-    glEndQuery( GL_SAMPLES_PASSED );
+        glEndQuery( GL_TIME_ELAPSED );
+        glEndQuery( GL_PRIMITIVES_GENERATED );
+        glEndQuery( GL_SAMPLES_PASSED );
+    }
 #endif
 
     glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glBlendEquation( GL_FUNC_ADD );
+
     glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_GEQUAL );
+    glDepthMask( GL_TRUE );
+
     glEnable( GL_CULL_FACE );
-    glDepthFunc( GL_LEQUAL );
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
+    glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
+
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
     const zp_char* vertVC = R"GLSL(
-        layout(location = 0) in float4 vertex;                      
-        layout(location = 1) in fixed4 color;                        
-        uniform fixed4 _Color;               
-        out fixed4 fragmentColor;               
-        void main()                                
-        {                                          
-           gl_Position = mul( _ObjectToWorld, vertex );  
-           fragmentColor = color * _Color;                  
-        }                                          
-        )GLSL";
+layout(location = 0) in float4 vertex;                      
+layout(location = 1) in fixed4 color;                        
+uniform float4 _Color;               
+out float4 fragmentColor;               
+void main()                                
+{                                          
+    gl_Position = mul( _ObjectToWorld, vertex );  
+    fragmentColor = color * _Color;                  
+}                                          
+)GLSL";
     const zp_char* fragVC = R"GLSL(
-        in fixed4 fragmentColor;    
-        out lowp vec4 outColor;        
-        void main()                    
-        {                              
-           gl_FragColor = fragmentColor;   
-        }                              
-        )GLSL";
+in float4 fragmentColor;    
+out float4 outColor;        
+void main()                    
+{                              
+    //gl_FragColor = fragmentColor;   
+    outColor = fragmentColor;
+}                              
+)GLSL";
 
     const zp_char* vertVCU = R"GLSL(
-        layout(location = 0) in float4 vertex;                          
-        layout(location = 1) in fixed4 color;                            
-        layout(location = 2) in float2 texcoord;                        
-        uniform fixed4 _Color;               
-        Sampler2D( _MainTex );                            
-        out fixed4 fragmentColor;                  
-        out float2 uv;                             
-        void main()                                    
-        {                                             
-            gl_Position = mul( _ObjectToWorld, vertex );
-            fragmentColor = color * _Color;                     
-            uv = TransformTex( _MainTex, texcoord );                             
-        }                                              
-        )GLSL";
+layout(location = 0) in float4 vertex;                          
+layout(location = 1) in fixed4 color;                            
+layout(location = 2) in float2 texcoord;                        
+uniform float4 _Color;               
+Sampler2D( _MainTex );                            
+out float4 fragmentColor;                  
+out float2 uv;                             
+void main()                                    
+{                                             
+    gl_Position = mul( _ObjectToWorld, vertex );
+    fragmentColor = color * _Color;                     
+    uv = TransformTex( _MainTex, texcoord );                             
+}                                              
+)GLSL";
     const zp_char* fragVCU = R"GLSL(
-        Sampler2D( _MainTex );                
-        in fixed4 fragmentColor;              
-        in float2 uv;                         
-        out lowp vec4 outColor;             
-        void main()                           
-        {                                     
-            gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
-        }                                                      
-        )GLSL";
+Sampler2D( _MainTex );                
+in float4 fragmentColor;              
+in float2 uv;                         
+//out float4 outColor;             
+void main()                           
+{                                     
+    gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
+}                                                      
+)GLSL";
 
     zpCreateShaderDesc vc = {};
     vc.shaderName = "fragVC";
@@ -1060,8 +866,10 @@ void TeardownRenderingOpenGL( zp_handle hContext )
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
 
 #ifdef ZP_USE_PROFILER
-    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[0].q ), g_queries[0].q );
-    glDeleteQueries( ZP_ARRAY_SIZE( g_queries[1].q ), g_queries[1].q );
+    for( zp_uint i = 0; i < NUM_QUERIES; ++i )
+    {
+        glDeleteQueries( ZP_ARRAY_SIZE( g_queries[ i ].q ), g_queries[ i ].q );
+    }
 #endif
     HGLRC context = static_cast<HGLRC>( hContext );
 
@@ -1132,7 +940,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                             cmd->viewport.topY,
                             cmd->viewport.width,
                             cmd->viewport.height );
-                glDepthRange( cmd->viewport.minDepth, cmd->viewport.maxDepth );
+                //glDepthRangef( cmd->viewport.minDepth, cmd->viewport.maxDepth );
 
                 position += sizeof( zpRenderCommandSetViewport );
             } break;
@@ -1477,62 +1285,62 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
     const zp_char* geometroyShaderSource = ZP_NULL;
 
     const zp_char* versionHeader = R"GLSL(
-        #version 330 core
-        #define tex2D( sampler, uv )      texture( sampler, uv )
-        #define BeginCBuffer( name )
-        #define EndCBuffer()
-        #define mul( a, b )               ( (a) * (b) )
-        #define float2                    highp vec2
-        #define float3                    highp vec3
-        #define float4                    highp vec4
-        #define float4x4                  highp mat4
-        #define half                      mediump float
-        #define half2                     mediump vec2
-        #define half3                     mediump vec3
-        #define half4                     mediump vec4
-        #define fixed                     lowp float
-        #define fixed2                    lowp vec2
-        #define fixed3                    lowp vec3
-        #define fixed4                    lowp vec4
-        #define TransformTex( name, uv )  ( (uv) * name##_ST.xy + name##_ST.zw )
-        #define Sampler2D( name )         uniform sampler2D name; uniform float4 name##_ST
-        )GLSL";
+#version 330 core
+#define tex2D( sampler, uv )      texture( sampler, uv )
+#define BeginCBuffer( name )
+#define EndCBuffer()
+#define mul( a, b )               ( (a) * (b) )
+#define float2                    highp vec2
+#define float3                    highp vec3
+#define float4                    highp vec4
+#define float4x4                  highp mat4
+#define half                      mediump float
+#define half2                     mediump vec2
+#define half3                     mediump vec3
+#define half4                     mediump vec4
+#define fixed                     lowp float
+#define fixed2                    lowp vec2
+#define fixed3                    lowp vec3
+#define fixed4                    lowp vec4
+#define TransformTex( name, uv )  ( (uv) * name##_ST.xy + name##_ST.zw )
+#define Sampler2D( name )         uniform sampler2D name; uniform float4 name##_ST
+)GLSL";
 
     const zp_char* commonHeader = R"GLSL(
-        BeginCBuffer( PerFrame )
-            uniform float4 _Time;
-        EndCBuffer()
+BeginCBuffer( PerFrame )
+    uniform float4 _Time;
+EndCBuffer()
 
-        BeginCBuffer( PerDrawCall )
-            uniform float4x4 _ObjectToWorld;
-        EndCBuffer()
+BeginCBuffer( PerDrawCall )
+    uniform float4x4 _ObjectToWorld;
+EndCBuffer()
 
-        BeginCBuffer( Camera )
-            uniform float4x4 _ViewProjection;
-            uniform float4x4 _InvViewPorjection;
-            uniform float4 _CameraUp;
-            uniform float4 _CameraLookTo;
-            uniform float4 _CameraPosition;
-            uniform float4 _CameraData;
-        EndCBuffer()
+BeginCBuffer( Camera )
+    uniform float4x4 _ViewProjection;
+    uniform float4x4 _InvViewPorjection;
+    uniform float4 _CameraUp;
+    uniform float4 _CameraLookTo;
+    uniform float4 _CameraPosition;
+    uniform float4 _CameraData;
+EndCBuffer()
 
-        float4 ObjectToClipSpace( in float4 vertex )
-        {
-          return mul( _ViewProjection, mul( _ObjectToWorld, vertex ) );
-        }
-        )GLSL";
+float4 ObjectToClipSpace( in float4 vertex )
+{
+    return mul( _ViewProjection, mul( _ObjectToWorld, vertex ) );
+}
+)GLSL";
 
     const zp_char* vsHeader = R"GLSL(
-        #define VERTEX
-        )GLSL";
+#define VERTEX
+)GLSL";
 
     const zp_char* psHeader = R"GLSL(
-        #define FRAGMENT 
-        )GLSL";
+#define FRAGMENT 
+)GLSL";
 
     const zp_char* gsHeader = R"GLSL(
-        #define GEOMETRY
-        )GLSL";
+#define GEOMETRY
+)GLSL";
 
     GLint result;
     GLint infoLength;
@@ -1564,6 +1372,16 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
                 zp_printfln( "Vertex Shader Error: %s", buffer );
             }
         }
+#if ZP_DEBUG
+        else
+        {
+            zp_char buff[ 255 ];
+            GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
+            len = zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), len + 5, "%s.vert", desc->shaderName );
+
+            glObjectLabel( GL_SHADER, shader.vertexShader.index, len, buff );
+        }
+#endif
     }
 
     // fragment shader
@@ -1593,6 +1411,16 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
                 zp_printfln( "Fragment Shader Error: %s", buffer );
             }
         }
+#if ZP_DEBUG
+        else
+        {
+            zp_char buff[ 255 ];
+            GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
+            len = zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), len + 5, "%s.frag", desc->shaderName );
+
+            glObjectLabel( GL_SHADER, shader.fragmentShader.index, len, buff );
+        }
+#endif
     }
 
     // geometry shader
@@ -1621,6 +1449,16 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
                 zp_printfln( "Geometry Shader Error: %s", buffer );
             }
         }
+#if ZP_DEBUG
+        else
+        {
+            zp_char buff[ 255 ];
+            GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
+            len = zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), len + 5, "%s.geom", desc->shaderName );
+
+            glObjectLabel( GL_SHADER, shader.geometryShader.index, len, buff );
+        }
+#endif
     }
 
     // link program
@@ -1707,7 +1545,7 @@ void BeginFrameOpenGL( zp_size_t frameIndex )
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
     glMarkerBlock( "Begin Frame" );
 
-    zp_size_t sampleIndex = frameIndex % 2;
+    zp_size_t sampleIndex = frameIndex % NUM_QUERIES;
     glBeginQuery( GL_TIME_ELAPSED, g_queries[ sampleIndex ].timeElapsed );
     glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ sampleIndex ].primitivesGenerated );
     glBeginQuery( GL_SAMPLES_PASSED, g_queries[ sampleIndex ].samplesPassed );
@@ -1722,7 +1560,7 @@ void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat )
     glEndQuery( GL_PRIMITIVES_GENERATED );
     glEndQuery( GL_SAMPLES_PASSED );
 
-    zp_size_t sampleIndex = ( frameIndex + 1 ) % 2;
+    zp_size_t sampleIndex = ( frameIndex + 1 ) % NUM_QUERIES;
 
     GLuint64 timeElapsed;
     GLuint64 primitviesGenerated;

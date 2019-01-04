@@ -565,6 +565,9 @@ namespace zpMath
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveRH( zpScalarParamF fovy, zpScalarParamF aspectRatio, zpScalarParamF zNear, zpScalarParamG zFar );
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveLH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar );
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveRH( zp_float fovy, zp_float aspectRatio, zp_float zNear, zp_float zFar );
+    
+    ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveReversedZRH( zp_float fovy, zp_float aspectRatio, zp_float zNear );
+    ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL PerspectiveReversedZLH( zp_float fovy, zp_float aspectRatio, zp_float zNear );
 
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL OrthoLH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar );
     ZP_FORCE_INLINE zpMatrix4fSimd ZP_VECTORCALL OrthoRH( zpScalarParamF l, zpScalarParamF r, zpScalarParamF t, zpScalarParamG b, zpScalarParamH zNear, zpScalarParamH zFar );

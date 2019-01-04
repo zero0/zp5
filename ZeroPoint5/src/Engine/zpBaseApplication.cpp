@@ -231,6 +231,23 @@ void zpBaseApplication::setup()
 
     m_debugGUI.setup( &m_input, ff, dm );
 
+    m_cameraManager.createCamera( cam );
+    cam->projectionType = ZP_CAMERA_PROJECTION_PERSPECTIVE;
+    cam->position = { 0, 0, 10, 1 };
+    cam->forward = { 0, 0, -1, 0 };
+    cam->up = { 0, 1, 0, 0 };
+    cam->flags |= 0xFF;
+    cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
+    cam->clearColor = zpColor::Blue;
+    cam->clearDepth = 0;
+    cam->clearStencil = 0;
+    cam->fovy = 45.f;
+    cam->aspectRatio = static_cast<zp_float>( m_screenSize.x ) / static_cast<zp_float>( m_screenSize.y );
+    cam->zNear = 0.f;
+    cam->zFar = 1.f;
+    cam->viewport = { 0, 0, m_screenSize.x, m_screenSize.y, 0, 1 };
+    cam->clipRect = { 0, 0, m_screenSize.x, m_screenSize.y };
+
     // TODO: remove when done debugging
     const zp_size_t fixedWidth = 12;
     const zp_size_t fixedHeight = 12;
@@ -306,6 +323,7 @@ void zpBaseApplication::teardown()
 
     m_objectManager.teardown();
     m_sceneManager.teardown();
+    m_renderingEngine.teardown();
 
     runGarbageCollection();
 
@@ -315,8 +333,6 @@ void zpBaseApplication::teardown()
     m_materialManager.teardown();
     m_shaderManager.teardown();
     m_textureManager.teardown();
-
-    m_renderingEngine.teardown();
 
     runGarbageCollection();
 
@@ -647,24 +663,6 @@ void zpBaseApplication::handleInput()
         ooo->getAllComponents()->meshRenderer->setMesh( mh );
         ooo->getAllComponents()->meshRenderer->setMaterial( tm );
         ooo->getAllComponents()->meshRenderer->setEnabled( true );
-
-    }
-    else if( m_input.isKeyPressed( ZP_KEY_CODE_C ) )
-    {
-        m_cameraManager.createCamera( cam );
-        cam->projectionType = ZP_CAMERA_PROJECTION_PERSPECTIVE;
-        cam->position = { 0, 0, 10, 1 };
-        cam->forward = { 0, 0, -1, 0 };
-        cam->up = { 0, 1, 0, 0 };
-        cam->flags |= 0xFF;
-        cam->clearMode = ZP_CAMERA_CLEAR_MODE_DEFAULT;
-        cam->clearColor = zpColor::Blue;
-        cam->fovy = 45.f;
-        cam->aspectRatio = m_screenSize.x / m_screenSize.y;
-        cam->zNear = 1.f;
-        cam->zFar = 100.f;
-        cam->viewport = { 0, 0, m_screenSize.x, m_screenSize.y, 1, 100 };
-        cam->clipRect = { 0, 0, m_screenSize.x, m_screenSize.y };
     }
     else if( m_input.isKeyPressed( ZP_KEY_CODE_U ) )
     {
@@ -721,15 +719,15 @@ void zpBaseApplication::render()
 
     zp_float fovy =  ( 45.f );
     zp_float ratio = ( static_cast<zp_float>( m_screenSize.x ) / static_cast<zp_float>( m_screenSize.y ) );
-    zp_float zn =    ( 1 );
-    zp_float zf =    ( 100 );
+    zp_float zn =    ( 0 );
+    zp_float zf =    ( 1 );
 
     zpVector4fSimd cen = zpMath::Vector4( 0, 0, 0, 1 );
-    zpVector4fSimd eye = zpMath::Vector4( 20, 10, -30, 1 );
+    zpVector4fSimd eye = zpMath::Vector4( 20, 10, 30, 1 );
     zpVector4fSimd dir = zpMath::Vector4Normalize3( zpMath::Vector4Sub( cen, eye ) );
     zpVector4fSimd up = zpMath::Vector4( 0, 1, 0, 0 );
 
-    zpMatrix4fSimd proj = zpMath::PerspectiveLH( fovy, ratio, zn, zf );
+    zpMatrix4fSimd proj = zpMath::PerspectiveReverseZLH( fovy, ratio, zn );
     zpMatrix4fSimd view = zpMath::LookAtLH( eye, dir, up );
     zpMatrix4fSimd viewProj = zpMath::MatrixMul( view, proj );
 
@@ -765,6 +763,21 @@ void zpBaseApplication::render()
     m_renderingEngine.beginFrame( zpTime::get().getFrameCount() );
 
     m_meshRendererComponentManager.render( ctx );
+
+    auto imm = m_renderingEngine.getImmediate();
+    imm->beginDrawImmediate( ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
+    imm->setMaterial( dm );
+    imm->setTransform( viewProj );
+    v0 = {  0.5f,  0.5f, 0.f, 1.f };
+    v1 = {  0.5f, -0.5f, 0.f, 1.f };
+    v2 = { -0.5f, -0.5f, 0.f, 1.f };
+    v3 = { -0.5f,  0.5f, 0.f, 1.f };
+    imm->addVertex( v0, { 255,0,0,255 } );
+    imm->addVertex( v1, { 0,255,0,255 } );
+    imm->addVertex( v2, { 0,0,255,255 } );
+    imm->addVertex( v3, { 255,255,255,255 } );
+    imm->addQuadIndex( 0, 1, 2, 3 );
+    imm->endDrawImmediate();
 
     // draw debug when toggled on
     if( m_debugFlags )
