@@ -717,6 +717,12 @@ static void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id
     zp_printfln( "%s %s %s: %s", sev, src, typ, message );
 }
 
+#if ZP_DEBUG
+#define glAssert( t, m ) do { if( !(t) ) { glDebugMessageInsert( GL_DEBUG_SOURCE_THIRD_PARTY, GL_DEBUG_TYPE_ERROR, 0, GL_DEBUG_SEVERITY_LOW, -1, #t ": " m ); } } while( 0 )
+#else
+#define glAssert( ... ) (void)0
+#endif
+
 void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContext )
 {
 #ifdef ZP_WINDOWS
@@ -815,7 +821,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     for( zp_uint i = 0; i < NUM_FBO; ++i )
     {
         zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "FBO %d", i );
-        glObjectLabel( GL_QUERY, g_fbo[ i ], -1, buff );
+        glObjectLabel( GL_FRAMEBUFFER, g_fbo[ i ], -1, buff );
     }
 #endif
 
@@ -1124,12 +1130,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, colorAttachment, colorTarget, colorTexture, 0 );
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, depthAttachment, colorTarget, 0, 0 );
 
-#if ZP_DEBUG
-                    if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                    {
-                        zp_printf( "Failed to setup Framebuffer" );
-                    }
-#endif
+                    glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
                 }
                 else
                 {
@@ -1160,12 +1161,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, colorAttachment, colorTarget, colorTexture, 0 );
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, depthAttachment, depthTarget, depthTexture, 0 );
 
-#if ZP_DEBUG
-                    if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                    {
-                        zp_printf( "Failed to setup Framebuffer" );
-                    }
-#endif
+                    glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
                 }
                 else
                 {
@@ -1215,24 +1211,16 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 {
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, trgAttachment, trgTarget, trgTexture, 0 );
                 }
-#if ZP_DEBUG
-                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                {
-                    zp_printf( "Failed to setup Framebuffer" );
-                }
-#endif
+
+                glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
 
                 glBlitFramebuffer( 0, 0, w, h, 0, 0, w, h, mask, GL_LINEAR );
 
                 glBindFramebuffer( GL_READ_FRAMEBUFFER, prevReadFramebuffer );
                 glBindFramebuffer( GL_DRAW_FRAMEBUFFER, prevDrawFramebuffer );
 
-#if ZP_DEBUG
-                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                {
-                    zp_printf( "Failed to setup Framebuffer" );
-                }
-#endif
+                glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
+
                 position += sizeof( zpRenderCommandResolveAntiAliasedRenderTarget );
             } break;
 
@@ -1302,22 +1290,16 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 {
                     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, trgAttachment, trgTarget, trgTexture, 0 );
                 }
-#if ZP_DEBUG
-                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                {
-                    zp_printf( "Failed to setup Framebuffer" );
-                }
-#endif
+
+                glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
+
                 glBlitFramebuffer( 0, 0, sw, sh, 0, 0, dw, dh, mask, GL_LINEAR );
 
                 glBindFramebuffer( GL_READ_FRAMEBUFFER, prevReadFramebuffer );
                 glBindFramebuffer( GL_DRAW_FRAMEBUFFER, prevDrawFramebuffer );
-#if ZP_DEBUG
-                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-                {
-                    zp_printf( "Failed to setup Framebuffer" );
-                }
-#endif
+
+                glAssert( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Failed to setup Framebuffer" );
+
                 position += sizeof( zpRenderCommandBlitRenderTexture );
             } break;
 

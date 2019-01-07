@@ -256,8 +256,8 @@ ZP_FORCE_INLINE ZP_CONSTEXPR zp_bool zp_flag32_is_set( zp_flag32 flag, zp_uint i
 //
 
 #ifdef ZP_USE_ASSERTIONS
-#define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, msg, __VA_ARGS__ ); }         static_cast<void>( 0 )
-#define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, msg, __VA_ARGS__ ); } static_cast<void>( 0 )
+#define ZP_ASSERT( test, msg, ... )         if( !(test) ) { zp_assert( __FILE__, __LINE__, #test ": " msg, __VA_ARGS__ ); }         static_cast<void>( 0 )
+#define ZP_ASSERT_WARN( test, msg, ... )    if( !(test) ) { zp_assert_warning( __FILE__, __LINE__, #test ": " msg, __VA_ARGS__ ); } static_cast<void>( 0 )
 #define ZP_INVALID_CODE_PATH()              zp_assert( __FILE__, __LINE__, "Invalid Code Path" )
 #else
 #define ZP_ASSERT( test, msg, ... )         static_cast<void>( 0 )
