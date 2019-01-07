@@ -4,7 +4,7 @@
 
 struct zpRenderTargetIdentifier
 {
-    zpRenderHandle renderTarger;
+    const zpTexture* renderTarget;
 };
 
 #endif // !ZP_RENDER_TARGET_H

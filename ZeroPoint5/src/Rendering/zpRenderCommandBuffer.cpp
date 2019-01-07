@@ -170,6 +170,18 @@ void zpRenderCommandBuffer::setDepthRenderTarget( const zpRenderTargetIdentifier
     m_buffer.write( cmd );
 }
 
+void zpRenderCommandBuffer::resolveAntiAlias( const zpRenderTargetIdentifier& srcTarget, const zpRenderTargetIdentifier& destTarget )
+{
+    zpRenderCommandResolveAntiAliasedRenderTarget cmd;
+    cmd.header.type = ZP_RENDER_COMMAND_RESOLVE_ANTI_ALIAS_RT;
+    cmd.header.id = ++m_uniqueID;
+
+    cmd.rtAntiAliasSource = srcTarget;
+    cmd.rtTarget = destTarget;
+
+    m_buffer.write( cmd );
+}
+
 void zpRenderCommandBuffer::setViewport( const zpViewport& viewport )
 {
     zpRenderCommandSetViewport cmd;
@@ -246,11 +258,16 @@ void zpRenderCommandBuffer::blit( const zpRenderTargetIdentifier& src, const zpR
     cmd.header.type = ZP_RENDER_COMMNAD_BLIT_RT;
     cmd.header.id = ++m_uniqueID;
 
+    cmd.rtSrc = src;
+    cmd.rtDst = dest;
+
     m_buffer.write( cmd );
 }
 
 void zpRenderCommandBuffer::blit( const zpTexture& src, const zpRenderTargetIdentifier& dest )
 {
+    ZP_INVALID_CODE_PATH();
+
     zpRenderCommandBlitTexture cmd;
     cmd.header.type = ZP_RENDER_COMMNAD_BLIT_TEXTURE;
     cmd.header.id = ++m_uniqueID;

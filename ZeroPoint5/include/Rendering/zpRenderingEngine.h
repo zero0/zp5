@@ -48,6 +48,7 @@ public:
     zpRenderImmediate* getImmediate();
     zpRenderContext* getContext();
     zpRenderPipeline* getPipeline();
+    zpRenderResourceCache* getRenderResourceCache();
 
     void createRenderBuffer( zpBufferType type, zpBufferBindType bindType, zp_size_t size, const void* data, zpRenderBuffer& buffer );
     void destoryRenderBuffer( zpRenderBuffer& buffer );
@@ -65,6 +66,7 @@ private:
     zpRenderImmediate m_immediate;
     zpRenderContext m_context;
     zpRenderPipeline m_pipeline;
+    zpRenderResourceCache m_resourceCache;
 
     zpVector< zpSortRenderCommandData > m_sortedCommands;
 

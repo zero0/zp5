@@ -123,6 +123,8 @@ enum zpRenderCommandType : zp_uint
     ZP_RENDER_COMMNAD_SET_RT_COLORS_DEPTH, 
     ZP_RENDER_COMMNAD_SET_RT_DEPTH,
 
+    ZP_RENDER_COMMAND_RESOLVE_ANTI_ALIAS_RT,
+
     ZP_RENDER_COMMNAD_BLIT_RT,
     ZP_RENDER_COMMNAD_BLIT_TEXTURE,
 
@@ -319,20 +321,6 @@ struct zpRenderingStat
     zp_ulong samplesPassed;
 };
 
-struct zpTextureDesc
-{
-    zp_uint width;
-    zp_uint height;
-    zp_uint depth;
-    zp_int mipMapCount;
-    zp_int minMipMap;
-    zp_int multisampleCount;
-    zp_float lodBias;
-    zpDisplayFormat format;
-    zpTextureDimension textureDimension;
-    zpTextureType type;
-};
-
 class zpRenderingEngine;
 
 #include "zpTexture.h"
@@ -510,6 +498,13 @@ struct zpRenderCommandSetRenderTargetDepth
     zpRenderTargetIdentifier rtDepth;
 };
 
+struct zpRenderCommandResolveAntiAliasedRenderTarget
+{
+    zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtAntiAliasSource;
+    zpRenderTargetIdentifier rtTarget;
+};
+
 struct zpRenderCommandDrawRenderers
 {
     zpRenderCommandHeader header;
@@ -519,6 +514,8 @@ struct zpRenderCommandDrawRenderers
 struct zpRenderCommandBlitRenderTexture
 {
     zpRenderCommandHeader header;
+    zpRenderTargetIdentifier rtSrc;
+    zpRenderTargetIdentifier rtDst;
 };
 
 struct zpRenderCommandBlitTexture
@@ -616,8 +613,8 @@ struct zpRenderCommandDrawMesh
 #include "zpRenderCommandBuffer.h"
 #include "zpRenderContext.h"
 #include "zpRenderImmediate.h"
-
 #include "zpRenderResource.h"
+
 #include "zpRenderPipeline.h"
 #include "zpRenderingContext.h"
 #include "zpRenderingEngine.h"

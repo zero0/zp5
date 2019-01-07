@@ -35,6 +35,14 @@ public:
 public:
     virtual zpRenderPipelinePassResolveResult resolve() = 0;
 
+    virtual void setInput( zp_size_t index, const zpRenderResourceIdentifier& renderResource )
+    {
+    }
+
+    virtual void setOutput( zp_size_t index, const zpRenderResourceIdentifier& renderResource )
+    {
+    }
+
     virtual void update( const zpCamera* camera, zpRenderContext* renderContext )
     {
     }
@@ -93,6 +101,7 @@ public:
 
         m_allPasses.clear();
     }
+
 protected:
     void buildPipeline();
 

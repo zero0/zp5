@@ -768,10 +768,10 @@ void zpBaseApplication::render()
     imm->beginDrawImmediate( ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
     imm->setMaterial( dm );
     imm->setTransform( viewProj );
-    v0 = {  0.5f,  0.5f, 0.f, 1.f };
-    v1 = {  0.5f, -0.5f, 0.f, 1.f };
-    v2 = { -0.5f, -0.5f, 0.f, 1.f };
-    v3 = { -0.5f,  0.5f, 0.f, 1.f };
+    v0 = {  10.5f,  10.5f, 0.f, 1.f };
+    v1 = {  10.5f, -10.5f, 0.f, 1.f };
+    v2 = { -10.5f, -10.5f, 0.f, 1.f };
+    v3 = { -10.5f,  10.5f, 0.f, 1.f };
     imm->addVertex( v0, { 255,0,0,255 } );
     imm->addVertex( v1, { 0,255,0,255 } );
     imm->addVertex( v2, { 0,0,255,255 } );

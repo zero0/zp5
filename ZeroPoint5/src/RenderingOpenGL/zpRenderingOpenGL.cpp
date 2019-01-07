@@ -328,6 +328,48 @@ static ZP_FORCE_INLINE GLsizei _GetCompressedImageSize( zp_uint width, zp_uint h
     return imageSize;
 }
 
+static ZP_FORCE_INLINE zp_bool _IsAntiAliased( zpTextureDimension dimension )
+{
+    switch( dimension )
+    {
+        case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE:
+        case ZP_TEXTURE_DIMENSION_2D_MULTISAMPLE_ARRAY:
+            return true;
+    }
+
+    return false;
+}
+
+static ZP_FORCE_INLINE zp_bool _IsDepthFormat( zpDisplayFormat format )
+{
+    switch( format )
+    {
+        case ZP_DISPLAY_FORMAT_D24S8_UNORM_UINT:
+        case ZP_DISPLAY_FORMAT_D32_FLOAT:
+            return true;
+    }
+
+    return false;
+}
+
+static ZP_FORCE_INLINE GLenum _DisplayFormatToAttachment( zpDisplayFormat format, zp_uint colorIndex = 0 )
+{
+    GLenum attachement = GL_COLOR_ATTACHMENT0 + colorIndex;
+
+    switch( format )
+    {
+        case ZP_DISPLAY_FORMAT_D32_FLOAT:
+            attachement = GL_DEPTH_ATTACHMENT;
+            break;
+
+        case ZP_DISPLAY_FORMAT_D24S8_UNORM_UINT:
+            attachement = GL_DEPTH_STENCIL_ATTACHMENT;
+            break;
+    }
+
+    return attachement;
+}
+
 union glQuery
 {
     struct
@@ -339,11 +381,14 @@ union glQuery
     GLuint q[ 3 ];
 };
 
+static ZP_CONSTEXPR zp_uint NUM_FBO = 2;
+
+static GLuint g_fbo[ NUM_FBO ];
 static GLuint g_vaos[ zpVertexFormat_Count ];
 static zpShader g_shaderVC;
 static zpShader g_shaderVCU;
 #ifdef ZP_USE_PROFILER
-ZP_CONSTEXPR zp_uint NUM_QUERIES = 2;
+static ZP_CONSTEXPR zp_uint NUM_QUERIES = 2;
 static glQuery g_queries[ NUM_QUERIES ];
 #endif
 
@@ -750,7 +795,7 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 
     zp_printfln( "Using GL:   %s", glGetString( GL_VERSION ) );
 
-#ifdef ZP_DEBUG
+#if ZP_DEBUG
     glEnable( GL_DEBUG_OUTPUT );
     glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
     if( OpenGLVersion[ 0 ] > 2 )
@@ -763,11 +808,32 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
 #endif
 
     glGenVertexArrays( zpVertexFormat_Count, g_vaos );
+    glGenFramebuffers( NUM_FBO, g_fbo );
+
+#if ZP_DEBUG
+    zp_char buff[ 512 ];
+    for( zp_uint i = 0; i < NUM_FBO; ++i )
+    {
+        zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "FBO %d", i );
+        glObjectLabel( GL_QUERY, g_fbo[ i ], -1, buff );
+    }
+#endif
 
 #ifdef ZP_USE_PROFILER
     for( zp_uint i = 0; i < NUM_QUERIES; ++i )
     {
         glGenQueries( ZP_ARRAY_SIZE( g_queries[ i ].q ), g_queries[ i ].q );
+
+#if ZP_DEBUG
+        zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "Time Elapsed %d", i );
+        glObjectLabel( GL_QUERY, g_queries[ i ].timeElapsed, -1, buff );
+
+        zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "Primitives Generated %d", i );
+        glObjectLabel( GL_QUERY, g_queries[ i ].primitivesGenerated, -1, buff );
+        
+        zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "Samples Passed %d", i );
+        glObjectLabel( GL_QUERY, g_queries[ i ].samplesPassed, -1, buff );
+#endif
 
         // perform dummy sample for next frame to remove GL errors
         glBeginQuery( GL_TIME_ELAPSED, g_queries[ i ].timeElapsed );
@@ -779,6 +845,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         glEndQuery( GL_SAMPLES_PASSED );
     }
 #endif
+
+    glEnable( GL_MULTISAMPLE );
 
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -864,6 +932,7 @@ void main()
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
+    glDeleteFramebuffers( NUM_FBO, g_fbo );
 
 #ifdef ZP_USE_PROFILER
     for( zp_uint i = 0; i < NUM_QUERIES; ++i )
@@ -1035,6 +1104,221 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 glClear( GL_STENCIL_BUFFER_BIT );
 
                 position += sizeof( zpRenderCommandClearStencil );
+            } break;
+
+            case ZP_RENDER_COMMNAD_SET_RT_COLOR:
+            {
+                const zpRenderCommandSetRenderTargetColor* cmd = static_cast<const zpRenderCommandSetRenderTargetColor*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set RT Color" );
+
+                if( cmd->rtColor.renderTarget )
+                {
+                    GLuint colorTexture = cmd->rtColor.renderTarget->texture.index;
+                    GLenum colorTarget = _TextureDimensionToTarget( cmd->rtColor.renderTarget->desc.textureDimension );
+                    
+                    GLenum colorAttachment = _DisplayFormatToAttachment( cmd->rtColor.renderTarget->desc.format );
+                    const GLenum depthAttachment = GL_DEPTH_STENCIL_ATTACHMENT;
+
+                    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, g_fbo[0] );
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, colorAttachment, colorTarget, colorTexture, 0 );
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, depthAttachment, colorTarget, 0, 0 );
+
+#if ZP_DEBUG
+                    if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                    {
+                        zp_printf( "Failed to setup Framebuffer" );
+                    }
+#endif
+                }
+                else
+                {
+                    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+                }
+
+                position += sizeof( zpRenderCommandSetRenderTargetColor );
+            } break;
+
+            case ZP_RENDER_COMMNAD_SET_RT_COLOR_DEPTH:
+            {
+                const zpRenderCommandSetRenderTargetColorDepth* cmd = static_cast<const zpRenderCommandSetRenderTargetColorDepth*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set RT Color Depth" );
+
+                if( cmd->rtColor.renderTarget && cmd->rtDepth.renderTarget )
+                {
+                    GLuint colorTexture = cmd->rtColor.renderTarget->texture.index;
+                    GLuint depthTexture = cmd->rtDepth.renderTarget->texture.index;
+
+                    GLenum colorTarget = _TextureDimensionToTarget( cmd->rtColor.renderTarget->desc.textureDimension );
+                    GLenum depthTarget = _TextureDimensionToTarget( cmd->rtDepth.renderTarget->desc.textureDimension );
+
+                    GLenum colorAttachment = _DisplayFormatToAttachment( cmd->rtColor.renderTarget->desc.format );
+                    GLenum depthAttachment = _DisplayFormatToAttachment( cmd->rtDepth.renderTarget->desc.format );
+
+                    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, g_fbo[0] );
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, colorAttachment, colorTarget, colorTexture, 0 );
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, depthAttachment, depthTarget, depthTexture, 0 );
+
+#if ZP_DEBUG
+                    if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                    {
+                        zp_printf( "Failed to setup Framebuffer" );
+                    }
+#endif
+                }
+                else
+                {
+                    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+                }
+
+                position += sizeof( zpRenderCommandSetRenderTargetColorDepth );
+            } break;
+
+            case ZP_RENDER_COMMAND_RESOLVE_ANTI_ALIAS_RT:
+            {
+                const zpRenderCommandResolveAntiAliasedRenderTarget* cmd = static_cast<const zpRenderCommandResolveAntiAliasedRenderTarget*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Resolve Anti Alias RT" );
+
+                GLuint srcTexture = cmd->rtAntiAliasSource.renderTarget->texture.index;
+                GLenum srcTarget = _TextureDimensionToTarget( cmd->rtAntiAliasSource.renderTarget->desc.textureDimension );
+                GLenum srcAttachment = _DisplayFormatToAttachment( cmd->rtAntiAliasSource.renderTarget->desc.format );
+
+                GLint w = cmd->rtAntiAliasSource.renderTarget->desc.width;
+                GLint h = cmd->rtAntiAliasSource.renderTarget->desc.height;
+
+                GLuint trgFBO = 0;
+                GLuint trgTexture = 0;
+                GLenum trgTarget = srcTarget;
+                GLenum trgAttachment = srcAttachment;
+                
+                if( cmd->rtTarget.renderTarget )
+                {
+                    trgFBO = g_fbo[ 1 ];
+                    trgTexture = cmd->rtTarget.renderTarget->texture.index;
+                    trgTarget = _TextureDimensionToTarget( cmd->rtTarget.renderTarget->desc.textureDimension );
+                    trgAttachment = _DisplayFormatToAttachment( cmd->rtTarget.renderTarget->desc.format );
+                }
+
+                GLint prevDrawFramebuffer, prevReadFramebuffer;
+                glGetIntegerv( GL_DRAW_FRAMEBUFFER_BINDING, &prevDrawFramebuffer );
+                glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevReadFramebuffer );
+
+                GLbitfield mask = GL_COLOR_BUFFER_BIT;
+
+                glBindFramebuffer( GL_READ_FRAMEBUFFER, g_fbo[ 0 ] );
+                glFramebufferTexture2D( GL_READ_FRAMEBUFFER, srcAttachment, srcTarget, srcTexture, 0 );
+
+                glBindFramebuffer( GL_DRAW_FRAMEBUFFER, trgFBO );
+                if( trgFBO )
+                {
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, trgAttachment, trgTarget, trgTexture, 0 );
+                }
+#if ZP_DEBUG
+                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                {
+                    zp_printf( "Failed to setup Framebuffer" );
+                }
+#endif
+
+                glBlitFramebuffer( 0, 0, w, h, 0, 0, w, h, mask, GL_LINEAR );
+
+                glBindFramebuffer( GL_READ_FRAMEBUFFER, prevReadFramebuffer );
+                glBindFramebuffer( GL_DRAW_FRAMEBUFFER, prevDrawFramebuffer );
+
+#if ZP_DEBUG
+                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                {
+                    zp_printf( "Failed to setup Framebuffer" );
+                }
+#endif
+                position += sizeof( zpRenderCommandResolveAntiAliasedRenderTarget );
+            } break;
+
+            case ZP_RENDER_COMMNAD_BLIT_RT:
+            {
+                const zpRenderCommandBlitRenderTexture* cmd = static_cast<const zpRenderCommandBlitRenderTexture*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Blit RT" );
+
+                GLint sw = 0;
+                GLint sh = 0;
+                GLint dw = 0;
+                GLint dh = 0;
+
+                GLuint srcTexture = 0;
+                GLenum srcTarget = GL_TEXTURE_2D;
+                GLenum srcAttachment = GL_COLOR_ATTACHMENT0;
+
+                if( cmd->rtSrc.renderTarget )
+                {
+                    srcTexture = cmd->rtSrc.renderTarget->texture.index;
+                    srcTarget = _TextureDimensionToTarget( cmd->rtSrc.renderTarget->desc.textureDimension );
+                    srcAttachment = _DisplayFormatToAttachment( cmd->rtSrc.renderTarget->desc.format );
+
+                    sw = cmd->rtSrc.renderTarget->desc.width;
+                    sh = cmd->rtSrc.renderTarget->desc.height;
+                }
+
+                GLuint trgFBO = 0;
+                GLuint trgTexture = 0;
+                GLenum trgTarget = GL_TEXTURE_2D;
+                GLenum trgAttachment = GL_COLOR_ATTACHMENT0;
+
+                if( cmd->rtDst.renderTarget )
+                {
+                    trgFBO = g_fbo[ 1 ];
+                    trgTexture = cmd->rtDst.renderTarget->texture.index;
+                    trgTarget = _TextureDimensionToTarget( cmd->rtDst.renderTarget->desc.textureDimension );
+                    trgAttachment = _DisplayFormatToAttachment( cmd->rtDst.renderTarget->desc.format );
+
+                    dw = cmd->rtDst.renderTarget->desc.width;
+                    dh = cmd->rtDst.renderTarget->desc.height;
+                }
+
+                if( cmd->rtSrc.renderTarget && !cmd->rtDst.renderTarget )
+                {
+                    dw = sw;
+                    dh = sh;
+                }
+                else if( !cmd->rtSrc.renderTarget && cmd->rtDst.renderTarget )
+                {
+                    sw = dw;
+                    sh = dh;
+                }
+
+                GLint prevDrawFramebuffer, prevReadFramebuffer;
+                glGetIntegerv( GL_DRAW_FRAMEBUFFER_BINDING, &prevDrawFramebuffer );
+                glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevReadFramebuffer );
+
+                GLbitfield mask = GL_COLOR_BUFFER_BIT;
+
+                glBindFramebuffer( GL_READ_FRAMEBUFFER, g_fbo[ 0 ] );
+                glFramebufferTexture2D( GL_READ_FRAMEBUFFER, srcAttachment, srcTarget, srcTexture, 0 );
+
+                glBindFramebuffer( GL_DRAW_FRAMEBUFFER, trgFBO );
+                if( trgFBO )
+                {
+                    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, trgAttachment, trgTarget, trgTexture, 0 );
+                }
+#if ZP_DEBUG
+                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                {
+                    zp_printf( "Failed to setup Framebuffer" );
+                }
+#endif
+                glBlitFramebuffer( 0, 0, sw, sh, 0, 0, dw, dh, mask, GL_LINEAR );
+
+                glBindFramebuffer( GL_READ_FRAMEBUFFER, prevReadFramebuffer );
+                glBindFramebuffer( GL_DRAW_FRAMEBUFFER, prevDrawFramebuffer );
+#if ZP_DEBUG
+                if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+                {
+                    zp_printf( "Failed to setup Framebuffer" );
+                }
+#endif
+                position += sizeof( zpRenderCommandBlitRenderTexture );
             } break;
 
             case ZP_RENDER_COMMNAD_PRESENT:

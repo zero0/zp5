@@ -38,6 +38,8 @@ public:
     void setRenderTargets( const zpRenderTargetIdentifier* colorTargets, zp_size_t colorCount, const zpRenderTargetIdentifier& depthTarget );
     void setDepthRenderTarget( const zpRenderTargetIdentifier& depthTarget );
 
+    void resolveAntiAlias( const zpRenderTargetIdentifier& srcTarget, const zpRenderTargetIdentifier& destTarget );
+
     void setViewport( const zpViewport& viewport );
     void setScissorRect( const zpRecti& scissorRect );
 

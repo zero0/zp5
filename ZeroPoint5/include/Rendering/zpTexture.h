@@ -2,6 +2,20 @@
 #ifndef ZP_TEXTURE_H
 #define ZP_TEXTURE_H
 
+struct zpTextureDesc
+{
+    zp_uint width;
+    zp_uint height;
+    zp_uint depth;
+    zp_int mipMapCount;
+    zp_int minMipMap;
+    zp_int multisampleCount;
+    zp_float lodBias;
+    zpDisplayFormat format;
+    zpTextureDimension textureDimension;
+    zpTextureType type;
+};
+
 struct zpTexture
 {
     zpTextureDesc desc;
