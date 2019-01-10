@@ -45,7 +45,7 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
 
         const zp_bool isPassMatch = p.passIndex == desc.passIndex;
         const zp_bool isRenderLayer = ( p.renderLayers & desc.renderLayers ) != 0;
-        const zp_bool isInRenderRange = true; // TODO: implement render queue range in zpMaterial
+        const zp_bool isInRenderRange = p.material->renderQueue >= desc.renderRange.minRenderQueue && p.material->renderQueue < desc.renderRange.maxRenderQueue;
         const zp_bool isInViewport = true; // TODO: implement viewports
         if( isPassMatch && isRenderLayer && isInRenderRange && isInViewport )
         {

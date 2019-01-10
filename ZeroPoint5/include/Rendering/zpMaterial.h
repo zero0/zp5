@@ -48,6 +48,7 @@ struct zpMaterialOld
 
 struct zpMaterial
 {
+    zp_uint renderQueue;
     zpShaderHandle shader;
 
     zpMap< zpShaderProperty, zp_int > ints;

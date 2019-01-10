@@ -150,8 +150,8 @@ public:
         // draw opaque renderers
         zpDrawRenderersDesc desc;
         desc.sortOrder = ZP_RENDER_SORT_ORDER_FRONT_TO_BACK;
-        desc.renderRange.minRenderQueue = 0;
-        desc.renderRange.maxRenderQueue = 2000;
+        desc.renderRange.minRenderQueue = ZP_RENDER_QUEUE_OPAQUE;
+        desc.renderRange.maxRenderQueue = ZP_RENDER_QUEUE_TRANSPARENT;
         desc.renderLayers = -1;
         desc.passIndex = 0;
         desc.viewPorts = -1;
@@ -164,6 +164,76 @@ public:
 private:
     zpRenderResourceIdentifier m_inputs[ zpForwardOpaquePassInput_Count ];
     zpRenderResourceIdentifier m_outputs[ zpForwardOpaquePassOutput_Count ];
+};
+
+enum zpForwardTransparnetPassInput
+{
+    ZP_FORWARD_TRANSPARENT_PASS_INPUT_COLOR_RT,
+    ZP_FORWARD_TRANSPARENT_PASS_INPUT_DEPTH_RT,
+
+    zpForwardTransparentPassInput_Count
+};
+
+enum zpForwardTransparentPassOutput
+{
+    ZP_FORWARD_TRANSPARENT_PASS_OUTPUT_COLOR_RT,
+    ZP_FORWARD_TRANSPARENT_PASS_OUTPUT_DEPTH_RT,
+
+    zpForwardTransparentPassOutput_Count
+};
+
+class zpForwardTransparentPass : public zpRenderPipelinePass
+{
+public:
+    zpRenderPipelinePassResolveResult resolve()
+    {
+        markAsClean();
+        return ZP_RENDER_PIPELINE_PASS_RESOLVE_SUCCESS;
+    }
+
+    void setInput( zp_size_t index, const zpRenderResourceIdentifier& renderResource )
+    {
+        m_inputs[ index ] = renderResource;
+    }
+
+    void setOutput( zp_size_t index, const zpRenderResourceIdentifier& renderResource )
+    {
+        m_outputs[ index ] = renderResource;
+    }
+
+    void update( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+    }
+
+    void executePass( const zpCamera* camera, zpRenderContext* renderContext )
+    {
+        zpRenderCommandBuffer* commandBuffer = renderContext->getCommandBuffer();
+
+        commandBuffer->pushMarker( "Forward Transparent" );
+
+        // set rt
+        zpRenderTargetIdentifier rtColor = { &m_inputs[ ZP_FORWARD_TRANSPARENT_PASS_INPUT_COLOR_RT ].getTexture() };
+        zpRenderTargetIdentifier rtDepth = { &m_inputs[ ZP_FORWARD_TRANSPARENT_PASS_INPUT_DEPTH_RT ].getTexture() };
+
+        commandBuffer->setRenderTarget( rtColor, rtDepth );
+
+        // draw opaque renderers
+        zpDrawRenderersDesc desc;
+        desc.sortOrder = ZP_RENDER_SORT_ORDER_BACK_TO_FRONT;
+        desc.renderRange.minRenderQueue = ZP_RENDER_QUEUE_TRANSPARENT;
+        desc.renderRange.maxRenderQueue = ZP_RENDER_QUEUE_MAX;
+        desc.renderLayers = -1;
+        desc.passIndex = 0;
+        desc.viewPorts = -1;
+
+        renderContext->drawRenderers( desc );
+
+        commandBuffer->popMarker();
+    };
+
+private:
+    zpRenderResourceIdentifier m_inputs[ zpForwardTransparentPassInput_Count ];
+    zpRenderResourceIdentifier m_outputs[ zpForwardTransparentPassOutput_Count ];
 };
 
 enum zpResolveAntiAliasPassInput
@@ -280,9 +350,13 @@ void zpRenderingEngine::setup( zp_handle hWindow )
     clearPass->setInput( ZP_CLEAR_PASS_INPUT_COLOR_RT, colorMsaa );
     clearPass->setInput( ZP_CLEAR_PASS_INPUT_DEPTH_RT, depthMsaa );
 
-    zpForwardOpaquePass* fwdPass = m_pipeline.addPass<zpForwardOpaquePass>();
-    fwdPass->setInput( ZP_FORWARD_OPAQUE_PASS_INPUT_COLOR_RT, colorMsaa );
-    fwdPass->setInput( ZP_FORWARD_OPAQUE_PASS_INPUT_DEPTH_RT, depthMsaa );
+    zpForwardOpaquePass* fwdOpaquePass = m_pipeline.addPass<zpForwardOpaquePass>();
+    fwdOpaquePass->setInput( ZP_FORWARD_OPAQUE_PASS_INPUT_COLOR_RT, colorMsaa );
+    fwdOpaquePass->setInput( ZP_FORWARD_OPAQUE_PASS_INPUT_DEPTH_RT, depthMsaa );
+
+    zpForwardTransparentPass* fwdTransparentPass = m_pipeline.addPass<zpForwardTransparentPass>();
+    fwdTransparentPass->setInput( ZP_FORWARD_TRANSPARENT_PASS_INPUT_COLOR_RT, colorMsaa );
+    fwdTransparentPass->setInput( ZP_FORWARD_TRANSPARENT_PASS_INPUT_DEPTH_RT, depthMsaa );
 
     zpResolveAntiAliasPass* resolvePass = m_pipeline.addPass<zpResolveAntiAliasPass>();
     resolvePass->setInput( ZP_RESOLVE_ANTI_ALIAS_PASS_INPUT_RT, colorMsaa );

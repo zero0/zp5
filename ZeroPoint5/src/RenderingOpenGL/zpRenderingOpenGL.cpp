@@ -821,14 +821,21 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     for( zp_uint i = 0; i < NUM_FBO; ++i )
     {
         zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "FBO %d", i );
+        glBindFramebuffer( GL_FRAMEBUFFER, g_fbo[ i ] );
         glObjectLabel( GL_FRAMEBUFFER, g_fbo[ i ], -1, buff );
     }
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 #endif
 
 #ifdef ZP_USE_PROFILER
     for( zp_uint i = 0; i < NUM_QUERIES; ++i )
     {
         glGenQueries( ZP_ARRAY_SIZE( g_queries[ i ].q ), g_queries[ i ].q );
+
+        // perform dummy sample for next frame to remove GL errors
+        glBeginQuery( GL_TIME_ELAPSED, g_queries[ i ].timeElapsed );
+        glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ i ].primitivesGenerated );
+        glBeginQuery( GL_SAMPLES_PASSED, g_queries[ i ].samplesPassed );
 
 #if ZP_DEBUG
         zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "Time Elapsed %d", i );
@@ -840,11 +847,6 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
         zp_snprintf( buff, ZP_ARRAY_SIZE( buff ), ZP_ARRAY_SIZE( buff ), "Samples Passed %d", i );
         glObjectLabel( GL_QUERY, g_queries[ i ].samplesPassed, -1, buff );
 #endif
-
-        // perform dummy sample for next frame to remove GL errors
-        glBeginQuery( GL_TIME_ELAPSED, g_queries[ i ].timeElapsed );
-        glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ i ].primitivesGenerated );
-        glBeginQuery( GL_SAMPLES_PASSED, g_queries[ i ].samplesPassed );
 
         glEndQuery( GL_TIME_ELAPSED );
         glEndQuery( GL_PRIMITIVES_GENERATED );
@@ -910,10 +912,11 @@ void main()
 Sampler2D( _MainTex );                
 in float4 fragmentColor;              
 in float2 uv;                         
-//out float4 outColor;             
+out float4 outColor;             
 void main()                           
 {                                     
-    gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
+    //gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
+    outColor = tex2D( _MainTex, uv );
 }                                                      
 )GLSL";
 
@@ -1433,14 +1436,17 @@ void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture )
     glGenTextures( 1, &texture.texture.index );
     glBindTexture( target, texture.texture.index );
 
-    glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    if( !_IsAntiAliased( desc->desc.textureDimension ) )
+    {
+        glTexParameteri( target, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
-    glTexParameteri( target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-    glTexParameterf( target, GL_TEXTURE_LOD_BIAS, desc->desc.lodBias );
-    glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->desc.minMipMap );
+        glTexParameterf( target, GL_TEXTURE_LOD_BIAS, desc->desc.lodBias );
+        glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->desc.minMipMap );
+    }
 
 #if ZP_DEBUG
     GLsizei len = static_cast<GLsizei>( zp_strlen( desc->textureName ) );

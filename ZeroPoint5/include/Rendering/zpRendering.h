@@ -253,6 +253,15 @@ enum zpRenderSortOrder : zp_uint
     zpRenderSortOrder_Force32 = ZP_FORCE_32BIT
 };
 
+enum zpRenderQueue : zp_uint
+{
+    ZP_RENDER_QUEUE_OPAQUE = 2000,
+    ZP_RENDER_QUEUE_ALPHA_TEST = 2450,
+    ZP_RENDER_QUEUE_TRANSPARENT = 3000,
+
+    ZP_RENDER_QUEUE_MAX = static_cast<zp_uint>( -1 )
+};
+
 union zpRenderHandle
 {
     zp_handle ptr;

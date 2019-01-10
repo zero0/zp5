@@ -34,6 +34,8 @@ struct zpMaterialData
 {
     zp_time_t lastModifiedTime;
 
+    zp_uint renderQueue;
+
     zpString shaderName;
 
     zpMap< zpShaderProperty, zp_int > ints;
@@ -76,6 +78,8 @@ static void FillMaterial( zpShaderManager* shaderManager, zpTextureManager* text
     if( !materialData.shaderName.isEmpty() ) shaderManager->getShader( materialData.shaderName.str(), material.shader );
 
     ClearMaterial( material );
+
+    material.renderQueue = ZP_RENDER_QUEUE_OPAQUE;
 
     material.ints.setAll( materialData.ints );
     material.floats.setAll( materialData.floats );

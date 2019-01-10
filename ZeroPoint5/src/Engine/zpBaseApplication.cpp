@@ -221,6 +221,7 @@ void zpBaseApplication::setup()
     m_materialManager.getMaterial( "font.material", ff->fontMaterial );
     //ff->fontMaterial->color = zpColor::White;
     //ff->fontMaterial->mainTexST = { 1, 1, 0, 0 };
+    ff->fontMaterial->renderQueue = ZP_RENDER_QUEUE_TRANSPARENT;
     ff->fontMaterial->setColor( "_Color", zpColor::White );
     ff->fontMaterial->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
     m_textureManager.loadTexture( "Assets/cp437_12x12.tga", fontTex );
