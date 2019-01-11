@@ -916,7 +916,7 @@ out float4 outColor;
 void main()                           
 {                                     
     //gl_FragColor = fragmentColor * tex2D( _MainTex, uv );
-    outColor = tex2D( _MainTex, uv );
+    outColor = fragmentColor * texture( _MainTex, uv );
 }                                                      
 )GLSL";
 
@@ -1446,6 +1446,11 @@ void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture )
 
         glTexParameterf( target, GL_TEXTURE_LOD_BIAS, desc->desc.lodBias );
         glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->desc.minMipMap );
+
+        if( desc->desc.mipMapCount >= 0 )
+        {
+            glTexParameterf( target, GL_TEXTURE_MAX_LEVEL, desc->desc.mipMapCount );
+        }
     }
 
 #if ZP_DEBUG
@@ -1530,7 +1535,7 @@ void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture )
         }
     }
 
-    if( desc->desc.mipMapCount < 0 )
+    if( !_IsAntiAliased( desc->desc.textureDimension ) )
     {
         glGenerateMipmap( target );
     }

@@ -206,12 +206,12 @@ void zpBaseApplication::setup()
 
     m_materialManager.getMaterial( "tempMaterial", tm );
     tm->setColor( "_Color", zpColor::White );
-    tm->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
     //tm->color = zpColor::White;
     //tm->mainTexST = { 1, 1, 0, 0 };
     zpTextureHandle tempTex;
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tempTex );
     tm->setTexture( "_MainTex", tempTex );
+    tm->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
 
     m_materialManager.getMaterial( "debug_material", dm );
     dm->setColor( "_Color", zpColor::White );
@@ -766,17 +766,17 @@ void zpBaseApplication::render()
     m_meshRendererComponentManager.render( ctx );
 
     auto imm = m_renderingEngine.getImmediate();
-    imm->beginDrawImmediate( ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR );
-    imm->setMaterial( dm );
+    imm->beginDrawImmediate( ZP_TOPOLOGY_TRIANGLE_LIST, ZP_VERTEX_FORMAT_VERTEX_COLOR_UV );
+    imm->setMaterial( tm );
     imm->setTransform( viewProj );
     v0 = {  10.5f,  10.5f, 0.f, 1.f };
     v1 = {  10.5f, -10.5f, 0.f, 1.f };
     v2 = { -10.5f, -10.5f, 0.f, 1.f };
     v3 = { -10.5f,  10.5f, 0.f, 1.f };
-    imm->addVertex( v0, { 255,0,0,255 } );
-    imm->addVertex( v1, { 0,255,0,255 } );
-    imm->addVertex( v2, { 0,0,255,255 } );
-    imm->addVertex( v3, { 255,255,255,255 } );
+    imm->addVertex( v0, { 255,0,0,255 }, { 0, 1 } );
+    imm->addVertex( v1, { 0,255,0,255 }, { 0, 0 } );
+    imm->addVertex( v2, { 0,0,255,255 }, { 1, 0 } );
+    imm->addVertex( v3, { 255,255,255,255 }, { 1, 1 } );
     imm->addQuadIndex( 0, 1, 2, 3 );
     imm->endDrawImmediate();
 
