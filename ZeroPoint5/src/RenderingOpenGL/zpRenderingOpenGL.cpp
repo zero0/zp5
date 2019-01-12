@@ -114,6 +114,7 @@ static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat dis
         // RGB Components
         GL_RGB8,
         GL_RGB8_SNORM,
+        GL_SRGB8,
 
         GL_RGB16,
         GL_RGB16_SNORM,
@@ -128,6 +129,7 @@ static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat dis
         GL_RGBA8I,
         GL_RGBA,
         GL_RGBA_SNORM,
+        GL_SRGB8_ALPHA8,
 
         GL_RGBA16UI,
         GL_RGBA16I,
@@ -189,6 +191,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFor
         // RGB Components
         GL_RGB,
         GL_RGB,
+        GL_RGB,
 
         GL_RGB,
         GL_RGB,
@@ -201,6 +204,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFor
         // RGBA Components
         GL_RGBA_INTEGER,
         GL_RGBA_INTEGER,
+        GL_RGBA,
         GL_RGBA,
         GL_RGBA,
 
@@ -264,6 +268,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayF
         // RGB Components
         GL_UNSIGNED_BYTE,
         GL_BYTE,
+        GL_UNSIGNED_BYTE,
 
         GL_UNSIGNED_SHORT,
         GL_SHORT,
@@ -278,6 +283,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayF
         GL_BYTE,
         GL_UNSIGNED_BYTE,
         GL_BYTE,
+        GL_UNSIGNED_BYTE,
 
         GL_UNSIGNED_SHORT,
         GL_SHORT,
