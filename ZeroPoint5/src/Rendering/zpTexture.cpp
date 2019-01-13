@@ -55,7 +55,7 @@ zp_int LoadBMPTextureData( const zp_char* filepath, zpTextureData* textureData )
     zpTextureDesc desc = {};
     desc.width = width;
     desc.height = height;
-    desc.format = ZP_DISPLAY_FORMAT_SRGB8;
+    desc.format = ZP_DISPLAY_FORMAT_SRGB8_UINT;
     desc.textureDimension = ZP_TEXTURE_DIMENSION_2D;
     desc.type = ZP_TEXTURE_TYPE_TEXTURE;
     desc.mipMapCount = 0;
@@ -132,11 +132,11 @@ zp_int LoadTGATextureData( const zp_char* filepath, zpTextureData& textureData )
     switch( header.bitsPerPixel )
     {
         case 24:
-            desc.format = ZP_DISPLAY_FORMAT_SRGB8;
+            desc.format = ZP_DISPLAY_FORMAT_SRGB8_UINT;
             break;
 
         case 32:
-            desc.format = ZP_DISPLAY_FORMAT_SRGBA8;
+            desc.format = ZP_DISPLAY_FORMAT_SRGBA8_UINT;
             break;
 
         default:
