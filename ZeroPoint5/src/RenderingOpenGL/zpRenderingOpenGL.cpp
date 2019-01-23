@@ -980,12 +980,12 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
 
         switch( type->type )
         {
-            case ZP_RENDER_COMMNAD_NOOP:
+            case ZP_RENDER_COMMAND_NOOP:
             {
                 position += sizeof( zpRenderCommandHeader );
             } break;
 
-            case ZP_RENDER_COMMNAD_PUSH_MARKER:
+            case ZP_RENDER_COMMAND_PUSH_MARKER:
             {
                 const zpRenderCommandPushMarker* cmd = static_cast<const zpRenderCommandPushMarker*>( ptr );
 
@@ -1001,7 +1001,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandPushMarker );
             } break;
 
-            case ZP_RENDER_COMMNAD_POP_MARKER:
+            case ZP_RENDER_COMMAND_POP_MARKER:
             {
                 if( GLEW_EXT_debug_marker )
                 {
@@ -1015,7 +1015,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandPopMarker );
             } break;
 
-            case ZP_RENDER_COMMNAD_SET_VIEWPORT:
+            case ZP_RENDER_COMMAND_SET_VIEWPORT:
             {
                 const zpRenderCommandSetViewport* cmd = static_cast<const zpRenderCommandSetViewport*>( ptr );
                 
@@ -1029,7 +1029,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandSetViewport );
             } break;
 
-            case ZP_RENDER_COMMNAD_SET_SCISSOR_RECT:
+            case ZP_RENDER_COMMAND_SET_SCISSOR_RECT:
             {
                 const zpRenderCommandSetScissorRect* cmd = static_cast<const zpRenderCommandSetScissorRect*>( ptr );
                
@@ -1042,7 +1042,84 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandSetScissorRect );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL:
+
+            case ZP_RENDER_COMMAND_SET_BLEND_STATE:
+            {
+                const zpRenderCommandSetBlendState* cmd = static_cast<const zpRenderCommandSetBlendState*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Blend State" );
+                if( cmd->blendState.blendEnabled )
+                {
+                    glEnable( GL_BLEND );
+                    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+                    glBlendEquation( GL_FUNC_ADD );
+                }
+                else
+                {
+                    glDisable( GL_BLEND );
+                }
+
+                position += sizeof( zpRenderCommandSetBlendState );
+            } break;
+            
+            case ZP_RENDER_COMMAND_SET_DEPTH_STATE:
+            {
+                const zpRenderCommandSetDepthState* cmd = static_cast<const zpRenderCommandSetDepthState*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Depth State" );
+                if( cmd->depthState.compareFunc == ZP_COMPARE_FUNCTION_DISABLED )
+                {
+                    glDisable( GL_DEPTH_TEST );
+                }
+                else
+                {
+                    glEnable( GL_DEPTH_TEST );
+                    glDepthFunc( GL_GEQUAL );
+                }
+
+                glDepthMask( cmd->depthState.writeEnabled ? GL_TRUE : GL_FALSE );
+
+                position += sizeof( zpRenderCommandSetDepthState );
+            } break;
+            
+            case ZP_RENDER_COMMAND_SET_STENCIL_STATE:
+            {
+                const zpRenderCommandSetStencilState* cmd = static_cast<const zpRenderCommandSetStencilState*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Stencil State" );
+                if( cmd->stencilState.stencilEnabled )
+                {
+                    glEnable( GL_STENCIL );
+                    //glStencilFunc( )
+                }
+                else
+                {
+                    glDisable( GL_STENCIL );
+                }
+
+                position += sizeof( zpRenderCommandSetStencilState );
+            } break;
+            
+            case ZP_RENDER_COMMAND_SET_RASTER_STATE:
+            {
+                const zpRenderCommandSetRasterState* cmd = static_cast<const zpRenderCommandSetRasterState*>( ptr );
+
+                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Raster State" );
+                if( cmd->rasterState.cullingMode == ZP_CULL_MODE_OFF )
+                {
+                    glDisable( GL_CULL_FACE );
+                }
+                else
+                {
+                    glEnable( GL_CULL_FACE );
+                    glCullFace( GL_BACK );
+                    glFrontFace( GL_CCW );
+                }
+
+                position += sizeof( zpRenderCommandSetRasterState );
+            } break;
+
+            case ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH_STENCIL:
             {
                 const zpRenderCommandClear* cmd = static_cast<const zpRenderCommandClear*>( ptr );
 
@@ -1058,7 +1135,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClear );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_COLOR:
+            case ZP_RENDER_COMMAND_CLEAR_COLOR:
             {
                 const zpRenderCommandClearColor* cmd = static_cast<const zpRenderCommandClearColor*>( ptr );
 
@@ -1072,7 +1149,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClearColor );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH:
+            case ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH:
             {
                 const zpRenderCommandClearColorDepth* cmd = static_cast<const zpRenderCommandClearColorDepth*>( ptr );
 
@@ -1087,7 +1164,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClearColorDepth );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_DEPTH_STENCIL:
+            case ZP_RENDER_COMMAND_CLEAR_DEPTH_STENCIL:
             {
                 const zpRenderCommandClearDepthStencil* cmd = static_cast<const zpRenderCommandClearDepthStencil*>( ptr );
 
@@ -1099,7 +1176,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClearDepthStencil );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_DEPTH:
+            case ZP_RENDER_COMMAND_CLEAR_DEPTH:
             {
                 const zpRenderCommandClearDepth* cmd = static_cast<const zpRenderCommandClearDepth*>( ptr );
 
@@ -1110,7 +1187,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClearDepth );
             } break;
 
-            case ZP_RENDER_COMMNAD_CLEAR_STENCIL:
+            case ZP_RENDER_COMMAND_CLEAR_STENCIL:
             {
                 const zpRenderCommandClearStencil* cmd = static_cast<const zpRenderCommandClearStencil*>( ptr );
 
@@ -1121,7 +1198,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandClearStencil );
             } break;
 
-            case ZP_RENDER_COMMNAD_SET_RT_COLOR:
+            case ZP_RENDER_COMMAND_SET_RT_COLOR:
             {
                 const zpRenderCommandSetRenderTargetColor* cmd = static_cast<const zpRenderCommandSetRenderTargetColor*>( ptr );
 
@@ -1149,7 +1226,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandSetRenderTargetColor );
             } break;
 
-            case ZP_RENDER_COMMNAD_SET_RT_COLOR_DEPTH:
+            case ZP_RENDER_COMMAND_SET_RT_COLOR_DEPTH:
             {
                 const zpRenderCommandSetRenderTargetColorDepth* cmd = static_cast<const zpRenderCommandSetRenderTargetColorDepth*>( ptr );
 
@@ -1233,7 +1310,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandResolveAntiAliasedRenderTarget );
             } break;
 
-            case ZP_RENDER_COMMNAD_BLIT_RT:
+            case ZP_RENDER_COMMAND_BLIT_RT:
             {
                 const zpRenderCommandBlitRenderTexture* cmd = static_cast<const zpRenderCommandBlitRenderTexture*>( ptr );
 
@@ -1312,7 +1389,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandBlitRenderTexture );
             } break;
 
-            case ZP_RENDER_COMMNAD_PRESENT:
+            case ZP_RENDER_COMMAND_PRESENT:
             {
                 const zpRenderCommandPresent* cmd = static_cast<const zpRenderCommandPresent*>( ptr );
 
@@ -1331,7 +1408,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 position += sizeof( zpRenderCommandPresent );
             } break;
 
-            case ZP_RENDER_COMMNAD_DRAW_MESH:
+            case ZP_RENDER_COMMAND_DRAW_MESH:
             {
                 const zpRenderCommandDrawMesh* cmd = static_cast<const zpRenderCommandDrawMesh*>( ptr );
 

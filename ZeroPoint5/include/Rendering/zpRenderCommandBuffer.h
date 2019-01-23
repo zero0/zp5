@@ -43,6 +43,11 @@ public:
     void setViewport( const zpViewport& viewport );
     void setScissorRect( const zpRecti& scissorRect );
 
+    void setBlendState( const zpBlendState& state );
+    void setDepthState( const zpDepthState& state );
+    void setStencilState( const zpStencilState& state );
+    void setRasterState( const zpRasterState& state );
+
     void drawMesh( const zpMatrix4f& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex );
     void drawMesh( const zpMatrix4f& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex );
 

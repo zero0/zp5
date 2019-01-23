@@ -212,9 +212,11 @@ void zpBaseApplication::setup()
     m_textureManager.loadTexture( "Assets/uv_checker_large.bmp", tempTex );
     tm->setTexture( "_MainTex", tempTex );
     tm->setVector( "_MainTex_ST", { 1, 1, 0, 0 } );
+    tm->renderQueue = ZP_RENDER_QUEUE_OPAQUE;
 
     m_materialManager.getMaterial( "debug_material", dm );
     dm->setColor( "_Color", zpColor::White );
+    dm->renderQueue = ZP_RENDER_QUEUE_TRANSPARENT;
 
     zpTextureHandle fontTex;
     m_fontManager.getFont( "debug.font", ff );

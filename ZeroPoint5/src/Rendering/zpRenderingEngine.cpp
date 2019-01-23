@@ -420,7 +420,7 @@ void zpRenderingEngine::submit()
     //PresentOpenGL( m_hDC, m_hContext );
     
     zpRenderCommandPresent cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_PRESENT;
+    cmd.header.type = ZP_RENDER_COMMAND_PRESENT;
     cmd.header.id = -1;
 
     cmd.hDC = m_hDC;

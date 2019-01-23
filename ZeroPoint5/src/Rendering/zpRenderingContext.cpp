@@ -42,7 +42,7 @@ void zpRenderingContext::clear( const zpColorf& clearColor, zp_float clearDepth,
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL;
+    cmd.type = ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH_STENCIL;
     cmd.sortKey.key = 0;
     cmd.clearColor = clearColor;
     cmd.clearDepth = clearDepth;
@@ -59,7 +59,7 @@ void zpRenderingContext::setViewport( const zpViewport& viewport )
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_SET_VIEWPORT;
+    cmd.type = ZP_RENDER_COMMAND_SET_VIEWPORT;
     cmd.sortKey.key = 0;
     cmd.viewport = viewport;
 }
@@ -69,7 +69,7 @@ void zpRenderingContext::setScissorRect( const zpRecti& scissorRect )
     ZP_ASSERT( m_currentCommnad == npos, "" );
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_SET_SCISSOR_RECT;
+    cmd.type = ZP_RENDER_COMMAND_SET_SCISSOR_RECT;
     cmd.sortKey.key = 0;
     cmd.scissorRect = scissorRect;
 }
@@ -86,7 +86,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+    cmd.type = ZP_RENDER_COMMAND_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = topology;
@@ -112,7 +112,7 @@ void zpRenderingContext::beginDrawImmediate( zp_byte layer, zpTopology topology,
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+    cmd.type = ZP_RENDER_COMMAND_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = topology;
@@ -139,7 +139,7 @@ void zpRenderingContext::beginDrawText( zp_byte layer, const zpFontHandle& font 
     m_currentCommnad = m_commands.size();
 
     zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-    cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+    cmd.type = ZP_RENDER_COMMAND_DRAW_MESH;
     cmd.sortKey.key = 0;
     cmd.sortKey.layer = layer;
     cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
@@ -393,7 +393,7 @@ void zpRenderingContext::drawMesh( zp_byte layer, const zpMatrix4f& transformDat
         const zpMeshPart* p = m->parts + i;
 
         zpRenderingCommand& cmd = m_commands.pushBackEmpty();
-        cmd.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+        cmd.type = ZP_RENDER_COMMAND_DRAW_MESH;
         cmd.sortKey.key = 0;
         cmd.sortKey.layer = layer;
         cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;

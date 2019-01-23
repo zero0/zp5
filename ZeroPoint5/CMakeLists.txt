@@ -178,6 +178,7 @@ set( ZP_RENDERING_SOURCE
     "src/Rendering/zpRenderPipeline.cpp"
     "src/Rendering/zpRenderResource.cpp"
     "src/Rendering/zpRenderTarget.cpp"
+    "src/Rendering/zpRendering.cpp"
     "src/Rendering/zpRenderingContext.cpp"
     "src/Rendering/zpRenderingEngine.cpp"
     "src/Rendering/zpShader.cpp"

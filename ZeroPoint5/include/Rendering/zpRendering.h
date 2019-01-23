@@ -103,48 +103,52 @@ enum zpTopology : zp_uint
 
 enum zpRenderCommandType : zp_uint
 {
-    ZP_RENDER_COMMNAD_NOOP = 0,
+    ZP_RENDER_COMMAND_NOOP = 0,
 
-    ZP_RENDER_COMMNAD_PUSH_MARKER,
-    ZP_RENDER_COMMNAD_POP_MARKER,
+    ZP_RENDER_COMMAND_PUSH_MARKER,
+    ZP_RENDER_COMMAND_POP_MARKER,
 
-    ZP_RENDER_COMMNAD_SET_VIEWPORT,
+    ZP_RENDER_COMMAND_SET_VIEWPORT,
+    ZP_RENDER_COMMAND_SET_SCISSOR_RECT,
 
-    ZP_RENDER_COMMNAD_SET_SCISSOR_RECT,
+    ZP_RENDER_COMMAND_SET_BLEND_STATE,
+    ZP_RENDER_COMMAND_SET_DEPTH_STATE,
+    ZP_RENDER_COMMAND_SET_STENCIL_STATE,
+    ZP_RENDER_COMMAND_SET_RASTER_STATE,
 
-    ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL,
-    ZP_RENDER_COMMNAD_CLEAR_COLOR,
-    ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH,
-    ZP_RENDER_COMMNAD_CLEAR_DEPTH_STENCIL,
-    ZP_RENDER_COMMNAD_CLEAR_DEPTH,
-    ZP_RENDER_COMMNAD_CLEAR_STENCIL,
+    ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH_STENCIL,
+    ZP_RENDER_COMMAND_CLEAR_COLOR,
+    ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH,
+    ZP_RENDER_COMMAND_CLEAR_DEPTH_STENCIL,
+    ZP_RENDER_COMMAND_CLEAR_DEPTH,
+    ZP_RENDER_COMMAND_CLEAR_STENCIL,
 
-    ZP_RENDER_COMMNAD_SET_RT_COLOR,
-    ZP_RENDER_COMMNAD_SET_RT_COLOR_DEPTH,
-    ZP_RENDER_COMMNAD_SET_RT_COLORS,
-    ZP_RENDER_COMMNAD_SET_RT_COLORS_DEPTH, 
-    ZP_RENDER_COMMNAD_SET_RT_DEPTH,
+    ZP_RENDER_COMMAND_SET_RT_COLOR,
+    ZP_RENDER_COMMAND_SET_RT_COLOR_DEPTH,
+    ZP_RENDER_COMMAND_SET_RT_COLORS,
+    ZP_RENDER_COMMAND_SET_RT_COLORS_DEPTH, 
+    ZP_RENDER_COMMAND_SET_RT_DEPTH,
 
     ZP_RENDER_COMMAND_RESOLVE_ANTI_ALIAS_RT,
 
-    ZP_RENDER_COMMNAD_BLIT_RT,
-    ZP_RENDER_COMMNAD_BLIT_TEXTURE,
+    ZP_RENDER_COMMAND_BLIT_RT,
+    ZP_RENDER_COMMAND_BLIT_TEXTURE,
 
-    ZP_RENDER_COMMNAD_SET_GLOBAL_INT,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_FLOAT,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_COLOR,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_VECTOR,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_MATRIX,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_TEXTURE,
-    ZP_RENDER_COMMNAD_SET_GLOBAL_BUFFER,
+    ZP_RENDER_COMMAND_SET_GLOBAL_INT,
+    ZP_RENDER_COMMAND_SET_GLOBAL_FLOAT,
+    ZP_RENDER_COMMAND_SET_GLOBAL_COLOR,
+    ZP_RENDER_COMMAND_SET_GLOBAL_VECTOR,
+    ZP_RENDER_COMMAND_SET_GLOBAL_MATRIX,
+    ZP_RENDER_COMMAND_SET_GLOBAL_TEXTURE,
+    ZP_RENDER_COMMAND_SET_GLOBAL_BUFFER,
 
     zpRenderCommandType_Count,
 
-    ZP_RENDER_COMMNAD_PRESENT,
+    ZP_RENDER_COMMAND_PRESENT,
 
-    ZP_RENDER_COMMNAD_DRAW_MESH,
-    ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED,
-    ZP_RENDER_COMMNAD_DRAW_MESH_INSTANCED_INDIRECT,
+    ZP_RENDER_COMMAND_DRAW_MESH,
+    ZP_RENDER_COMMAND_DRAW_MESH_INSTANCED,
+    ZP_RENDER_COMMAND_DRAW_MESH_INSTANCED_INDIRECT,
 
     zpRenderCommandType_Force32 = ZP_FORCE_32BIT
 };
@@ -161,6 +165,99 @@ enum zpVertexFormat : zp_uint
 
     zpVertexFormat_Count,
     zpVertexFormat_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpColorMask : zp_uint
+{
+    ZP_COLOR_MASK_NONE = 0,
+
+    ZP_COLOR_MASK_R = 1 << 0,
+    ZP_COLOR_MASK_G = 1 << 1,
+    ZP_COLOR_MASK_B = 1 << 2,
+    ZP_COLOR_MASK_A = 1 << 3,
+
+    ZP_COLOR_MASK_ALL = ZP_COLOR_MASK_R | ZP_COLOR_MASK_G | ZP_COLOR_MASK_B | ZP_COLOR_MASK_A,
+};
+
+enum zpBlendMode : zp_uint
+{
+    ZP_BLEND_MODE_ZERO,
+    ZP_BLEND_MODE_ONE,
+    ZP_BLEND_MODE_DST_COLOR,
+    ZP_BLEND_MODE_SRC_COLOR,
+    ZP_BLEND_MODE_ONE_MINUS_DST_COLOR,
+    ZP_BLEND_MODE_ONE_MINUS_SRC_COLOR,
+    ZP_BLEND_MODE_DST_ALPHA,
+    ZP_BLEND_MODE_SRC_ALPHA,
+    ZP_BLEND_MODE_ONE_MINUS_DST_ALPHA,
+    ZP_BLEND_MODE_ONE_MINUS_SRC_ALPHA,
+
+    zpBlendMode_Count,
+    zpBlendMode_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpBlendOperation : zp_uint
+{
+    ZP_BLEND_OPERATION_ADD,
+    ZP_BLEND_OPERATION_SUBTRACT,
+    ZP_BLEND_OPERATION_REVERSE_SUBTRACT,
+    ZP_BLEND_OPERATION_MIN,
+    ZP_BLEND_OPERATION_MAX,
+
+    zpBlendOperation_Count,
+    zpBlendOperation_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpCullMode : zp_uint
+{
+    ZP_CULL_MODE_OFF,
+    ZP_CULL_MODE_FRONT,
+    ZP_CULL_MODE_BACK,
+    ZP_CULL_MODE_FRONT_AND_BACK,
+
+    zpCullMode_Count,
+    zpCullMode_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpStencilOperation : zp_uint
+{
+    ZP_STENCIL_OPERATION_KEEP,
+    ZP_STENCIL_OPERATION_ZERO,
+    ZP_STENCIL_OPERATION_REPLACE,
+    ZP_STENCIL_OPERATION_INVERT,
+    ZP_STENCIL_OPERATION_INC_SATURATE,
+    ZP_STENCIL_OPERATION_DEC_SATURATE,
+    ZP_STENCIL_OPERATION_INC_WRAP,
+    ZP_STENCIL_OPERATION_DEC_WRAP,
+
+    zpStencilOperation_Count,
+    zpStencilOperation_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpCompareFunction : zp_uint
+{
+    ZP_COMPARE_FUNCTION_DISABLED,
+    ZP_COMPARE_FUNCTION_NEVER,
+    ZP_COMPARE_FUNCTION_LESS,
+    ZP_COMPARE_FUNCTION_LESS_EQUAL,
+    ZP_COMPARE_FUNCTION_GREATER,
+    ZP_COMPARE_FUNCTION_GREATER_EQUAL,
+    ZP_COMPARE_FUNCTION_EQUAL,
+    ZP_COMPARE_FUNCTION_NOT_EQUAL,
+    ZP_COMPARE_FUNCTION_ALWAYS,
+
+    zpCompareFunction_Count,
+    zpCompareFunction_Force32 = ZP_FORCE_32BIT
+};
+
+enum zpFillMode : zp_uint
+{
+    ZP_FILL_MODE_POINT,
+    ZP_FILL_MODE_LINE,
+    ZP_FILL_MODE_FILL,
+
+    zpFillMode_Count,
+    zpFillMode_Force32 = ZP_FORCE_32BIT
 };
 
 enum zpBufferType : zp_uint
@@ -332,6 +429,65 @@ struct zpRenderingStat
     zp_ulong samplesPassed;
 };
 
+struct zpRenderTargetBlendState
+{
+    zpColorMask writeMask;
+    zpBlendMode srcColorBlendMode;
+    zpBlendMode dstColorBlendMode;
+    zpBlendMode srcAlphaBlendMode;
+    zpBlendMode dstAlphaBlendMode;
+    zpBlendOperation colorBlendOp;
+    zpBlendOperation alphaBlendOp;
+
+    static const zpRenderTargetBlendState Default;
+};
+
+struct zpBlendState
+{
+    zpRenderTargetBlendState blendStates[ 8 ];
+    zp_bool blendEnabled;
+    zp_bool alphaToMask;
+    zp_bool separateBlendStates;
+
+    static const zpBlendState Default;
+};
+
+struct zpDepthState
+{
+    zpCompareFunction compareFunc;
+    zp_bool writeEnabled;
+
+    static const zpDepthState Default;
+};
+
+struct zpStencilState
+{
+    zpCompareFunction compareFuncFront;
+    zpStencilOperation passOpFront;
+    zpStencilOperation failOpFront;
+    zpStencilOperation zFailOpFront;
+    zpCompareFunction compareFuncBack;
+    zpStencilOperation passOpBack;
+    zpStencilOperation failOpBack;
+    zpStencilOperation zFailOpBack;
+    zp_byte readMask;
+    zp_byte writeMask;
+    zp_bool stencilEnabled;
+
+    static const zpStencilState Default;
+};
+
+struct zpRasterState
+{
+    zpFillMode fillMode;
+    zpCullMode cullingMode;
+    zp_float depthOffsetFactor;
+    zp_int depthOffsetUnits;
+    zp_bool enableDepthClip;
+
+    static const zpRasterState Default;
+};
+
 class zpRenderingEngine;
 
 #include "zpTexture.h"
@@ -433,6 +589,30 @@ struct zpRenderCommandSetScissorRect
 {
     zpRenderCommandHeader header;
     zpRecti scissorRect;
+};
+
+struct zpRenderCommandSetBlendState
+{
+    zpRenderCommandHeader header;
+    zpBlendState blendState;
+};
+
+struct zpRenderCommandSetDepthState
+{
+    zpRenderCommandHeader header;
+    zpDepthState depthState;
+};
+
+struct zpRenderCommandSetStencilState
+{
+    zpRenderCommandHeader header;
+    zpStencilState stencilState;
+};
+
+struct zpRenderCommandSetRasterState
+{
+    zpRenderCommandHeader header;
+    zpRasterState rasterState;
 };
 
 struct zpRenderCommandClear

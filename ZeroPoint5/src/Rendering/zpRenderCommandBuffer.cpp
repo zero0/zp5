@@ -21,7 +21,7 @@ void zpRenderCommandBuffer::pushMarker( const zp_char* marker )
 {
 #if ZP_DEBUG
     zpRenderCommandPushMarker cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_PUSH_MARKER;
+    cmd.header.type = ZP_RENDER_COMMAND_PUSH_MARKER;
     cmd.header.id = ++m_uniqueID;
 
     const zp_size_t len = zp_strlen( marker );
@@ -37,7 +37,7 @@ void zpRenderCommandBuffer::popMarker()
 {
 #if ZP_DEBUG
     zpRenderCommandPopMarker cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_POP_MARKER;
+    cmd.header.type = ZP_RENDER_COMMAND_POP_MARKER;
     cmd.header.id = ++m_uniqueID;
 
     m_buffer.write( cmd );
@@ -47,7 +47,7 @@ void zpRenderCommandBuffer::popMarker()
 void zpRenderCommandBuffer::clearColorDepthStencil( const zpColorf& clearColor, zp_float clearDepth, zp_uint clearStencil )
 {
     zpRenderCommandClear cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH_STENCIL;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH_STENCIL;
     cmd.header.id = ++m_uniqueID;
 
     cmd.color = clearColor;
@@ -59,7 +59,7 @@ void zpRenderCommandBuffer::clearColorDepthStencil( const zpColorf& clearColor, 
 void zpRenderCommandBuffer::clearColorDepth( const zpColorf& clearColor, zp_float clearDepth )
 {
     zpRenderCommandClearColorDepth cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_COLOR_DEPTH;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_COLOR_DEPTH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.color = clearColor;
@@ -71,7 +71,7 @@ void zpRenderCommandBuffer::clearColorDepth( const zpColorf& clearColor, zp_floa
 void zpRenderCommandBuffer::clearDepthStencil( zp_float clearDepth, zp_uint clearStencil )
 {
     zpRenderCommandClearDepthStencil cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_DEPTH_STENCIL;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_DEPTH_STENCIL;
     cmd.header.id = ++m_uniqueID;
 
     cmd.depth = clearDepth;
@@ -83,7 +83,7 @@ void zpRenderCommandBuffer::clearDepthStencil( zp_float clearDepth, zp_uint clea
 void zpRenderCommandBuffer::clearColor( const zpColorf& clearColor )
 {
     zpRenderCommandClearColor cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_COLOR;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_COLOR;
     cmd.header.id = ++m_uniqueID;
 
     cmd.color = clearColor;
@@ -94,7 +94,7 @@ void zpRenderCommandBuffer::clearColor( const zpColorf& clearColor )
 void zpRenderCommandBuffer::clearDepth( zp_float clearDepth )
 {
     zpRenderCommandClearDepth cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_DEPTH;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_DEPTH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.depth = clearDepth;
@@ -105,7 +105,7 @@ void zpRenderCommandBuffer::clearDepth( zp_float clearDepth )
 void zpRenderCommandBuffer::clearStencil( zp_uint clearStencil )
 {
     zpRenderCommandClearStencil cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_CLEAR_STENCIL;
+    cmd.header.type = ZP_RENDER_COMMAND_CLEAR_STENCIL;
     cmd.header.id = ++m_uniqueID;
 
     cmd.stencil = clearStencil;
@@ -116,7 +116,7 @@ void zpRenderCommandBuffer::clearStencil( zp_uint clearStencil )
 void zpRenderCommandBuffer::setRenderTarget( const zpRenderTargetIdentifier& colorTarget )
 {
     zpRenderCommandSetRenderTargetColor cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_RT_COLOR;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RT_COLOR;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtColor = colorTarget;
@@ -127,7 +127,7 @@ void zpRenderCommandBuffer::setRenderTarget( const zpRenderTargetIdentifier& col
 void zpRenderCommandBuffer::setRenderTarget( const zpRenderTargetIdentifier& colorTarget, const zpRenderTargetIdentifier& depthTarget )
 {
     zpRenderCommandSetRenderTargetColorDepth cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_RT_COLOR_DEPTH;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RT_COLOR_DEPTH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtColor = colorTarget;
@@ -139,7 +139,7 @@ void zpRenderCommandBuffer::setRenderTarget( const zpRenderTargetIdentifier& col
 void zpRenderCommandBuffer::setRenderTargets( const zpRenderTargetIdentifier* colorTargets, zp_size_t colorCount )
 {
     zpRenderCommandSetRenderTargetColors cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_RT_COLORS;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RT_COLORS;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtCount = colorCount;
@@ -150,7 +150,7 @@ void zpRenderCommandBuffer::setRenderTargets( const zpRenderTargetIdentifier* co
 void zpRenderCommandBuffer::setRenderTargets( const zpRenderTargetIdentifier* colorTargets, zp_size_t colorCount, const zpRenderTargetIdentifier& depthTarget )
 {
     zpRenderCommandSetRenderTargetColorsDepth cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_RT_COLORS_DEPTH;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RT_COLORS_DEPTH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtCount = colorCount;
@@ -162,7 +162,7 @@ void zpRenderCommandBuffer::setRenderTargets( const zpRenderTargetIdentifier* co
 void zpRenderCommandBuffer::setDepthRenderTarget( const zpRenderTargetIdentifier& depthTarget )
 {
     zpRenderCommandSetRenderTargetDepth cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_RT_DEPTH;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RT_DEPTH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtDepth = depthTarget;
@@ -185,7 +185,7 @@ void zpRenderCommandBuffer::resolveAntiAlias( const zpRenderTargetIdentifier& sr
 void zpRenderCommandBuffer::setViewport( const zpViewport& viewport )
 {
     zpRenderCommandSetViewport cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_VIEWPORT;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_VIEWPORT;
     cmd.header.id = ++m_uniqueID;
 
     cmd.viewport = viewport;
@@ -196,7 +196,7 @@ void zpRenderCommandBuffer::setViewport( const zpViewport& viewport )
 void zpRenderCommandBuffer::setScissorRect( const zpRecti& scissorRect )
 {
     zpRenderCommandSetScissorRect cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_SET_SCISSOR_RECT;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_SCISSOR_RECT;
     cmd.header.id = ++m_uniqueID;
 
     cmd.scissorRect = scissorRect;
@@ -204,10 +204,54 @@ void zpRenderCommandBuffer::setScissorRect( const zpRecti& scissorRect )
     m_buffer.write( cmd );
 }
 
+void zpRenderCommandBuffer::setBlendState( const zpBlendState& state )
+{
+    zpRenderCommandSetBlendState cmd;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_BLEND_STATE;
+    cmd.header.id = ++m_uniqueID;
+
+    cmd.blendState = state;
+
+    m_buffer.write( cmd );
+}
+
+void zpRenderCommandBuffer::setDepthState( const zpDepthState& state )
+{
+    zpRenderCommandSetDepthState cmd;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_DEPTH_STATE;
+    cmd.header.id = ++m_uniqueID;
+
+    cmd.depthState = state;
+
+    m_buffer.write( cmd );
+}
+
+void zpRenderCommandBuffer::setStencilState( const zpStencilState& state )
+{
+    zpRenderCommandSetStencilState cmd;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_STENCIL_STATE;
+    cmd.header.id = ++m_uniqueID;
+
+    cmd.stencilState = state;
+
+    m_buffer.write( cmd );
+}
+
+void zpRenderCommandBuffer::setRasterState( const zpRasterState& state )
+{
+    zpRenderCommandSetRasterState cmd;
+    cmd.header.type = ZP_RENDER_COMMAND_SET_RASTER_STATE;
+    cmd.header.id = ++m_uniqueID;
+
+    cmd.rasterState = state;
+
+    m_buffer.write( cmd );
+}
+
 void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpDrawMeshDesc& desc, const zpMaterial* material, zp_int passIndex )
 {
     zpRenderCommandDrawMesh cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+    cmd.header.type = ZP_RENDER_COMMAND_DRAW_MESH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.vertexBuffer = desc.vertexBuffer;
@@ -231,7 +275,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpDrawM
 void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpMesh* mesh, zp_size_t subMeshIndex, const zpMaterial* material, zp_int passIndex )
 {
     zpRenderCommandDrawMesh cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_DRAW_MESH;
+    cmd.header.type = ZP_RENDER_COMMAND_DRAW_MESH;
     cmd.header.id = ++m_uniqueID;
 
     cmd.vertexBuffer = mesh->vertexData;
@@ -255,7 +299,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpMesh*
 void zpRenderCommandBuffer::blit( const zpRenderTargetIdentifier& src, const zpRenderTargetIdentifier& dest )
 {
     zpRenderCommandBlitRenderTexture cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_BLIT_RT;
+    cmd.header.type = ZP_RENDER_COMMAND_BLIT_RT;
     cmd.header.id = ++m_uniqueID;
 
     cmd.rtSrc = src;
@@ -269,7 +313,7 @@ void zpRenderCommandBuffer::blit( const zpTexture& src, const zpRenderTargetIden
     ZP_INVALID_CODE_PATH();
 
     zpRenderCommandBlitTexture cmd;
-    cmd.header.type = ZP_RENDER_COMMNAD_BLIT_TEXTURE;
+    cmd.header.type = ZP_RENDER_COMMAND_BLIT_TEXTURE;
     cmd.header.id = ++m_uniqueID;
 
     m_buffer.write( cmd );
