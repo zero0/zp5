@@ -147,6 +147,17 @@ public:
 
         commandBuffer->setRenderTarget( rtColor, rtDepth );
 
+        // disable blending
+        zpBlendState blendState = zpBlendState::Default;
+        commandBuffer->setBlendState( blendState );
+
+        // enable depth write
+        zpDepthState depthState = zpDepthState::Default;
+        depthState.compareFunc = ZP_COMPARE_FUNCTION_LESS_EQUAL;
+        depthState.writeEnabled = true;
+
+        commandBuffer->setDepthState( depthState );
+
         // draw opaque renderers
         zpDrawRenderersDesc desc;
         desc.sortOrder = ZP_RENDER_SORT_ORDER_FRONT_TO_BACK;
@@ -216,6 +227,25 @@ public:
         zpRenderTargetIdentifier rtDepth = { &m_inputs[ ZP_FORWARD_TRANSPARENT_PASS_INPUT_DEPTH_RT ].getTexture() };
 
         commandBuffer->setRenderTarget( rtColor, rtDepth );
+
+        // enable alpha blending
+        zpBlendState blendState = zpBlendState::Default;
+        blendState.blendEnabled = true;
+        blendState.blendStates[ 0 ].srcColorBlendMode = ZP_BLEND_MODE_SRC_ALPHA;
+        blendState.blendStates[ 0 ].srcAlphaBlendMode = ZP_BLEND_MODE_SRC_ALPHA;
+        blendState.blendStates[ 0 ].dstColorBlendMode = ZP_BLEND_MODE_ONE_MINUS_SRC_ALPHA;
+        blendState.blendStates[ 0 ].dstAlphaBlendMode = ZP_BLEND_MODE_ONE_MINUS_SRC_ALPHA;
+        blendState.blendStates[ 0 ].colorBlendOp = ZP_BLEND_OPERATION_ADD;
+        blendState.blendStates[ 0 ].alphaBlendOp = ZP_BLEND_OPERATION_ADD;
+
+        commandBuffer->setBlendState( blendState );
+
+        // disable depth write
+        zpDepthState depthState = zpDepthState::Default;
+        depthState.compareFunc = ZP_COMPARE_FUNCTION_DISABLED;
+        depthState.writeEnabled = false;
+
+        commandBuffer->setDepthState( depthState );
 
         // draw opaque renderers
         zpDrawRenderersDesc desc;

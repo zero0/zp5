@@ -219,6 +219,15 @@ enum zpCullMode : zp_uint
     zpCullMode_Force32 = ZP_FORCE_32BIT
 };
 
+enum zpFrontFace : zp_uint
+{
+    ZP_FRONT_FACE_CW,
+    ZP_FRONT_FACE_CCW,
+
+    zpFrontFace_Count,
+    zpFrontFace_Force32 = ZP_FORCE_32BIT
+};
+
 enum zpStencilOperation : zp_uint
 {
     ZP_STENCIL_OPERATION_KEEP,
@@ -445,6 +454,7 @@ struct zpRenderTargetBlendState
 struct zpBlendState
 {
     zpRenderTargetBlendState blendStates[ 8 ];
+    zp_uint numBlendStates;
     zp_bool blendEnabled;
     zp_bool alphaToMask;
     zp_bool separateBlendStates;
@@ -462,6 +472,7 @@ struct zpDepthState
 
 struct zpStencilState
 {
+    zp_int reference;
     zpCompareFunction compareFuncFront;
     zpStencilOperation passOpFront;
     zpStencilOperation failOpFront;
@@ -470,8 +481,10 @@ struct zpStencilState
     zpStencilOperation passOpBack;
     zpStencilOperation failOpBack;
     zpStencilOperation zFailOpBack;
-    zp_byte readMask;
-    zp_byte writeMask;
+    zp_byte readMaskFront;
+    zp_byte readMaskBack;
+    zp_byte writeMaskFront;
+    zp_byte writeMaskBack;
     zp_bool stencilEnabled;
 
     static const zpStencilState Default;
@@ -481,6 +494,7 @@ struct zpRasterState
 {
     zpFillMode fillMode;
     zpCullMode cullingMode;
+    zpFrontFace frontFace;
     zp_float depthOffsetFactor;
     zp_int depthOffsetUnits;
     zp_bool enableDepthClip;

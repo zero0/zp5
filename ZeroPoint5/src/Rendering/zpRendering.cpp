@@ -19,6 +19,7 @@ const zpBlendState zpBlendState::Default = {
     zpRenderTargetBlendState::Default,
     zpRenderTargetBlendState::Default,
     zpRenderTargetBlendState::Default,
+    0,
     false,
     false,
     false
@@ -30,6 +31,7 @@ const zpDepthState zpDepthState::Default = {
 };
 
 const zpStencilState zpStencilState::Default = {
+    0,
     ZP_COMPARE_FUNCTION_ALWAYS,
     ZP_STENCIL_OPERATION_KEEP,
     ZP_STENCIL_OPERATION_KEEP,
@@ -38,6 +40,8 @@ const zpStencilState zpStencilState::Default = {
     ZP_STENCIL_OPERATION_KEEP,
     ZP_STENCIL_OPERATION_KEEP,
     ZP_STENCIL_OPERATION_KEEP,
+    0xFF,
+    0xFF,
     0xFF,
     0xFF,
     false
@@ -46,6 +50,7 @@ const zpStencilState zpStencilState::Default = {
 const zpRasterState zpRasterState::Default = {
     ZP_FILL_MODE_FILL,
     ZP_CULL_MODE_BACK,
+    ZP_FRONT_FACE_CCW,
     0.f,
     0,
     false

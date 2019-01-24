@@ -44,7 +44,7 @@ static ZP_FORCE_INLINE GLenum _BufferTypeToTarget( zpBufferType type )
         0,
     };
 
-    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpBufferType_Count );
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpBufferType_Count );
     return mapping[ type ];
 }
 
@@ -77,7 +77,7 @@ static ZP_FORCE_INLINE GLenum _TextureDimensionToTarget( zpTextureDimension text
         GL_TEXTURE_CUBE_MAP,
     };
 
-    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpTextureDimension_Count );
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpTextureDimension_Count );
     return mapping[ textureDimenision ];
 }
 
@@ -154,7 +154,7 @@ static ZP_FORCE_INLINE GLint _DisplayFormatToInternalFormat( zpDisplayFormat dis
         0,
     };
 
-    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpDisplayFormat_Count );
     return mapping[ displayFormat ];
 }
 
@@ -231,7 +231,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToFormat( zpDisplayFormat displayFor
         0,
     };
 
-    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpDisplayFormat_Count );
     return mapping[ displayFormat ];
 }
 
@@ -308,7 +308,7 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToDataType( zpDisplayFormat displayF
         0,
     };
 
-    ZP_STATIC_ASSERT( ( sizeof( mapping ) / sizeof( mapping[ 0 ] ) ) == zpDisplayFormat_Count );
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpDisplayFormat_Count );
     return mapping[ displayFormat ];
 }
 
@@ -374,6 +374,110 @@ static ZP_FORCE_INLINE GLenum _DisplayFormatToAttachment( zpDisplayFormat format
     }
 
     return attachement;
+}
+
+static ZP_FORCE_INLINE GLenum _BlendModeToMode( zpBlendMode mode )
+{
+    constexpr GLenum mapping[] =
+    {
+        GL_ZERO,
+        GL_ONE,
+        GL_DST_COLOR,
+        GL_SRC_COLOR,
+        GL_ONE_MINUS_DST_COLOR,
+        GL_ONE_MINUS_SRC_COLOR,
+        GL_DST_ALPHA,
+        GL_SRC_ALPHA,
+        GL_ONE_MINUS_DST_ALPHA,
+        GL_ONE_MINUS_SRC_ALPHA,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpBlendMode_Count );
+    return mapping[ mode ];
+}
+
+static ZP_FORCE_INLINE GLenum _BlendOperationToMode( zpBlendOperation operation )
+{
+    constexpr GLenum mapping[] =
+    {
+        GL_FUNC_ADD,
+        GL_FUNC_SUBTRACT,
+        GL_FUNC_REVERSE_SUBTRACT,
+        GL_MIN,
+        GL_MAX,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpBlendOperation_Count );
+    return mapping[ operation ];
+}
+
+static ZP_FORCE_INLINE GLenum _CullModeToMode( zpCullMode mode )
+{
+    constexpr GLenum mapping[] =
+    {
+        0,
+        GL_FRONT,
+        GL_BACK,
+        GL_FRONT_AND_BACK,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpCullMode_Count );
+    return mapping[ mode ];
+}
+
+static ZP_FORCE_INLINE GLenum _FrontFaceToMode( zpFrontFace mode )
+{
+    constexpr GLenum mapping[] =
+    {
+        GL_CW,
+        GL_CCW,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpFrontFace_Count );
+    return mapping[ mode ];
+}
+
+static ZP_FORCE_INLINE GLenum _StencilOperationToMode( zpStencilOperation operation )
+{
+    constexpr GLenum mapping[] =
+    {
+        GL_KEEP,
+        GL_ZERO,
+        GL_REPLACE,
+        GL_INVERT,
+        GL_INCR,
+        GL_DECR,
+        GL_INCR_WRAP,
+        GL_DECR_WRAP,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpStencilOperation_Count );
+    return mapping[ operation ];
+}
+
+static ZP_FORCE_INLINE GLenum _CompareFunctionToMode( zpCompareFunction func )
+{
+    constexpr GLenum mapping[] =
+    {
+        0,
+        GL_NEVER,
+        GL_LESS,
+        GL_LEQUAL,
+        GL_GREATER,
+        GL_GEQUAL,
+        GL_EQUAL,
+        GL_NOTEQUAL,
+        GL_ALWAYS,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpCompareFunction_Count );
+    return mapping[ func ];
+}
+
+static ZP_FORCE_INLINE GLenum _FillModeToMode( zpFillMode mode )
+{
+    constexpr GLenum mapping[] =
+    {
+        GL_POINT,
+        GL_LINE,
+        GL_FILL,
+    };
+    ZP_STATIC_ASSERT( ZP_ARRAY_SIZE( mapping ) == zpFillMode_Count );
+    return mapping[ mode ];
 }
 
 union glQuery
@@ -1051,8 +1155,20 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 if( cmd->blendState.blendEnabled )
                 {
                     glEnable( GL_BLEND );
-                    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-                    glBlendEquation( GL_FUNC_ADD );
+
+                    if( cmd->blendState.separateBlendStates )
+                    {
+                        for( zp_uint i = 0; i < cmd->blendState.numBlendStates; ++i )
+                        {
+                            glBlendFuncSeparatei( i, _BlendModeToMode( cmd->blendState.blendStates[ i ].srcColorBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ i ].dstColorBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ i ].srcAlphaBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ i ].dstAlphaBlendMode ) );
+                            glBlendEquationSeparatei( i, _BlendOperationToMode( cmd->blendState.blendStates[ i ].colorBlendOp ), _BlendOperationToMode( cmd->blendState.blendStates[ i ].alphaBlendOp ) );
+                        }
+                    }
+                    else
+                    {
+                        glBlendFuncSeparate( _BlendModeToMode( cmd->blendState.blendStates[ 0 ].srcColorBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ 0 ].dstColorBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ 0 ].srcAlphaBlendMode ), _BlendModeToMode( cmd->blendState.blendStates[ 0 ].dstAlphaBlendMode ) );
+                        glBlendEquationSeparate( _BlendOperationToMode( cmd->blendState.blendStates[ 0 ].colorBlendOp ), _BlendOperationToMode( cmd->blendState.blendStates[ 0 ].alphaBlendOp ) );
+                    }
                 }
                 else
                 {
@@ -1074,7 +1190,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 else
                 {
                     glEnable( GL_DEPTH_TEST );
-                    glDepthFunc( GL_GEQUAL );
+                    glDepthFunc( _CompareFunctionToMode( cmd->depthState.compareFunc ) );
                 }
 
                 glDepthMask( cmd->depthState.writeEnabled ? GL_TRUE : GL_FALSE );
@@ -1090,7 +1206,14 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 if( cmd->stencilState.stencilEnabled )
                 {
                     glEnable( GL_STENCIL );
-                    //glStencilFunc( )
+
+                    glStencilMaskSeparate( GL_FRONT, cmd->stencilState.writeMaskFront );
+                    glStencilFuncSeparate( GL_FRONT, _CompareFunctionToMode( cmd->stencilState.compareFuncFront ), cmd->stencilState.reference, cmd->stencilState.readMaskFront );
+                    glStencilOpSeparate( GL_FRONT, _StencilOperationToMode( cmd->stencilState.failOpFront ), _StencilOperationToMode( cmd->stencilState.zFailOpFront ), _StencilOperationToMode( cmd->stencilState.passOpFront ) );
+
+                    glStencilMaskSeparate( GL_BACK, cmd->stencilState.writeMaskBack );
+                    glStencilFuncSeparate( GL_BACK, _CompareFunctionToMode( cmd->stencilState.compareFuncBack ), cmd->stencilState.reference, cmd->stencilState.readMaskBack );
+                    glStencilOpSeparate( GL_BACK, _StencilOperationToMode( cmd->stencilState.failOpBack ), _StencilOperationToMode( cmd->stencilState.zFailOpBack ), _StencilOperationToMode( cmd->stencilState.passOpBack ) );
                 }
                 else
                 {
@@ -1105,6 +1228,9 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 const zpRenderCommandSetRasterState* cmd = static_cast<const zpRenderCommandSetRasterState*>( ptr );
 
                 glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Raster State" );
+                
+                glPolygonMode( GL_FRONT_AND_BACK, _FillModeToMode( cmd->rasterState.fillMode ) );
+
                 if( cmd->rasterState.cullingMode == ZP_CULL_MODE_OFF )
                 {
                     glDisable( GL_CULL_FACE );
@@ -1112,9 +1238,11 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 else
                 {
                     glEnable( GL_CULL_FACE );
-                    glCullFace( GL_BACK );
-                    glFrontFace( GL_CCW );
+                    glCullFace( _CullModeToMode( cmd->rasterState.cullingMode ) );
                 }
+
+                glFrontFace( _FrontFaceToMode( cmd->rasterState.frontFace ) );
+                glPolygonOffset( cmd->rasterState.depthOffsetFactor, cmd->rasterState.depthOffsetUnits );
 
                 position += sizeof( zpRenderCommandSetRasterState );
             } break;
