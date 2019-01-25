@@ -1949,15 +1949,17 @@ float4 ObjectToClipSpace( in float4 vertex )
 #endif
     }
 
-    // link program
+    // create program
     shader.programShader.index = glCreateProgram();
 
     if( shader.vertexShader.index )   glAttachShader( shader.programShader.index, shader.vertexShader.index );
     if( shader.fragmentShader.index ) glAttachShader( shader.programShader.index, shader.fragmentShader.index );
     if( shader.geometryShader.index ) glAttachShader( shader.programShader.index, shader.geometryShader.index );
 
+    // link program
     glLinkProgram( shader.programShader.index );
 
+    // print link erros
     glGetProgramiv( shader.programShader.index, GL_LINK_STATUS, &result );
     if( result != GL_TRUE )
     {
@@ -1966,6 +1968,21 @@ float4 ObjectToClipSpace( in float4 vertex )
         {
             glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
             zp_printfln( "Program Link Error: %s", buffer );
+        }
+    }
+
+    // validate program
+    glValidateProgram( shader.programShader.index );
+
+    // print validation errors
+    glGetProgramiv( shader.programShader.index, GL_VALIDATE_STATUS, &result );
+    if( result != GL_TRUE )
+    {
+        glGetProgramiv( shader.programShader.index, GL_INFO_LOG_LENGTH, &infoLength );
+        if( infoLength )
+        {
+            glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
+            zp_printfln( "Program Validation Error: %s", buffer );
         }
     }
 
