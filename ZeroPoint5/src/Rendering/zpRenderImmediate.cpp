@@ -4,6 +4,11 @@
 #include "RenderingOpenGL\zpRenderingOpenGL.h"
 #endif
 
+static ZP_FORCE_INLINE zpIndexStride _IndexCountToStride( zp_uint indexCount )
+{
+    return indexCount <= 0xFF ? ZP_INDEX_STRIDE_BYTE : indexCount <= 0xFFFF ? ZP_INDEX_STRIDE_USHORT : ZP_INDEX_STRIDE_UINT;
+}
+
 zpRenderImmediate::zpRenderImmediate()
     : m_scratchVertexBuffer( ZP_MEMORY_MB( 4 ) )
     , m_scratchIndexBuffer( ZP_MEMORY_MB( 4 ) )
@@ -257,7 +262,7 @@ void zpRenderImmediate::endDrawImmediate()
         desc.vertexCount = m_currentVertexCount;
         desc.indexOffset = m_immediateIndexSize;
         desc.indexCount = m_currentIndexCount;
-        desc.indexStride = sizeof( zp_ushort );
+        desc.indexStride = _IndexCountToStride( m_currentIndexCount );
         desc.vertexFormat = m_currentVertexFormat;
         desc.topology = m_currentTopology;
         desc.localToWorld = m_currentTransform;

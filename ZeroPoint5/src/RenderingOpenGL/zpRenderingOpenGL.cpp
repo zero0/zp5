@@ -1545,15 +1545,16 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 GLenum indexStride;
                 switch( cmd->indexStride )
                 {
-                    case sizeof( zp_byte ) :
-                        indexStride = GL_UNSIGNED_BYTE;
-                        break;
+                    case ZP_INDEX_STRIDE_BYTE:
+                        // NOTE: byte is not well supported, fallback to ushort
+                        //indexStride = GL_UNSIGNED_BYTE;
+                        //break;
 
-                    case sizeof( zp_ushort ) :
+                    case ZP_INDEX_STRIDE_USHORT:
                         indexStride = GL_UNSIGNED_SHORT;
                         break;
 
-                    case sizeof( zp_uint ) :
+                    case ZP_INDEX_STRIDE_UINT:
                         indexStride = GL_UNSIGNED_INT;
                         break;
 
@@ -1660,7 +1661,7 @@ void CreateTextureOpenGL( zpCreateTextureDesc* desc, zpTexture& texture )
 
         if( desc->desc.mipMapCount >= 0 )
         {
-            glTexParameterf( target, GL_TEXTURE_MAX_LEVEL, desc->desc.mipMapCount );
+            glTexParameteri( target, GL_TEXTURE_MAX_LEVEL, desc->desc.mipMapCount );
         }
     }
 

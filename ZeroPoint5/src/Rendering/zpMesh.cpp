@@ -8,7 +8,7 @@ const zp_time_t ZP_MESH_NOT_FILE = static_cast<zp_time_t>( -1 );
 struct zpMeshData
 {
     zpTopology topology;
-    zp_uint indexStride;
+    zpIndexStride indexStride;
     zpVertexFormat vertexFormat;
     zpDataBuffer vertexBuffer;
     zpDataBuffer indexBuffer;
@@ -57,7 +57,7 @@ static zp_int LoadMeshData( const zp_char* filepath, zpMeshData& meshData )
     };
 
     meshData.topology = ZP_TOPOLOGY_TRIANGLE_LIST;
-    meshData.indexStride = sizeof( zp_ushort );
+    meshData.indexStride = ZP_INDEX_STRIDE_USHORT;
     meshData.numMeshParts = 1;
     meshData.vertexFormat = ZP_VERTEX_FORMAT_VERTEX_COLOR_UV;
     meshData.indexBuffer.write( index, 0, sizeof( index ) );

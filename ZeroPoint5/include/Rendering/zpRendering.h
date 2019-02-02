@@ -101,6 +101,16 @@ enum zpTopology : zp_uint
     zpTopology_Force32 = ZP_FORCE_32BIT
 };
 
+enum zpIndexStride : zp_uint
+{
+    ZP_INDEX_STRIDE_BYTE,
+    ZP_INDEX_STRIDE_USHORT,
+    ZP_INDEX_STRIDE_UINT,
+
+    zpIndexStride_Count,
+    zpIndexStride_Force32 = ZP_FORCE_32BIT
+};
+
 enum zpRenderCommandType : zp_uint
 {
     ZP_RENDER_COMMAND_NOOP = 0,
@@ -496,7 +506,7 @@ struct zpRasterState
     zpCullMode cullingMode;
     zpFrontFace frontFace;
     zp_float depthOffsetFactor;
-    zp_int depthOffsetUnits;
+    zp_float depthOffsetUnits;
     zp_bool enableDepthClip;
 
     static const zpRasterState Default;
@@ -801,7 +811,7 @@ struct zpRenderCommandDrawMesh
     zp_size_t vertexCount;
     zp_size_t indexOffset;
     zp_size_t indexCount;
-    zp_uint indexStride;
+    zpIndexStride indexStride;
     zpVertexFormat vertexFormat;
     zpTopology topology;
 

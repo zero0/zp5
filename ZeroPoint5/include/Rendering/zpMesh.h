@@ -19,7 +19,7 @@ struct zpMeshPart
 struct zpMesh
 {
     zpTopology topology;
-    zp_uint indexStride;
+    zpIndexStride indexStride;
     zpVertexFormat vertexFormat;
     zpRenderBuffer vertexData;
     zpRenderBuffer indexData;
