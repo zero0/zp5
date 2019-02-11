@@ -25,6 +25,10 @@ struct zpCreateShaderDesc
     const void* fragmentShaderSrc;
     zp_size_t fragmentShaderOffset;
     zp_size_t fragmentShaderLength;
+
+    const void* geometryShaderSrc;
+    zp_size_t geometryShaderOffset;
+    zp_size_t geometryShaderLength;
 };
 
 class zpRenderingEngine

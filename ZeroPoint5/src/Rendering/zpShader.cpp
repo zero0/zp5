@@ -4,6 +4,35 @@
 const zp_hash64 ZP_SHADER_ID_INVALID = (zp_hash64)-1;
 const zp_hash64 ZP_SHADER_ID_EMPTY = 0;
 
+zp_bool operator==( const zpShaderProperty& x, const zpShaderProperty& y )
+{
+    return x.m_property == y.m_property;
+}
+
+zp_bool operator!=( const zpShaderProperty& x, const zpShaderProperty& y )
+{
+    return x.m_property != y.m_property;
+}
+
+//
+//
+//
+
+zp_bool operator==( const zpShaderKeyword& x, const zpShaderKeyword& y )
+{
+    return x.m_keyword == y.m_keyword;
+}
+
+zp_bool operator!=( const zpShaderKeyword& x, const zpShaderKeyword& y )
+{
+    return x.m_keyword != y.m_keyword;
+}
+
+
+//
+//
+//
+
 struct zpShaderData
 {
 
@@ -134,12 +163,14 @@ void zpShaderManager::setup( zpRenderingEngine* engine )
 {
     m_engine = engine;
     zpShaderProperty::s_shaderPropertyToName = &m_shaderPropertyToName;
+    zpShaderKeyword::s_shaderKeywordToName = &m_shaderKeywordToName;
 }
 
 void zpShaderManager::teardown()
 {
-    m_engine = ZP_NULL;
+    zpShaderKeyword::s_shaderKeywordToName = ZP_NULL;
     zpShaderProperty::s_shaderPropertyToName = ZP_NULL;
+    m_engine = ZP_NULL;
 }
 
 zp_bool zpShaderManager::getShader( const zp_char* shaderName, zpShaderHandle& shader )
@@ -206,8 +237,35 @@ void zpShaderManager::garbageCollect()
     }
 }
 
+zpShaderProperty zpShaderManager::getShaderProperty( const zp_char* name ) const
+{
+    zpShaderProperty property;
+
+    zp_hash_t hash = zp_hash_fnv_t_str( name, zp_strlen( name ) );
+    if( m_shaderPropertyToName.containsKey( hash ) )
+    {
+        property = zpShaderProperty( hash );
+    }
+
+    return property;
+}
+
+zpShaderKeyword zpShaderManager::getShaderKeyword( const zp_char* name ) const
+{
+    zpShaderKeyword keyword;
+
+    zp_hash_t hash = zp_hash_fnv_t_str( name, zp_strlen( name ) );
+    if( m_shaderKeywordToName.containsKey( hash ) )
+    {
+        keyword = zpShaderKeyword( hash );
+    }
+
+    return keyword;
+}
+
 //
 //
 //
 
-zpMap<zp_hash_t, zpString>* zpShaderProperty::s_shaderPropertyToName = ZP_NULL;
+zpMap<zp_hash_t, zpString>* zpShaderProperty::s_shaderPropertyToName = ZP_NULL; 
+zpMap<zp_hash_t, zpString>* zpShaderKeyword::s_shaderKeywordToName = ZP_NULL;

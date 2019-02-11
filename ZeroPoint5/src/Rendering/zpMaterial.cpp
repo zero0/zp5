@@ -5,31 +5,6 @@ const zp_hash64 ZP_MATERIAL_ID_INVALID = static_cast<zp_hash64>( -1 );
 const zp_hash64 ZP_MATERIAL_ID_EMPTY = 0;
 const zp_time_t ZP_MATERIAL_NOT_FILE = static_cast<zp_time_t>( -1 );
 
-struct zpMaterialDataPartColor
-{
-    zpString name;
-    zpColorf color;
-};
-
-struct zpMaterialDataPartVector
-{
-    zpString name;
-    zpVector4f vector;
-};
-
-struct zpMaterialDataPartTexture
-{
-    zpString name;
-    zpString texture;
-};
-
-struct zpMaterialDataPartMatrix
-{
-    zpString name;
-    zpMatrix4f matrix;
-};
-
-
 struct zpMaterialData
 {
     zp_time_t lastModifiedTime;

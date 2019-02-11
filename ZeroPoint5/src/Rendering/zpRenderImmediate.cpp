@@ -4,7 +4,7 @@
 #include "RenderingOpenGL\zpRenderingOpenGL.h"
 #endif
 
-static ZP_FORCE_INLINE zpIndexStride _IndexCountToStride( zp_uint indexCount )
+static ZP_FORCE_INLINE zpIndexStride _IndexCountToStride( zp_size_t indexCount )
 {
     return indexCount <= 0xFF ? ZP_INDEX_STRIDE_BYTE : indexCount <= 0xFFFF ? ZP_INDEX_STRIDE_USHORT : ZP_INDEX_STRIDE_UINT;
 }

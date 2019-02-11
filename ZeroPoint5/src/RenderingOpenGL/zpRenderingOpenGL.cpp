@@ -557,23 +557,39 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
     switch( cmd->vertexFormat )
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
-            glVertexAttribPointer( 5, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
-            glEnableVertexAttribArray( 5 );
+        {
+            GLint uv1Location = glGetAttribLocation( prog, "uv1" );
+            glVertexAttribPointer( uv1Location, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
+            glEnableVertexAttribArray( uv1Location );
+        }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
-            glVertexAttribPointer( 4, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
-            glEnableVertexAttribArray( 4 );
+        {
+            GLint tangentLocation = glGetAttribLocation( prog, "tangent" );
+            glVertexAttribPointer( tangentLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
+            glEnableVertexAttribArray( tangentLocation );
+        }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
-            glVertexAttribPointer( 3, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
-            glEnableVertexAttribArray( 3 );
+        {
+            GLint normalLocation = glGetAttribLocation( prog, "normal" );
+            glVertexAttribPointer( normalLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
+            glEnableVertexAttribArray( normalLocation );
+        }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
-            glEnableVertexAttribArray( 2 );
+        {
+            GLint uv0Location = glGetAttribLocation( prog, "uv0" );
+            glVertexAttribPointer( uv0Location, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
+            glEnableVertexAttribArray( uv0Location );
+        }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            glVertexAttribPointer( 1, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
-            glEnableVertexAttribArray( 1 );
-            glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
-            glEnableVertexAttribArray( 0 );
-            break;
+        {
+            GLint colorLocation = glGetAttribLocation( prog, "color" );
+            glVertexAttribPointer( colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
+            glEnableVertexAttribArray( colorLocation );
+            GLint vertexLocation = glGetAttribLocation( prog, "vertex" );
+            glVertexAttribPointer( vertexLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
+            glEnableVertexAttribArray( vertexLocation );
+        } break;
+
         default:
             break;
     }
@@ -681,28 +697,6 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
 
 static void UnbindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd )
 {
-    switch( cmd->vertexFormat )
-    {
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
-            glDisableVertexAttribArray( 5 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
-            glDisableVertexAttribArray( 4 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
-            glDisableVertexAttribArray( 3 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
-            glDisableVertexAttribArray( 2 );
-        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
-            glDisableVertexAttribArray( 1 );
-            glDisableVertexAttribArray( 0 );
-            break;
-        default:
-            break;
-    }
-
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-    glBindVertexArray( 0 );
-
     GLuint prog = 0;
     if( cmd->material && cmd->material->shader.isValid() )
     {
@@ -720,6 +714,44 @@ static void UnbindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* c
             prog = ( g_shaderVCU.programShader.index );
             break;
     }
+
+    switch( cmd->vertexFormat )
+    {
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
+        {
+            GLint uv1Location = glGetAttribLocation( prog, "uv1" );
+            glDisableVertexAttribArray( uv1Location );
+        }
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
+        {
+            GLint tangentLocation = glGetAttribLocation( prog, "tangent" );
+            glDisableVertexAttribArray( tangentLocation );
+        }
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
+        {
+            GLint normalLocation = glGetAttribLocation( prog, "normal" );
+            glDisableVertexAttribArray( normalLocation );
+        }
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
+        {
+            GLint uv0Location = glGetAttribLocation( prog, "uv0" );
+            glDisableVertexAttribArray( uv0Location );
+        }
+        case ZP_VERTEX_FORMAT_VERTEX_COLOR:
+        {
+            GLint colorLocation = glGetAttribLocation( prog, "color" );
+            glDisableVertexAttribArray( colorLocation );
+            GLint vertexLocation = glGetAttribLocation( prog, "vertex" );
+            glDisableVertexAttribArray( vertexLocation );
+        } break;
+
+        default:
+            break;
+    }
+
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
 
     if( cmd->material )
     {
@@ -768,23 +800,52 @@ ZP_FORCE_INLINE glDebugBlockS::~glDebugBlockS()
 #define glDebugBlock( source, message ) (void)0
 #endif
 
-#if false //ZP_DEBUG && GL_EXT_debug_marker
+#if ZP_DEBUG
+static ZP_FORCE_INLINE void glMarkerPushS( const zp_char* marker, GLsizei length )
+{
+    if( GLEW_EXT_debug_marker )
+    {
+        glPushGroupMarkerEXT( length, marker );
+    }
+    else
+    {
+        glPushDebugGroup( GL_DEBUG_SOURCE_APPLICATION, 0, length, marker );
+    }
+}
+static ZP_FORCE_INLINE void glMarkerPopS()
+{
+    if( GLEW_EXT_debug_marker )
+    {
+        glPopGroupMarkerEXT();
+    }
+    else
+    {
+        glPopDebugGroup();
+    }
+}
+
 struct glMarkerBlockS
 {
     ZP_FORCE_INLINE glMarkerBlockS( const char* marker );
     ZP_FORCE_INLINE ~glMarkerBlockS();
 };
+
 ZP_FORCE_INLINE glMarkerBlockS::glMarkerBlockS( const char* marker )
 {
-    glPushGroupMarkerEXT( 0, marker );
+    glMarkerPushS( marker, -1 );
 }
 ZP_FORCE_INLINE glMarkerBlockS::~glMarkerBlockS()
 {
-    glPopGroupMarkerEXT();
+    glMarkerPopS();
 }
-#define glMarkerBlock( marker ) glMarkerBlockS( marker )
+
+#define glMarkerBlock( marker )         glMarkerBlockS ZP_CONCAT( __marker_block_, __LINE__)( marker )
+#define glMarkerPush( marker, length )  glMarkerPushS( marker, length )
+#define glMarkerPop()                   glMarkerPopS()
 #else
-#define glMarkerBlock( marker ) (void)0
+#define glMarkerBlock( ... )            (void)0
+#define glMarkerPush( marker )          (void)0
+#define glMarkerPush()                  (void)0
 #endif
 
 static void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
@@ -983,8 +1044,8 @@ void SetupRenderingOpenGL( zp_handle hWindow, zp_handle& hDC, zp_handle& hContex
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     const zp_char* vertVC = R"GLSL(
-layout(location = 0) in float4 vertex;                      
-layout(location = 1) in fixed4 color;                        
+in float4 vertex;                      
+in fixed4 color;                        
 uniform float4 _Color;               
 out float4 fragmentColor;               
 void main()                                
@@ -1004,9 +1065,9 @@ void main()
 )GLSL";
 
     const zp_char* vertVCU = R"GLSL(
-layout(location = 0) in float4 vertex;                          
-layout(location = 1) in fixed4 color;                            
-layout(location = 2) in float2 texcoord;                        
+in float4 vertex;                          
+in fixed4 color;                            
+in float2 uv0;                        
 uniform float4 _Color;               
 Sampler2D( _MainTex );                            
 out float4 fragmentColor;                  
@@ -1015,7 +1076,7 @@ void main()
 {                                             
     gl_Position = mul( _ObjectToWorld, vertex );
     fragmentColor = color * _Color;                     
-    uv = TransformTex( _MainTex, texcoord );                             
+    uv = TransformTex( _MainTex, uv0 );                             
 }                                              
 )GLSL";
     const zp_char* fragVCU = R"GLSL(
@@ -1050,6 +1111,9 @@ void main()
 
 void TeardownRenderingOpenGL( zp_handle hContext )
 {
+    DestroyShaderOpenGL( g_shaderVC );
+    DestroyShaderOpenGL( g_shaderVCU );
+
     glDeleteVertexArrays( zpVertexFormat_Count, g_vaos );
     glDeleteFramebuffers( NUM_FBO, g_fbo );
 
@@ -1093,28 +1157,14 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandPushMarker* cmd = static_cast<const zpRenderCommandPushMarker*>( ptr );
 
-                if( GLEW_EXT_debug_marker )
-                {
-                    glPushGroupMarkerEXT( static_cast<GLsizei>( cmd->length ), cmd->marker );
-                }
-                else
-                {
-                    glPushDebugGroup( GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>( cmd->length ), cmd->marker );
-                }
+                glMarkerPush( cmd->marker, static_cast<GLsizei>( cmd->length ) );
 
                 position += sizeof( zpRenderCommandPushMarker );
             } break;
 
             case ZP_RENDER_COMMAND_POP_MARKER:
             {
-                if( GLEW_EXT_debug_marker )
-                {
-                    glPopGroupMarkerEXT();
-                }
-                else
-                {
-                    glPopDebugGroup();
-                }
+                glMarkerPop();
 
                 position += sizeof( zpRenderCommandPopMarker );
             } break;
@@ -1123,7 +1173,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetViewport* cmd = static_cast<const zpRenderCommandSetViewport*>( ptr );
                 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Viewport" );
+                glMarkerBlock( "Set Viewport" );
                 glViewport( cmd->viewport.topX,
                             cmd->viewport.topY,
                             cmd->viewport.width,
@@ -1137,7 +1187,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetScissorRect* cmd = static_cast<const zpRenderCommandSetScissorRect*>( ptr );
                
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Scissor Rect" );
+                glMarkerBlock( "Set Scissor Rect" );
                 glScissor( cmd->scissorRect.x,
                            cmd->scissorRect.y,
                            cmd->scissorRect.width,
@@ -1151,7 +1201,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetBlendState* cmd = static_cast<const zpRenderCommandSetBlendState*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Blend State" );
+                glMarkerBlock( "Set Blend State" );
                 if( cmd->blendState.blendEnabled )
                 {
                     glEnable( GL_BLEND );
@@ -1182,7 +1232,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetDepthState* cmd = static_cast<const zpRenderCommandSetDepthState*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Depth State" );
+                glMarkerBlock( "Set Depth State" );
                 if( cmd->depthState.compareFunc == ZP_COMPARE_FUNCTION_DISABLED )
                 {
                     glDisable( GL_DEPTH_TEST );
@@ -1202,7 +1252,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetStencilState* cmd = static_cast<const zpRenderCommandSetStencilState*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Stencil State" );
+                glMarkerBlock( "Set Stencil State" );
                 if( cmd->stencilState.stencilEnabled )
                 {
                     glEnable( GL_STENCIL );
@@ -1227,7 +1277,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetRasterState* cmd = static_cast<const zpRenderCommandSetRasterState*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set Raster State" );
+                glMarkerBlock( "Set Raster State" );
                 
                 glPolygonMode( GL_FRONT_AND_BACK, _FillModeToMode( cmd->rasterState.fillMode ) );
 
@@ -1251,7 +1301,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClear* cmd = static_cast<const zpRenderCommandClear*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth Stencil" );
+                glMarkerBlock( "Clear Depth Stencil" );
                 glClearColor( cmd->color.r,
                               cmd->color.g,
                               cmd->color.b,
@@ -1267,7 +1317,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClearColor* cmd = static_cast<const zpRenderCommandClearColor*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Color" );
+                glMarkerBlock( "Clear Color" );
                 glClearColor( cmd->color.r,
                               cmd->color.g,
                               cmd->color.b,
@@ -1281,7 +1331,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClearColorDepth* cmd = static_cast<const zpRenderCommandClearColorDepth*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Color Depth" );
+                glMarkerBlock( "Clear Color Depth" );
                 glClearColor( cmd->color.r,
                               cmd->color.g,
                               cmd->color.b,
@@ -1296,7 +1346,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClearDepthStencil* cmd = static_cast<const zpRenderCommandClearDepthStencil*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth Stencil" );
+                glMarkerBlock( "Clear Depth Stencil" );
                 glClearDepth( cmd->depth );
                 glClearStencil( cmd->stencil );
                 glClear( GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
@@ -1308,7 +1358,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClearDepth* cmd = static_cast<const zpRenderCommandClearDepth*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Depth" );
+                glMarkerBlock( "Clear Depth" );
                 glClearDepth( cmd->depth );
                 glClear( GL_DEPTH_BUFFER_BIT );
 
@@ -1319,7 +1369,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandClearStencil* cmd = static_cast<const zpRenderCommandClearStencil*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Clear Stencil" );
+                glMarkerBlock( "Clear Stencil" );
                 glClearStencil( cmd->stencil );
                 glClear( GL_STENCIL_BUFFER_BIT );
 
@@ -1330,7 +1380,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetRenderTargetColor* cmd = static_cast<const zpRenderCommandSetRenderTargetColor*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set RT Color" );
+                glMarkerBlock( "Set RT Color" );
 
                 if( cmd->rtColor.renderTarget )
                 {
@@ -1358,7 +1408,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandSetRenderTargetColorDepth* cmd = static_cast<const zpRenderCommandSetRenderTargetColorDepth*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Set RT Color Depth" );
+                glMarkerBlock( "Set RT Color Depth" );
 
                 if( cmd->rtColor.renderTarget && cmd->rtDepth.renderTarget )
                 {
@@ -1389,7 +1439,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandResolveAntiAliasedRenderTarget* cmd = static_cast<const zpRenderCommandResolveAntiAliasedRenderTarget*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Resolve Anti Alias RT" );
+                glMarkerBlock( "Resolve Anti Alias RT" );
 
                 GLuint srcTexture = cmd->rtAntiAliasSource.renderTarget->texture.index;
                 GLenum srcTarget = _TextureDimensionToTarget( cmd->rtAntiAliasSource.renderTarget->desc.textureDimension );
@@ -1442,7 +1492,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandBlitRenderTexture* cmd = static_cast<const zpRenderCommandBlitRenderTexture*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Blit RT" );
+                glMarkerBlock( "Blit RT" );
 
                 GLint sw = 0;
                 GLint sh = 0;
@@ -1521,7 +1571,6 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             {
                 const zpRenderCommandPresent* cmd = static_cast<const zpRenderCommandPresent*>( ptr );
 
-                glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Present" );
                 glMarkerBlock( "Present" );
 
                 const HDC dc = static_cast<const HDC>( cmd->hDC );
@@ -1539,6 +1588,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
             case ZP_RENDER_COMMAND_DRAW_MESH:
             {
                 const zpRenderCommandDrawMesh* cmd = static_cast<const zpRenderCommandDrawMesh*>( ptr );
+                glMarkerBlock( "Draw Mesh" );
 
                 BindVertexFormatForRenderCommand( cmd );
 
@@ -1585,7 +1635,6 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
 
 void PresentOpenGL( zp_handle hDC, zp_handle hContext )
 {
-    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Present" );
     glMarkerBlock( "Present" );
 
     HDC dc = static_cast<HDC>( hDC );
@@ -1767,14 +1816,18 @@ void CreateShaderOpenGL( zpCreateShaderDesc* desc, zpShader& shader )
 {
     glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Create Shader" );
 
-    zpShader empty = {};
-    shader = empty;
-
-    // TODO: add to method
-    const zp_char* geometroyShaderSource = ZP_NULL;
+    shader = {};
 
     const zp_char* versionHeader = R"GLSL(
 #version 330 core
+)GLSL";
+
+    const zp_char* debuggingEnabledHeader = R"GLSL(
+#pragma optimization(off)
+#pragma debug(on)
+)GLSL";
+
+    const zp_char* hlslToGlslHeader = R"GLSL(
 #define tex2D( sampler, uv )      texture( sampler, uv )
 #define BeginCBuffer( name )
 #define EndCBuffer()
@@ -1824,7 +1877,7 @@ float4 ObjectToClipSpace( in float4 vertex )
 )GLSL";
 
     const zp_char* psHeader = R"GLSL(
-#define FRAGMENT 
+#define FRAGMENT
 )GLSL";
 
     const zp_char* gsHeader = R"GLSL(
@@ -1841,6 +1894,8 @@ float4 ObjectToClipSpace( in float4 vertex )
         const zp_char* vs[] =
         {
             versionHeader,
+            debuggingEnabledHeader,
+            hlslToGlslHeader,
             commonHeader,
             vsHeader,
             static_cast<const zp_char*>( desc->vertexShaderSrc ) + desc->vertexShaderOffset
@@ -1860,6 +1915,10 @@ float4 ObjectToClipSpace( in float4 vertex )
                 glGetShaderInfoLog( shader.vertexShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
                 zp_printfln( "Vertex Shader Error: %s", buffer );
             }
+
+            glDeleteShader( shader.vertexShader.index );
+
+            shader.vertexShader.index = 0;
         }
 #if ZP_DEBUG
         else
@@ -1879,10 +1938,11 @@ float4 ObjectToClipSpace( in float4 vertex )
         const zp_char* ps[] =
         {
             versionHeader,
+            debuggingEnabledHeader,
+            hlslToGlslHeader,
             commonHeader,
             psHeader,
             static_cast<const zp_char*>( desc->fragmentShaderSrc ) + desc->fragmentShaderOffset
-
         };
 
         shader.fragmentShader.index = glCreateShader( GL_FRAGMENT_SHADER );
@@ -1899,6 +1959,10 @@ float4 ObjectToClipSpace( in float4 vertex )
                 glGetShaderInfoLog( shader.fragmentShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
                 zp_printfln( "Fragment Shader Error: %s", buffer );
             }
+
+            glDeleteShader( shader.fragmentShader.index );
+
+            shader.fragmentShader.index = 0;
         }
 #if ZP_DEBUG
         else
@@ -1913,14 +1977,16 @@ float4 ObjectToClipSpace( in float4 vertex )
     }
 
     // geometry shader
-    if( geometroyShaderSource )
+    if( desc->geometryShaderSrc )
     {
         const zp_char* gs[] =
         {
             versionHeader,
+            debuggingEnabledHeader,
+            hlslToGlslHeader,
             commonHeader,
             gsHeader,
-            geometroyShaderSource
+            static_cast<const zp_char*>( desc->geometryShaderSrc ) + desc->geometryShaderOffset
         };
 
         shader.geometryShader.index = glCreateShader( GL_GEOMETRY_SHADER );
@@ -1937,6 +2003,10 @@ float4 ObjectToClipSpace( in float4 vertex )
                 glGetShaderInfoLog( shader.geometryShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
                 zp_printfln( "Geometry Shader Error: %s", buffer );
             }
+
+            glDeleteShader( shader.geometryShader.index );
+
+            shader.geometryShader.index = 0;
         }
 #if ZP_DEBUG
         else
@@ -1970,7 +2040,18 @@ float4 ObjectToClipSpace( in float4 vertex )
             glGetProgramInfoLog( shader.programShader.index, ZP_ARRAY_SIZE( buffer ), ZP_NULL, buffer );
             zp_printfln( "Program Link Error: %s", buffer );
         }
+
+        glDeleteProgram( shader.programShader.index );
+
+        shader.programShader.index = 0;
     }
+#if ZP_DEBUG
+    else
+    {
+        GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
+        glObjectLabel( GL_PROGRAM, shader.programShader.index, len, desc->shaderName );
+    }
+#endif
 
     // validate program
     glValidateProgram( shader.programShader.index );
@@ -2005,11 +2086,6 @@ float4 ObjectToClipSpace( in float4 vertex )
         glDetachShader( shader.programShader.index, shader.geometryShader.index );
         glDeleteShader( shader.geometryShader.index );
     }
-
-#if ZP_DEBUG
-    GLsizei len = static_cast<GLsizei>( zp_strlen( desc->shaderName ) );
-    glObjectLabel( GL_PROGRAM, shader.programShader.index, len, desc->shaderName );
-#endif
 
     shader.vertexShader.index = 0;
     shader.fragmentShader.index = 0;
@@ -2048,9 +2124,6 @@ void DestroyShaderOpenGL( zpShader& shader )
 #ifdef ZP_USE_PROFILER
 void BeginFrameOpenGL( zp_size_t frameIndex )
 {
-    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "Begin Frame" );
-    glMarkerBlock( "Begin Frame" );
-
     zp_size_t sampleIndex = frameIndex % NUM_QUERIES;
     glBeginQuery( GL_TIME_ELAPSED, g_queries[ sampleIndex ].timeElapsed );
     glBeginQuery( GL_PRIMITIVES_GENERATED, g_queries[ sampleIndex ].primitivesGenerated );
@@ -2059,9 +2132,6 @@ void BeginFrameOpenGL( zp_size_t frameIndex )
 
 void EndFrameOpenGL( zp_size_t frameIndex, zpRenderingStat& stat )
 {
-    glDebugBlock( GL_DEBUG_SOURCE_APPLICATION, "End Frame" );
-    glMarkerBlock( "End Frame" );
-
     glEndQuery( GL_TIME_ELAPSED );
     glEndQuery( GL_PRIMITIVES_GENERATED );
     glEndQuery( GL_SAMPLES_PASSED );

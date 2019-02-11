@@ -58,6 +58,8 @@ struct zpMaterial
     zpMap< zpShaderProperty, zpTextureHandle > textures;
     zpMap< zpShaderProperty, zpMatrix4f > matrices;
 
+    zpVector< zpShaderKeyword > keywords;
+
     void setInt( zpShaderProperty name, const zp_int value )
     {
         ints.set( name, value );
