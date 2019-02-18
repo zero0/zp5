@@ -255,6 +255,7 @@ void zpRenderImmediate::endDrawImmediate()
         desc.renderLayers = -1;
         desc.passIndex = 0;
         desc.subMeshIndex = 0;
+        desc.mesh = {};
         desc.material = m_currentMaterial;
         desc.vertexBuffer = m_immidateVertexBuffers[ m_currentBufferIndex ];
         desc.indexBuffer = m_immidateIndexBuffers[ m_currentBufferIndex ];

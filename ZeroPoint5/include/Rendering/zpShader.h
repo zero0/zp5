@@ -179,6 +179,7 @@ struct zpShaderKeyword
         m_keyword = other.m_keyword;
     }
 
+
     ZP_FORCE_INLINE operator zp_hash_t() const
     {
         return m_keyword;
@@ -197,6 +198,7 @@ struct zpShaderKeyword
 
     friend zp_bool operator==( const zpShaderKeyword& x, const zpShaderKeyword& y );
     friend zp_bool operator!=( const zpShaderKeyword& x, const zpShaderKeyword& y );
+    friend zp_bool operator<( const zpShaderKeyword& x, const zpShaderKeyword& y );
 
 private:
     ZP_FORCE_INLINE zpShaderKeyword( zp_hash_t hash )
@@ -208,6 +210,15 @@ private:
     static zpMap<zp_hash_t, zpString>* s_shaderKeywordToName;
 
     friend class zpShaderManager;
+};
+
+//
+//
+//
+
+struct zpShaderKeywordSet
+{
+    zpHashSet< zpShaderKeyword > keywords;
 };
 
 //

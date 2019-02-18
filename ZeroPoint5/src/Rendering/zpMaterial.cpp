@@ -76,6 +76,45 @@ static void FillMaterial( zpShaderManager* shaderManager, zpTextureManager* text
 //
 //
 
+void zpMaterial::setInt( zpShaderProperty name, const zp_int value )
+{
+    ints.set( name, value );
+}
+
+void zpMaterial::setFloat( zpShaderProperty name, const zp_float value )
+{
+    floats.set( name, value );
+}
+
+void zpMaterial::setColor( zpShaderProperty name, const zpColorf& color )
+{
+    colors.set( name, color );
+}
+
+void zpMaterial::setVector( zpShaderProperty name, const zpVector4f& vector )
+{
+    vectors.set( name, vector );
+}
+
+void zpMaterial::setMatrix( zpShaderProperty name, const zpMatrix4f& matrix )
+{
+    matrices.set( name, matrix );
+}
+
+void zpMaterial::setTexture( zpShaderProperty name, const zpTextureHandle& texture )
+{
+    textures.set( name, texture );
+}
+
+void zpMaterial::setBuffer( zpShaderProperty name, const zpRenderBuffer& buffer )
+{
+    buffers.set( name, buffer );
+}
+
+//
+//
+//
+
 zpMaterialHandle::zpMaterialHandle()
     : m_instanceId( ZP_MATERIAL_ID_INVALID )
     , m_materialInstance( ZP_NULL )

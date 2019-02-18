@@ -844,8 +844,8 @@ ZP_FORCE_INLINE glMarkerBlockS::~glMarkerBlockS()
 #define glMarkerPop()                   glMarkerPopS()
 #else
 #define glMarkerBlock( ... )            (void)0
-#define glMarkerPush( marker )          (void)0
-#define glMarkerPush()                  (void)0
+#define glMarkerPush( ... )             (void)0
+#define glMarkerPop()                   (void)0
 #endif
 
 static void GLAPIENTRY _DebugOutputOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam )
@@ -1619,7 +1619,7 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                                 static_cast<GLsizei>( cmd->indexCount ),
                                 indexStride,
                                 reinterpret_cast<void*>( cmd->indexOffset ),
-                                cmd->baseVertexIndex );
+                                static_cast<GLint>( cmd->baseVertexIndex ) );
 
 
                 UnbindVertexFormatForRenderCommand( cmd );

@@ -28,6 +28,10 @@ zp_bool operator!=( const zpShaderKeyword& x, const zpShaderKeyword& y )
     return x.m_keyword != y.m_keyword;
 }
 
+zp_bool operator<( const zpShaderKeyword& x, const zpShaderKeyword& y )
+{
+    return x.m_keyword < y.m_keyword;
+}
 
 //
 //
@@ -170,6 +174,10 @@ void zpShaderManager::teardown()
 {
     zpShaderKeyword::s_shaderKeywordToName = ZP_NULL;
     zpShaderProperty::s_shaderPropertyToName = ZP_NULL;
+
+    m_shaderPropertyToName.clear();
+    m_shaderKeywordToName.clear();
+
     m_engine = ZP_NULL;
 }
 

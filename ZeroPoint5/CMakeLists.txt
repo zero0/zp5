@@ -57,6 +57,7 @@ set( ZP_CORE_HEADER
     "include/Core/zpCore.h"
     "include/Core/zpDataBuffer.h"
     "include/Core/zpFile.h"
+    "include/Core/zpHashSet.h"
     "include/Core/zpLZF.h"
     "include/Core/zpMap.h"
     "include/Core/zpMath.h"
@@ -72,14 +73,8 @@ set( ZP_CORE_HEADER
     "include/Core/zpTLSF.h"
     "include/Core/zpVector.h"
     )
-set( ZP_CORE_INLINE
-    "include/Core/zpCore.inl"
-    "include/Core/zpMathSimd.inl"
-    "include/Core/zpVector.inl"
-    )
 
 source_group( Headers FILES
-    ${ZP_CORE_INLINE}
     ${ZP_CORE_HEADER}
 )
 source_group( Source FILES

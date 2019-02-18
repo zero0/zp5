@@ -284,6 +284,11 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 // Includes
 //
 
+struct zpDefaultGlobalAllocator;
+
+template<typename T>
+struct zpDefaultEqualityComparer;
+
 #include "zpMath.h"
 #include "zpTLSF.h"
 #include "zpLZF.h"
@@ -296,6 +301,7 @@ zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const
 #include "zpVector.h"
 #include "zpQueue.h"
 #include "zpStack.h"
+#include "zpHashSet.h"
 #include "zpDataBuffer.h"
 #include "zpFile.h"
 #include "zpArchive.h"
