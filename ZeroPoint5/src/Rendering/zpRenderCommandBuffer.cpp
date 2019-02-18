@@ -260,6 +260,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpDrawM
     cmd.vertexCount = desc.vertexCount;
     cmd.indexOffset = desc.indexOffset;
     cmd.indexCount = desc.indexCount;
+    cmd.baseVertexIndex = desc.baseVertexIndex;
     cmd.indexStride = desc.indexStride;
     cmd.vertexFormat = desc.vertexFormat;
     cmd.topology = desc.topology;
@@ -284,6 +285,7 @@ void zpRenderCommandBuffer::drawMesh( const zpMatrix4f& transform, const zpMesh*
     cmd.vertexCount = mesh->parts[ subMeshIndex ].vertexCount;
     cmd.indexOffset = mesh->parts[ subMeshIndex ].indexOffset;
     cmd.indexCount = mesh->parts[ subMeshIndex ].indexCount;
+    cmd.baseVertexIndex = mesh->parts[ subMeshIndex ].baseVertexIndex;
     cmd.indexStride = mesh->indexStride;
     cmd.vertexFormat = mesh->vertexFormat;
     cmd.topology = ZP_TOPOLOGY_TRIANGLE_LIST;

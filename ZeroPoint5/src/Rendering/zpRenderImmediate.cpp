@@ -251,7 +251,7 @@ void zpRenderImmediate::endDrawImmediate()
         SetRenderBufferDataOpenGL( m_immidateVertexBuffers[ m_currentBufferIndex ], m_scratchVertexBuffer.getBuffer(), m_immediateVertexSize, m_scratchVertexBuffer.getLength() );
         SetRenderBufferDataOpenGL( m_immidateIndexBuffers[ m_currentBufferIndex ], m_scratchIndexBuffer.getBuffer(), m_immediateIndexSize, m_scratchIndexBuffer.getLength() );
 
-        zpDrawRenderable desc = {};
+        zpDrawRenderable desc;
         desc.renderLayers = -1;
         desc.passIndex = 0;
         desc.subMeshIndex = 0;
@@ -262,6 +262,7 @@ void zpRenderImmediate::endDrawImmediate()
         desc.vertexCount = m_currentVertexCount;
         desc.indexOffset = m_immediateIndexSize;
         desc.indexCount = m_currentIndexCount;
+        desc.baseVertexIndex = 0;
         desc.indexStride = _IndexCountToStride( m_currentIndexCount );
         desc.vertexFormat = m_currentVertexFormat;
         desc.topology = m_currentTopology;

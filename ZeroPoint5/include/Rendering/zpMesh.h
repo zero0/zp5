@@ -13,6 +13,7 @@ struct zpMeshPart
     zp_size_t indexCount;
     zp_size_t vertexOffset;
     zp_size_t vertexCount;
+    zp_size_t baseVertexIndex;
     zpBoundingAABB bounds;
 };
 

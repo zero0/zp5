@@ -134,6 +134,7 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
                 desc.vertexCount = part.vertexCount;
                 desc.indexOffset = part.indexOffset;
                 desc.indexCount = part.indexCount;
+                desc.baseVertexIndex = part.baseVertexIndex;
                 desc.indexStride = mesh->indexStride;
                 desc.vertexFormat = mesh->vertexFormat;
                 desc.topology = mesh->topology;
@@ -150,6 +151,7 @@ void zpRenderContext::drawRenderers( const zpDrawRenderersDesc& desc )
             desc.vertexCount = drawRenderable->vertexCount;
             desc.indexOffset = drawRenderable->indexOffset;
             desc.indexCount = drawRenderable->indexCount;
+            desc.baseVertexIndex = drawRenderable->baseVertexIndex;
             desc.indexStride = drawRenderable->indexStride;
             desc.vertexFormat = drawRenderable->vertexFormat;
             desc.topology = drawRenderable->topology;

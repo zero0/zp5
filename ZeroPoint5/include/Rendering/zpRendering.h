@@ -811,6 +811,7 @@ struct zpRenderCommandDrawMesh
     zp_size_t vertexCount;
     zp_size_t indexOffset;
     zp_size_t indexCount;
+    zp_size_t baseVertexIndex;
     zpIndexStride indexStride;
     zpVertexFormat vertexFormat;
     zpTopology topology;

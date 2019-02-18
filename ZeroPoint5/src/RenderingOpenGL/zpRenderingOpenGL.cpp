@@ -1614,10 +1614,12 @@ void ProcessRenderCommandOpenGL( const void* cmd, zp_size_t size )
                 }
 
                 GLenum mode = _TopologyToMode( cmd->topology );
-                glDrawElements( mode,
+                glDrawElementsBaseVertex( 
+                                mode,
                                 static_cast<GLsizei>( cmd->indexCount ),
                                 indexStride,
-                                reinterpret_cast<void*>( cmd->indexOffset ) );
+                                reinterpret_cast<void*>( cmd->indexOffset ),
+                                cmd->baseVertexIndex );
 
 
                 UnbindVertexFormatForRenderCommand( cmd );
