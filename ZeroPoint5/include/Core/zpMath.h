@@ -414,6 +414,11 @@ ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_sign( zp_int value )
     return value < 0 ? -1 : 1;
 }
 
+ZP_FORCE_INLINE ZP_CONSTEXPR zp_int zp_sign( zp_long value )
+{
+    return value < 0L ? -1 : 1;
+}
+
 namespace zpMath
 {
     ZP_FORCE_INLINE zpScalarSimd ZP_VECTORCALL Scalar( zp_float s );

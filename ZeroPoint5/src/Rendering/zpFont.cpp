@@ -1,5 +1,5 @@
 #include "Rendering/zpRendering.h"
-#include <new>
+//#include <new>
 
 const zp_hash64 ZP_FONT_ID_INVALID = static_cast<zp_hash64>( -1 );
 const zp_hash64 ZP_FONT_ID_EMPTY = 0;

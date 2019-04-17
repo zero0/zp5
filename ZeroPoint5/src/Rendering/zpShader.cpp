@@ -1,5 +1,5 @@
 #include "Rendering/zpRendering.h"
-#include <new>
+//#include <new>
 
 const zp_hash64 ZP_SHADER_ID_INVALID = (zp_hash64)-1;
 const zp_hash64 ZP_SHADER_ID_EMPTY = 0;

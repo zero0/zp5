@@ -35,6 +35,8 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
     globalAllocator.setup();
     g_globalAllocator = &globalAllocator;
 
+    //zpJobSystem::Initialize( g_globalAllocator, zpThread::GetNumProcessors() - 1 );
+
     int r = 0;// = zpMain();
     {
         zpBaseApplication app;
@@ -45,6 +47,8 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
         app.run();
         r = app.shutdown();
     }
+
+    //zpJobSystem::Shutdown( g_globalAllocator );
 
     globalAllocator.teardown();
     g_globalAllocator = ZP_NULL;

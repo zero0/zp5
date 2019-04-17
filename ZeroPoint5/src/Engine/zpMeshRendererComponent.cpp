@@ -1,5 +1,5 @@
 #include "Engine/zpEngine.h"
-#include <new>
+//#include <new>
 
 zpMeshRendererComponent::zpMeshRendererComponent()
 {

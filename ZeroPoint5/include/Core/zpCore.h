@@ -109,9 +109,9 @@ typedef char zp_char;
 
 typedef void* zp_handle;
 
-typedef zp_ushort   zp_word;
-typedef zp_uint     zp_dword;
-typedef zp_ulong    zp_qword;
+typedef unsigned short      zp_word;
+typedef unsigned long       zp_dword;
+typedef unsigned long long  zp_qword;
 
 typedef zp_uint     zp_hash32;
 typedef zp_ulong    zp_hash64;
@@ -280,6 +280,36 @@ zp_int zp_printfln( const zp_char* text, ... );
 
 zp_int zp_snprintf( zp_char* dest, zp_size_t destSize, zp_size_t maxCount, const zp_char* format, ... );
 
+#pragma push_macro("new")
+#undef new
+extern "C++" {
+#define __PLACEMENT_NEW_INLINE
+    inline void* __cdecl operator new( zp_size_t _Size, void* _Where ) throw( )
+    {
+        (void)_Size;
+        return _Where;
+    }
+
+    inline void __cdecl operator delete( void*, void* ) throw( )
+    {
+        return;
+    }
+
+#define __PLACEMENT_VEC_NEW_INLINE
+    inline void* __cdecl operator new[]( zp_size_t _Size, void* _Where ) throw( )
+    {
+        (void)_Size;
+        return _Where;
+    }
+
+    inline void __cdecl operator delete[]( void*, void* ) throw( )
+    {
+    }
+}
+#pragma pop_macro("new")
+
+#define zp_offsetof(s,m) ((zp_size_t)&reinterpret_cast<char const volatile&>((((s*)0)->m)))
+
 //
 // Includes
 //
@@ -289,12 +319,15 @@ struct zpDefaultGlobalAllocator;
 template<typename T>
 struct zpDefaultEqualityComparer;
 
+#include "zpAtomic.h"
+#include "zpThread.h"
 #include "zpMath.h"
 #include "zpTLSF.h"
 #include "zpLZF.h"
 #include "zpMemoryAllocator.h"
 #include "zpMemoryPolicy.h"
 #include "zpMemoryStorage.h"
+#include "zpJob.h"
 #include "zpTime.h"
 #include "zpString.h"
 #include "zpMap.h"

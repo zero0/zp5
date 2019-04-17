@@ -54,7 +54,7 @@ enum zp_tlsf_block_config : zp_size_t
     BLOCK_HEADER_GET_SIZE_MASK = ~( BLOCK_HEADER_FREE_BIT | BLOCK_HEADER_PREV_FREE_BIT ),
 
     BLOCK_HEADER_OVERHEAD = sizeof( zp_size_t ),
-    BLOCK_START_OFFSET = offsetof( zp_tlsf_block_header_t, size ) + sizeof( zp_size_t ),
+    BLOCK_START_OFFSET = zp_offsetof( zp_tlsf_block_header_t, size ) + sizeof( zp_size_t ),
     BLOCK_SIZE_MIN = sizeof( zp_tlsf_block_header_t ) - sizeof( zp_tlsf_block_header_t* ),
     BLOCK_SIZE_MAX = ( (zp_size_t)1 << FL_INDEX_MAX ),
 }

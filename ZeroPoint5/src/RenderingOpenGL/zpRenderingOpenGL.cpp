@@ -558,39 +558,40 @@ static void BindVertexFormatForRenderCommand( const zpRenderCommandDrawMesh* cmd
     {
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT_UV2:
         {
-            GLint uv1Location = glGetAttribLocation( prog, "uv1" );
+            const GLint uv1Location = glGetAttribLocation( prog, "uv1" );
             glVertexAttribPointer( uv1Location, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 5 ] ) );
             glEnableVertexAttribArray( uv1Location );
         }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL_TANGENT:
         {
-            GLint tangentLocation = glGetAttribLocation( prog, "tangent" );
+            const GLint tangentLocation = glGetAttribLocation( prog, "tangent" );
             glVertexAttribPointer( tangentLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 4 ] ) );
             glEnableVertexAttribArray( tangentLocation );
         }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV_NORMAL:
         {
-            GLint normalLocation = glGetAttribLocation( prog, "normal" );
+            const GLint normalLocation = glGetAttribLocation( prog, "normal" );
             glVertexAttribPointer( normalLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 3 ] ) );
             glEnableVertexAttribArray( normalLocation );
         }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR_UV:
         {
-            GLint uv0Location = glGetAttribLocation( prog, "uv0" );
+            const GLint uv0Location = glGetAttribLocation( prog, "uv0" );
             glVertexAttribPointer( uv0Location, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 2 ] ) );
             glEnableVertexAttribArray( uv0Location );
         }
         case ZP_VERTEX_FORMAT_VERTEX_COLOR:
         {
-            GLint colorLocation = glGetAttribLocation( prog, "color" );
+            const GLint colorLocation = glGetAttribLocation( prog, "color" );
             glVertexAttribPointer( colorLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 1 ] ) );
             glEnableVertexAttribArray( colorLocation );
-            GLint vertexLocation = glGetAttribLocation( prog, "vertex" );
+            const GLint vertexLocation = glGetAttribLocation( prog, "vertex" );
             glVertexAttribPointer( vertexLocation, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>( vertexOffset + offsets[ 0 ] ) );
             glEnableVertexAttribArray( vertexLocation );
         } break;
 
         default:
+            ZP_INVALID_CODE_PATH();
             break;
     }
 
